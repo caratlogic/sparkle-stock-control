@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,17 +14,42 @@ import { sampleGems } from '../data/sampleGems';
 interface ConsignmentCreationProps {
   onCancel: () => void;
   onSave: (consignment: Consignment) => void;
+  preselectedGem?: Gem | null;
+  preselectedCustomer?: Customer | null;
 }
 
-export const ConsignmentCreation = ({ onCancel, onSave }: ConsignmentCreationProps) => {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [customerSearch, setCustomerSearch] = useState('');
+export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: ConsignmentCreationProps) => {
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer || null);
+  const [customerSearch, setCustomerSearch] = useState(preselectedCustomer?.name || '');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [productSearch, setProductSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [returnDate, setReturnDate] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Handle preselected gem
+  useEffect(() => {
+    if (preselectedGem) {
+      const newItem: InvoiceItem = {
+        productId: preselectedGem.id,
+        productType: preselectedGem.gemType.toLowerCase() as 'diamond',
+        productDetails: {
+          stockId: preselectedGem.stockId,
+          carat: preselectedGem.carat,
+          cut: preselectedGem.cut,
+          color: preselectedGem.color,
+          clarity: preselectedGem.clarity,
+          certificateNumber: preselectedGem.certificateNumber,
+          gemType: preselectedGem.gemType,
+        },
+        quantity: 1,
+        unitPrice: preselectedGem.price,
+        totalPrice: preselectedGem.price,
+      };
+      setItems([newItem]);
+    }
+  }, [preselectedGem]);
 
   // Customer search results
   const customerResults = sampleCustomers.filter(customer =>
