@@ -10,7 +10,12 @@ import { sampleCustomers } from '../data/sampleCustomers';
 import { CustomerForm } from './CustomerForm';
 import { CustomerTable } from './CustomerTable';
 
-export const CustomerDashboard = () => {
+interface CustomerDashboardProps {
+  onCreateInvoice?: (customer: Customer) => void;
+  onCreateConsignment?: (customer: Customer) => void;
+}
+
+export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: CustomerDashboardProps) => {
   const [customers, setCustomers] = useState<Customer[]>(sampleCustomers);
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -144,6 +149,8 @@ export const CustomerDashboard = () => {
               setShowForm(true);
             }}
             onDelete={handleDeleteCustomer}
+            onCreateInvoice={onCreateInvoice}
+            onCreateConsignment={onCreateConsignment}
           />
         </CardContent>
       </Card>

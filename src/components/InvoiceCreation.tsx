@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,21 +12,47 @@ import { Invoice, InvoiceItem } from '../types/customer';
 import { Gem } from '../types/gem';
 import { sampleCustomers } from '../data/sampleCustomers';
 import { sampleGems } from '../data/sampleGems';
+import { generateInvoicePDF } from '../utils/pdfGenerator';
 
 interface InvoiceCreationProps {
   onCancel: () => void;
   onSave: (invoice: Invoice) => void;
+  preselectedGem?: Gem | null;
+  preselectedCustomer?: Customer | null;
 }
 
-export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [customerSearch, setCustomerSearch] = useState('');
+export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: InvoiceCreationProps) => {
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer || null);
+  const [customerSearch, setCustomerSearch] = useState(preselectedCustomer?.name || '');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [productSearch, setProductSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [taxRate, setTaxRate] = useState(8.5);
   const [notes, setNotes] = useState('');
+
+  // Auto-add preselected gem to items
+  useEffect(() => {
+    if (preselectedGem && items.length === 0) {
+      const newItem: InvoiceItem = {
+        productId: preselectedGem.id,
+        productType: preselectedGem.gemType.toLowerCase() as 'diamond',
+        productDetails: {
+          stockId: preselectedGem.stockId,
+          carat: preselectedGem.carat,
+          cut: preselectedGem.cut,
+          color: preselectedGem.color,
+          clarity: preselectedGem.clarity,
+          certificateNumber: preselectedGem.certificateNumber,
+          gemType: preselectedGem.gemType,
+        },
+        quantity: 1,
+        unitPrice: preselectedGem.price,
+        totalPrice: preselectedGem.price,
+      };
+      setItems([newItem]);
+    }
+  }, [preselectedGem]);
 
   // Customer search results
   const customerResults = sampleCustomers.filter(customer =>
@@ -110,88 +136,23 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
   const downloadInvoice = () => {
     if (!selectedCustomer || items.length === 0) return;
 
-    const invoiceHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Invoice</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .company-info { margin-bottom: 20px; }
-          .customer-info { margin-bottom: 20px; }
-          .invoice-details { margin-bottom: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-          th { background-color: #f5f5f5; }
-          .totals { text-align: right; }
-          .total-row { font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>INVOICE</h1>
-          <h2>Diamond Inventory</h2>
-        </div>
-        
-        <div class="invoice-details">
-          <p><strong>Invoice Number:</strong> INV-${Date.now()}</p>
-          <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-          <p><strong>Due Date:</strong> ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
-        </div>
+    const invoice: Invoice = {
+      id: Date.now().toString(),
+      invoiceNumber: `INV-${Date.now()}`,
+      customerId: selectedCustomer.id,
+      customerDetails: selectedCustomer,
+      items,
+      subtotal,
+      taxRate,
+      taxAmount,
+      total,
+      status: 'draft',
+      dateCreated: new Date().toISOString().split('T')[0],
+      dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      notes,
+    };
 
-        <div class="customer-info">
-          <h3>Bill To:</h3>
-          <p><strong>${selectedCustomer.name}</strong></p>
-          <p>${selectedCustomer.email}</p>
-          <p>${selectedCustomer.phone}</p>
-          ${selectedCustomer.company ? `<p>${selectedCustomer.company}</p>` : ''}
-          <p>${selectedCustomer.address.street}</p>
-          <p>${selectedCustomer.address.city}, ${selectedCustomer.address.state} ${selectedCustomer.address.zipCode}</p>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Stock ID</th>
-              <th>Description</th>
-              <th>Quantity</th>
-              <th>Unit Price</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map(item => `
-              <tr>
-                <td>${item.productDetails.stockId}</td>
-                <td>${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} ${item.productDetails.clarity}<br>
-                Cert: ${item.productDetails.certificateNumber}</td>
-                <td>${item.quantity}</td>
-                <td>$${item.unitPrice.toLocaleString()}</td>
-                <td>$${item.totalPrice.toLocaleString()}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-
-        <div class="totals">
-          <p>Subtotal: $${subtotal.toLocaleString()}</p>
-          <p>Tax (${taxRate}%): $${taxAmount.toLocaleString()}</p>
-          <p class="total-row">Total: $${total.toLocaleString()}</p>
-        </div>
-
-        ${notes ? `<div><h3>Notes:</h3><p>${notes}</p></div>` : ''}
-      </body>
-      </html>
-    `;
-
-    const blob = new Blob([invoiceHTML], { type: 'text/html' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `invoice-${Date.now()}.html`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    generateInvoicePDF(invoice);
   };
 
   return (
@@ -414,7 +375,7 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
           variant="outline"
         >
           <Download className="w-4 h-4 mr-2" />
-          Download Invoice
+          Download PDF
         </Button>
         <Button
           onClick={handleSaveInvoice}

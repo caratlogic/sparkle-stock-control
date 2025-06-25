@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,16 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES, GEM_COLORS, CUT_OPTIONS } from '../types/gem';
-import { Search, Filter, Edit, Eye, ArrowUpDown, Download } from 'lucide-react';
+import { Search, Filter, Edit, Eye, ArrowUpDown, Download, FileText, Receipt } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface GemTableProps {
   gems: Gem[];
   onEdit: (gem: Gem) => void;
   onDelete: (id: string) => void;
+  onCreateInvoice?: (gem: Gem) => void;
+  onCreateConsignment?: (gem: Gem) => void;
 }
 
-export const GemTable = ({ gems, onEdit, onDelete }: GemTableProps) => {
+export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateConsignment }: GemTableProps) => {
   const { isOwner } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -293,9 +294,6 @@ export const GemTable = ({ gems, onEdit, onDelete }: GemTableProps) => {
                     </Badge>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.dateAdded}</div>
-                  </td>
-                  <td className="py-4 px-4">
                     <div className="flex space-x-2">
                       <Button
                         variant="ghost"
@@ -304,6 +302,26 @@ export const GemTable = ({ gems, onEdit, onDelete }: GemTableProps) => {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
+                      {gem.status === 'In Stock' && onCreateInvoice && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onCreateInvoice(gem)}
+                          title="Create Invoice"
+                        >
+                          <FileText className="w-4 h-4 text-blue-600" />
+                        </Button>
+                      )}
+                      {gem.status === 'In Stock' && onCreateConsignment && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onCreateConsignment(gem)}
+                          title="Create Consignment"
+                        >
+                          <Receipt className="w-4 h-4 text-purple-600" />
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>

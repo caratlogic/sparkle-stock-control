@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES } from '../types/gem';
-import { Invoice, Consignment } from '../types/customer';
+import { Invoice, Consignment, Customer } from '../types/customer';
 import { sampleGems } from '../data/sampleGems';
+import { sampleCustomers } from '../data/sampleCustomers';
 import { GemForm } from './GemForm';
 import { GemTable } from './GemTable';
 import { CustomerDashboard } from './CustomerDashboard';
@@ -34,6 +35,8 @@ export const Dashboard = () => {
   const [selectedGemType, setSelectedGemType] = useState<string>('all');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [consignments, setConsignments] = useState<Consignment[]>([]);
+  const [preselectedGem, setPreselectedGem] = useState<Gem | null>(null);
+  const [preselectedCustomer, setPreselectedCustomer] = useState<Customer | null>(null);
 
   // Filter gems by selected type
   const filteredGems = selectedGemType === 'all' 
@@ -66,6 +69,8 @@ export const Dashboard = () => {
 
   const handleSaveInvoice = (invoice: Invoice) => {
     setInvoices([...invoices, invoice]);
+    setPreselectedGem(null);
+    setPreselectedCustomer(null);
     setActiveTab('transactions');
   };
 
@@ -77,7 +82,29 @@ export const Dashboard = () => {
     });
     setGems(updatedGems);
     setConsignments([...consignments, consignment]);
+    setPreselectedGem(null);
+    setPreselectedCustomer(null);
     setActiveTab('transactions');
+  };
+
+  const handleCreateInvoiceFromGem = (gem: Gem) => {
+    setPreselectedGem(gem);
+    setActiveTab('create-invoice');
+  };
+
+  const handleCreateConsignmentFromGem = (gem: Gem) => {
+    setPreselectedGem(gem);
+    setActiveTab('create-consignment');
+  };
+
+  const handleCreateInvoiceFromCustomer = (customer: Customer) => {
+    setPreselectedCustomer(customer);
+    setActiveTab('create-invoice');
+  };
+
+  const handleCreateConsignmentFromCustomer = (customer: Customer) => {
+    setPreselectedCustomer(customer);
+    setActiveTab('create-consignment');
   };
 
   // Calculate statistics
@@ -140,23 +167,42 @@ export const Dashboard = () => {
                 setActiveTab('edit-gem');
               }}
               onDelete={handleDeleteGem}
+              onCreateInvoice={handleCreateInvoiceFromGem}
+              onCreateConsignment={handleCreateConsignmentFromGem}
             />
           </div>
         );
       case 'customers':
-        return <CustomerDashboard />;
+        return (
+          <CustomerDashboard 
+            onCreateInvoice={handleCreateInvoiceFromCustomer}
+            onCreateConsignment={handleCreateConsignmentFromCustomer}
+          />
+        );
       case 'create-invoice':
         return (
           <InvoiceCreation
-            onCancel={() => setActiveTab('dashboard')}
+            onCancel={() => {
+              setActiveTab('dashboard');
+              setPreselectedGem(null);
+              setPreselectedCustomer(null);
+            }}
             onSave={handleSaveInvoice}
+            preselectedGem={preselectedGem}
+            preselectedCustomer={preselectedCustomer}
           />
         );
       case 'create-consignment':
         return (
           <ConsignmentCreation
-            onCancel={() => setActiveTab('dashboard')}
+            onCancel={() => {
+              setActiveTab('dashboard');
+              setPreselectedGem(null);
+              setPreselectedCustomer(null);
+            }}
             onSave={handleSaveConsignment}
+            preselectedGem={preselectedGem}
+            preselectedCustomer={preselectedCustomer}
           />
         );
       case 'transactions':
