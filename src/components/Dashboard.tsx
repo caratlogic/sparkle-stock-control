@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES } from '../types/gem';
+import { Invoice, Consignment } from '../types/customer';
 import { sampleGems } from '../data/sampleGems';
 import { GemForm } from './GemForm';
 import { GemTable } from './GemTable';
 import { CustomerDashboard } from './CustomerDashboard';
 import { InvoiceCreation } from './InvoiceCreation';
-import { Invoice } from '../types/customer';
+import { ConsignmentCreation } from './ConsignmentCreation';
+import { TransactionDashboard } from './TransactionDashboard';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -19,7 +21,8 @@ import {
   Plus, 
   Users, 
   FileText,
-  Gem as GemIcon
+  Gem as GemIcon,
+  Receipt
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -30,6 +33,7 @@ export const Dashboard = () => {
   const [editingGem, setEditingGem] = useState<Gem | null>(null);
   const [selectedGemType, setSelectedGemType] = useState<string>('all');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [consignments, setConsignments] = useState<Consignment[]>([]);
 
   // Filter gems by selected type
   const filteredGems = selectedGemType === 'all' 
@@ -62,7 +66,18 @@ export const Dashboard = () => {
 
   const handleSaveInvoice = (invoice: Invoice) => {
     setInvoices([...invoices, invoice]);
-    setActiveTab('dashboard');
+    setActiveTab('transactions');
+  };
+
+  const handleSaveConsignment = (consignment: Consignment) => {
+    // Update gem status to Reserved for consigned items
+    const updatedGems = gems.map(gem => {
+      const isConsigned = consignment.items.some(item => item.productId === gem.id);
+      return isConsigned ? { ...gem, status: 'Reserved' as const } : gem;
+    });
+    setGems(updatedGems);
+    setConsignments([...consignments, consignment]);
+    setActiveTab('transactions');
   };
 
   // Calculate statistics
@@ -135,6 +150,20 @@ export const Dashboard = () => {
           <InvoiceCreation
             onCancel={() => setActiveTab('dashboard')}
             onSave={handleSaveInvoice}
+          />
+        );
+      case 'create-consignment':
+        return (
+          <ConsignmentCreation
+            onCancel={() => setActiveTab('dashboard')}
+            onSave={handleSaveConsignment}
+          />
+        );
+      case 'transactions':
+        return (
+          <TransactionDashboard
+            invoices={invoices}
+            consignments={consignments}
           />
         );
       default:
@@ -311,6 +340,28 @@ export const Dashboard = () => {
             >
               <FileText className="w-4 h-4 inline mr-2" />
               Create Invoice
+            </button>
+            <button
+              onClick={() => setActiveTab('create-consignment')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'create-consignment'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <Receipt className="w-4 h-4 inline mr-2" />
+              Create Consignment
+            </button>
+            <button
+              onClick={() => setActiveTab('transactions')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'transactions'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <FileText className="w-4 h-4 inline mr-2" />
+              Transactions
             </button>
           </div>
         </div>

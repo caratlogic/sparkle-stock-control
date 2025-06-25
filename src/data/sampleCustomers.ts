@@ -6,8 +6,10 @@ export const sampleCustomers: Customer[] = [
     id: '1',
     customerId: 'CUST001',
     name: 'John Smith',
-    email: 'john.smith@email.com',
-    phone: '+1 (555) 123-4567',
+    email: 'john.smith@example.com',
+    phone: '+1-555-0123',
+    company: 'Smith Jewelry Co.',
+    taxId: 'TAX123456',
     address: {
       street: '123 Main Street',
       city: 'New York',
@@ -15,19 +17,18 @@ export const sampleCustomers: Customer[] = [
       zipCode: '10001',
       country: 'USA'
     },
-    company: 'Smith Jewelry Co.',
-    taxId: 'TAX123456',
     dateAdded: '2024-01-15',
     totalPurchases: 45000,
     lastPurchaseDate: '2024-06-15',
-    notes: 'Preferred customer, bulk orders'
+    notes: 'Frequent customer, prefers emeralds'
   },
   {
     id: '2',
     customerId: 'CUST002',
     name: 'Sarah Johnson',
-    email: 'sarah.johnson@email.com',
-    phone: '+1 (555) 987-6543',
+    email: 'sarah.johnson@example.com',
+    phone: '+1-555-0124',
+    company: 'Elite Gems LLC',
     address: {
       street: '456 Oak Avenue',
       city: 'Los Angeles',
@@ -35,29 +36,27 @@ export const sampleCustomers: Customer[] = [
       zipCode: '90210',
       country: 'USA'
     },
-    company: 'Elegant Gems LLC',
-    taxId: 'TAX789012',
     dateAdded: '2024-02-20',
-    totalPurchases: 28000,
-    lastPurchaseDate: '2024-06-10',
-    notes: 'Specialty in rare diamonds'
+    totalPurchases: 78000,
+    lastPurchaseDate: '2024-06-20',
+    notes: 'High-end client, interested in large diamonds'
   },
   {
     id: '3',
     customerId: 'CUST003',
-    name: 'Michael Chen',
-    email: 'michael.chen@email.com',
-    phone: '+1 (555) 456-7890',
+    name: 'Michael Brown',
+    email: 'michael.brown@example.com',
+    phone: '+1-555-0125',
     address: {
-      street: '789 Pine Street',
+      street: '789 Pine Road',
       city: 'Chicago',
       state: 'IL',
       zipCode: '60601',
       country: 'USA'
     },
     dateAdded: '2024-03-10',
-    totalPurchases: 15000,
-    lastPurchaseDate: '2024-05-20',
-    notes: 'Individual collector'
+    totalPurchases: 23000,
+    lastPurchaseDate: '2024-05-30',
+    notes: 'Collector, focuses on rare colored stones'
   }
 ];
