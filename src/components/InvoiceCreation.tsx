@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, Plus, Trash2, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, FileText, Download } from 'lucide-react';
 import { Customer } from '../types/customer';
 import { Invoice, InvoiceItem } from '../types/customer';
-import { Diamond } from '../types/diamond';
+import { Gem } from '../types/gem';
 import { sampleCustomers } from '../data/sampleCustomers';
-import { sampleDiamonds } from '../data/sampleData';
+import { sampleGems } from '../data/sampleGems';
 
 interface InvoiceCreationProps {
   onCancel: () => void;
@@ -23,7 +23,7 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
   const [customerSearch, setCustomerSearch] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [productSearch, setProductSearch] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<Diamond | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [taxRate, setTaxRate] = useState(8.5);
   const [notes, setNotes] = useState('');
@@ -35,9 +35,10 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
   ).slice(0, 5);
 
   // Product search results
-  const productResults = sampleDiamonds.filter(diamond =>
-    diamond.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
-    diamond.certificateNumber.toLowerCase().includes(productSearch.toLowerCase())
+  const productResults = sampleGems.filter(gem =>
+    gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.gemType.toLowerCase().includes(productSearch.toLowerCase())
   ).slice(0, 5);
 
   const handleCustomerSelect = (customer: Customer) => {
@@ -45,9 +46,9 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
     setCustomerSearch(customer.name);
   };
 
-  const handleProductSelect = (product: Diamond) => {
+  const handleProductSelect = (product: Gem) => {
     setSelectedProduct(product);
-    setProductSearch(`${product.stockId} - ${product.carat}ct ${product.cut}`);
+    setProductSearch(`${product.stockId} - ${product.carat}ct ${product.gemType} ${product.cut}`);
   };
 
   const handleAddItem = () => {
@@ -55,7 +56,7 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
 
     const newItem: InvoiceItem = {
       productId: selectedProduct.id,
-      productType: 'diamond',
+      productType: selectedProduct.gemType.toLowerCase() as 'diamond',
       productDetails: {
         stockId: selectedProduct.stockId,
         carat: selectedProduct.carat,
@@ -63,6 +64,7 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
         color: selectedProduct.color,
         clarity: selectedProduct.clarity,
         certificateNumber: selectedProduct.certificateNumber,
+        gemType: selectedProduct.gemType,
       },
       quantity,
       unitPrice: selectedProduct.price,
@@ -105,6 +107,93 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
     onSave(invoice);
   };
 
+  const downloadInvoice = () => {
+    if (!selectedCustomer || items.length === 0) return;
+
+    const invoiceHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .company-info { margin-bottom: 20px; }
+          .customer-info { margin-bottom: 20px; }
+          .invoice-details { margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+          th { background-color: #f5f5f5; }
+          .totals { text-align: right; }
+          .total-row { font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>INVOICE</h1>
+          <h2>Diamond Inventory</h2>
+        </div>
+        
+        <div class="invoice-details">
+          <p><strong>Invoice Number:</strong> INV-${Date.now()}</p>
+          <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+          <p><strong>Due Date:</strong> ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
+        </div>
+
+        <div class="customer-info">
+          <h3>Bill To:</h3>
+          <p><strong>${selectedCustomer.name}</strong></p>
+          <p>${selectedCustomer.email}</p>
+          <p>${selectedCustomer.phone}</p>
+          ${selectedCustomer.company ? `<p>${selectedCustomer.company}</p>` : ''}
+          <p>${selectedCustomer.address.street}</p>
+          <p>${selectedCustomer.address.city}, ${selectedCustomer.address.state} ${selectedCustomer.address.zipCode}</p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Stock ID</th>
+              <th>Description</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(item => `
+              <tr>
+                <td>${item.productDetails.stockId}</td>
+                <td>${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} ${item.productDetails.clarity}<br>
+                Cert: ${item.productDetails.certificateNumber}</td>
+                <td>${item.quantity}</td>
+                <td>$${item.unitPrice.toLocaleString()}</td>
+                <td>$${item.totalPrice.toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <p>Subtotal: $${subtotal.toLocaleString()}</p>
+          <p>Tax (${taxRate}%): $${taxAmount.toLocaleString()}</p>
+          <p class="total-row">Total: $${total.toLocaleString()}</p>
+        </div>
+
+        ${notes ? `<div><h3>Notes:</h3><p>${notes}</p></div>` : ''}
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([invoiceHTML], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoice-${Date.now()}.html`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
       <div className="flex items-center mb-6">
@@ -114,7 +203,7 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
         </Button>
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Create Invoice</h2>
-          <p className="text-slate-600">Generate a new invoice for diamond sales</p>
+          <p className="text-slate-600">Generate a new invoice for gem sales</p>
         </div>
       </div>
 
@@ -214,12 +303,12 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-2">
-                <Label htmlFor="product-search">Search Diamond</Label>
+                <Label htmlFor="product-search">Search Gem</Label>
                 <Input
                   id="product-search"
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
-                  placeholder="Enter stock ID or certificate number..."
+                  placeholder="Enter stock ID, certificate number, or gem type..."
                 />
                 {productSearch && !selectedProduct && productResults.length > 0 && (
                   <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
@@ -231,7 +320,7 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
                       >
                         <div className="font-medium">{product.stockId}</div>
                         <div className="text-sm text-slate-500">
-                          {product.carat}ct {product.cut} {product.color} {product.clarity} - ${product.price.toLocaleString()}
+                          {product.carat}ct {product.gemType} {product.cut} {product.color} {product.clarity} - ${product.price.toLocaleString()}
                         </div>
                       </div>
                     ))}
@@ -272,7 +361,7 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
                       <div className="flex-1">
                         <div className="font-medium">{item.productDetails.stockId}</div>
                         <div className="text-sm text-slate-600">
-                          {item.productDetails.carat}ct {item.productDetails.cut} {item.productDetails.color} {item.productDetails.clarity}
+                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color} {item.productDetails.clarity}
                         </div>
                         <div className="text-sm text-slate-500">
                           Cert: {item.productDetails.certificateNumber}
@@ -318,6 +407,14 @@ export const InvoiceCreation = ({ onCancel, onSave }: InvoiceCreationProps) => {
       <div className="flex justify-end space-x-4 mt-6">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
+        </Button>
+        <Button
+          onClick={downloadInvoice}
+          disabled={!selectedCustomer || items.length === 0}
+          variant="outline"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Download Invoice
         </Button>
         <Button
           onClick={handleSaveInvoice}

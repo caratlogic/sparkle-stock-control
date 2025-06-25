@@ -5,24 +5,21 @@ export interface Customer {
   name: string;
   email: string;
   phone: string;
+  company?: string;
   address: {
     street: string;
     city: string;
     state: string;
     zipCode: string;
-    country: string;
   };
-  company?: string;
-  taxId?: string;
   dateAdded: string;
   totalPurchases: number;
-  lastPurchaseDate?: string;
   notes?: string;
 }
 
 export interface InvoiceItem {
   productId: string;
-  productType: 'diamond';
+  productType: string;
   productDetails: {
     stockId: string;
     carat: number;
@@ -30,6 +27,7 @@ export interface InvoiceItem {
     color: string;
     clarity: string;
     certificateNumber: string;
+    gemType?: string;
   };
   quantity: number;
   unitPrice: number;
@@ -46,9 +44,8 @@ export interface Invoice {
   taxRate: number;
   taxAmount: number;
   total: number;
-  status: 'draft' | 'sent' | 'paid' | 'cancelled';
+  status: 'draft' | 'sent' | 'paid' | 'overdue';
   dateCreated: string;
   dateDue: string;
-  datePaid?: string;
   notes?: string;
 }

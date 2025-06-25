@@ -1,307 +1,325 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, Diamond, Package, AlertTriangle, Plus, Edit, Eye, Users, FileText } from 'lucide-react';
-import { DiamondForm } from './DiamondForm';
-import { DiamondTable } from './DiamondTable';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Gem, GEM_TYPES } from '../types/gem';
+import { sampleGems } from '../data/sampleGems';
+import { GemForm } from './GemForm';
+import { GemTable } from './GemTable';
 import { CustomerDashboard } from './CustomerDashboard';
 import { InvoiceCreation } from './InvoiceCreation';
-import { Diamond as DiamondType } from '../types/diamond';
 import { Invoice } from '../types/customer';
-import { sampleDiamonds } from '../data/sampleData';
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Package, 
+  AlertTriangle, 
+  Plus, 
+  Users, 
+  FileText,
+  Gem as GemIcon
+} from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Dashboard = () => {
-  const [diamonds, setDiamonds] = useState<DiamondType[]>(sampleDiamonds);
+  const { isOwner } = useAuth();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [gems, setGems] = useState<Gem[]>(sampleGems);
+  const [editingGem, setEditingGem] = useState<Gem | null>(null);
+  const [selectedGemType, setSelectedGemType] = useState<string>('all');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [editingDiamond, setEditingDiamond] = useState<DiamondType | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'inventory' | 'customers' | 'create-invoice'>('dashboard');
 
-  // Calculate metrics
-  const totalDiamonds = diamonds.length;
-  const totalValue = diamonds.reduce((sum, diamond) => sum + diamond.price, 0);
-  const inStockCount = diamonds.filter(d => d.status === 'In Stock').length;
-  const lowStockCount = diamonds.filter(d => d.status === 'Reserved').length;
+  // Filter gems by selected type
+  const filteredGems = selectedGemType === 'all' 
+    ? gems 
+    : gems.filter(gem => gem.gemType === selectedGemType);
 
-  const handleAddDiamond = (diamond: Omit<DiamondType, 'id' | 'stockId' | 'dateAdded'>) => {
-    const newDiamond: DiamondType = {
-      ...diamond,
+  const handleAddGem = (gemData: any) => {
+    const newGem: Gem = {
+      ...gemData,
       id: Date.now().toString(),
-      stockId: `DM${String(totalDiamonds + 1).padStart(4, '0')}`,
-      dateAdded: new Date().toISOString().split('T')[0],
+      stockId: `${gemData.gemType.substring(0, 2).toUpperCase()}${String(gems.length + 1).padStart(4, '0')}`,
+      dateAdded: new Date().toISOString().split('T')[0]
     };
-    setDiamonds([newDiamond, ...diamonds]);
-    setShowForm(false);
+    setGems([...gems, newGem]);
+    setActiveTab('inventory');
   };
 
-  const handleEditDiamond = (diamond: DiamondType) => {
-    setDiamonds(diamonds.map(d => d.id === diamond.id ? diamond : d));
-    setEditingDiamond(null);
-    setShowForm(false);
+  const handleEditGem = (gemData: any) => {
+    if (!editingGem) return;
+    
+    const updatedGem = { ...editingGem, ...gemData };
+    setGems(gems.map(gem => gem.id === editingGem.id ? updatedGem : gem));
+    setEditingGem(null);
+    setActiveTab('inventory');
   };
 
-  const handleDeleteDiamond = (id: string) => {
-    setDiamonds(diamonds.filter(d => d.id !== id));
+  const handleDeleteGem = (id: string) => {
+    setGems(gems.filter(gem => gem.id !== id));
   };
 
   const handleSaveInvoice = (invoice: Invoice) => {
-    setInvoices([invoice, ...invoices]);
-    setCurrentView('dashboard');
-    console.log('Invoice created:', invoice);
+    setInvoices([...invoices, invoice]);
+    setActiveTab('dashboard');
   };
 
-  if (showForm) {
-    return (
-      <div className="animate-fade-in">
-        <DiamondForm
-          diamond={editingDiamond}
-          onSubmit={editingDiamond ? handleEditDiamond : handleAddDiamond}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingDiamond(null);
-          }}
-        />
-      </div>
-    );
-  }
+  // Calculate statistics
+  const totalValue = filteredGems.reduce((sum, gem) => sum + gem.price, 0);
+  const totalCostValue = isOwner ? filteredGems.reduce((sum, gem) => sum + gem.costPrice, 0) : 0;
+  const inStockCount = filteredGems.filter(gem => gem.status === 'In Stock').length;
+  const soldCount = filteredGems.filter(gem => gem.status === 'Sold').length;
+  const reservedCount = filteredGems.filter(gem => gem.status === 'Reserved').length;
 
-  if (currentView === 'customers') {
-    return <CustomerDashboard />;
-  }
-
-  if (currentView === 'create-invoice') {
-    return (
-      <InvoiceCreation
-        onCancel={() => setCurrentView('dashboard')}
-        onSave={handleSaveInvoice}
-      />
-    );
-  }
-
-  if (currentView === 'inventory') {
-    return (
-      <div className="animate-fade-in">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">Diamond Inventory</h2>
-            <p className="text-slate-600">Manage your diamond collection</p>
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'add-gem':
+        return (
+          <GemForm
+            onSubmit={handleAddGem}
+            onCancel={() => setActiveTab('inventory')}
+          />
+        );
+      case 'edit-gem':
+        return (
+          <GemForm
+            gem={editingGem}
+            onSubmit={handleEditGem}
+            onCancel={() => {
+              setEditingGem(null);
+              setActiveTab('inventory');
+            }}
+          />
+        );
+      case 'inventory':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-4">
+                <h2 className="text-2xl font-bold text-slate-800">Gem Inventory</h2>
+                <Select value={selectedGemType} onValueChange={setSelectedGemType}>
+                  <SelectTrigger className="w-48 bg-white border-slate-200">
+                    <SelectValue placeholder="Filter by gem type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-slate-200">
+                    <SelectItem value="all">All Gems</SelectItem>
+                    {GEM_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={() => setActiveTab('add-gem')}
+                className="bg-diamond-gradient hover:opacity-90"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Gem
+              </Button>
+            </div>
+            <GemTable
+              gems={filteredGems}
+              onEdit={(gem) => {
+                setEditingGem(gem);
+                setActiveTab('edit-gem');
+              }}
+              onDelete={handleDeleteGem}
+            />
           </div>
-          <div className="flex space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentView('dashboard')}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
-            <Button
-              onClick={() => setShowForm(true)}
-              className="bg-diamond-gradient hover:opacity-90"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Diamond
-            </Button>
+        );
+      case 'customers':
+        return <CustomerDashboard />;
+      case 'create-invoice':
+        return (
+          <InvoiceCreation
+            onCancel={() => setActiveTab('dashboard')}
+            onSave={handleSaveInvoice}
+          />
+        );
+      default:
+        return (
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-800">Dashboard</h2>
+                <p className="text-slate-600 mt-2">Welcome to your gem inventory management system</p>
+              </div>
+              <div className="flex space-x-4">
+                <Select value={selectedGemType} onValueChange={setSelectedGemType}>
+                  <SelectTrigger className="w-40 bg-white border-slate-200">
+                    <SelectValue placeholder="All Gems" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-slate-200">
+                    <SelectItem value="all">All Gems</SelectItem>
+                    {GEM_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="diamond-sparkle">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-600">Total Inventory Value</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-slate-800">${totalValue.toLocaleString()}</div>
+                  {isOwner && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Cost: ${totalCostValue.toLocaleString()}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="diamond-sparkle">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-600">Total Gems</CardTitle>
+                  <Package className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-slate-800">{filteredGems.length}</div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {selectedGemType === 'all' ? 'All types' : selectedGemType}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="diamond-sparkle">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-600">In Stock</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-slate-800">{inStockCount}</div>
+                  <p className="text-xs text-slate-500 mt-1">Available for sale</p>
+                </CardContent>
+              </Card>
+
+              <Card className="diamond-sparkle">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-600">Sold</CardTitle>
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-slate-800">{soldCount}</div>
+                  <p className="text-xs text-slate-500 mt-1">{reservedCount} reserved</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Gems */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <GemIcon className="w-5 h-5 text-slate-600" />
+                  <span>Recent Gems</span>
+                  {selectedGemType !== 'all' && (
+                    <Badge variant="outline">{selectedGemType}</Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredGems.slice(0, 5).map((gem) => (
+                    <div key={gem.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-diamond-gradient rounded-full flex items-center justify-center">
+                          <GemIcon className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-800">{gem.stockId}</div>
+                          <div className="text-sm text-slate-500">
+                            {gem.carat}ct {gem.gemType} {gem.cut} - {gem.color} {gem.clarity}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
+                        <Badge 
+                          variant={
+                            gem.status === 'In Stock' ? 'secondary' : 
+                            gem.status === 'Sold' ? 'destructive' : 'default'
+                          }
+                          className="text-xs"
+                        >
+                          {gem.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-        <DiamondTable
-          diamonds={diamonds}
-          onEdit={(diamond) => {
-            setEditingDiamond(diamond);
-            setShowForm(true);
-          }}
-          onDelete={handleDeleteDiamond}
-        />
-      </div>
-    );
-  }
+        );
+    }
+  };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-800">Dashboard</h2>
-          <p className="text-slate-600 mt-1">Welcome back! Here's your business overview.</p>
-        </div>
-        <div className="flex space-x-3">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentView('customers')}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Customers
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentView('create-invoice')}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Create Invoice
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentView('inventory')}
-          >
-            <Package className="w-4 h-4 mr-2" />
-            View Inventory
-          </Button>
-          <Button
-            onClick={() => setShowForm(true)}
-            className="bg-diamond-gradient hover:opacity-90"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Diamond
-          </Button>
-        </div>
-      </div>
-
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Diamonds</CardTitle>
-            <Diamond className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-800">{totalDiamonds}</div>
-            <p className="text-xs text-slate-500 mt-1">Active inventory items</p>
-          </CardContent>
-        </Card>
-
-        <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-800">${totalValue.toLocaleString()}</div>
-            <p className="text-xs text-slate-500 mt-1">Current inventory value</p>
-          </CardContent>
-        </Card>
-
-        <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">In Stock</CardTitle>
-            <Package className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">{inStockCount}</div>
-            <p className="text-xs text-slate-500 mt-1">Available for sale</p>
-          </CardContent>
-        </Card>
-
-        <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{lowStockCount}</div>
-            <p className="text-xs text-slate-500 mt-1">Reserved items</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView('customers')}>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-800">Customer Management</h3>
-                <p className="text-sm text-slate-600">Manage customer information and relationships</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView('create-invoice')}>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-800">Create Invoice</h3>
-                <p className="text-sm text-slate-600">Generate invoices for diamond sales</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentView('inventory')}>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Diamond className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-800">Diamond Inventory</h3>
-                <p className="text-sm text-slate-600">View and manage diamond stock</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Additions */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold text-slate-800">Recent Additions</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentView('inventory')}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Navigation */}
+      <nav className="bg-white border-b border-slate-200 sticky top-16 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'dashboard'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
             >
-              View All
-            </Button>
+              <BarChart3 className="w-4 h-4 inline mr-2" />
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('inventory')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'inventory' || activeTab === 'add-gem' || activeTab === 'edit-gem'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <Package className="w-4 h-4 inline mr-2" />
+              Inventory
+            </button>
+            <button
+              onClick={() => setActiveTab('customers')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'customers'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <Users className="w-4 h-4 inline mr-2" />
+              Customers
+            </button>
+            <button
+              onClick={() => setActiveTab('create-invoice')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'create-invoice'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <FileText className="w-4 h-4 inline mr-2" />
+              Create Invoice
+            </button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {diamonds.slice(0, 5).map((diamond) => (
-              <div key={diamond.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-diamond-gradient rounded-lg flex items-center justify-center">
-                    <Diamond className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-slate-800">{diamond.stockId}</div>
-                    <div className="text-sm text-slate-500">
-                      {diamond.carat}ct {diamond.cut} {diamond.color} {diamond.clarity}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <Badge variant={diamond.status === 'In Stock' ? 'secondary' : diamond.status === 'Sold' ? 'destructive' : 'default'}>
-                    {diamond.status}
-                  </Badge>
-                  <div className="text-right">
-                    <div className="font-semibold text-slate-800">${diamond.price.toLocaleString()}</div>
-                    <div className="text-sm text-slate-500">{diamond.dateAdded}</div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEditingDiamond(diamond);
-                      setShowForm(true);
-                    }}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {renderContent()}
+      </main>
     </div>
   );
 };
