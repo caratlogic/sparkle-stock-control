@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Diamond, CUT_OPTIONS, COLOR_OPTIONS, CLARITY_OPTIONS, STATUS_OPTIONS } from '../types/diamond';
 import { ArrowLeft, Save, Diamond as DiamondIcon } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DiamondFormProps {
   diamond?: Diamond | null;
@@ -16,12 +16,14 @@ interface DiamondFormProps {
 }
 
 export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) => {
+  const { isOwner } = useAuth();
   const [formData, setFormData] = useState({
     carat: '',
     cut: '',
     color: '',
     clarity: '',
     price: '',
+    costPrice: '',
     certificateNumber: '',
     status: 'In Stock',
     notes: ''
@@ -35,6 +37,7 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
         color: diamond.color,
         clarity: diamond.clarity,
         price: diamond.price.toString(),
+        costPrice: diamond.costPrice.toString(),
         certificateNumber: diamond.certificateNumber,
         status: diamond.status,
         notes: diamond.notes || ''
@@ -49,6 +52,7 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
       ...formData,
       carat: parseFloat(formData.carat),
       price: parseFloat(formData.price),
+      costPrice: parseFloat(formData.costPrice) || 0,
       ...(diamond && { id: diamond.id, stockId: diamond.stockId, dateAdded: diamond.dateAdded })
     };
 
@@ -146,7 +150,7 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price">Price (USD)</Label>
+                <Label htmlFor="price">Selling Price (USD)</Label>
                 <Input
                   id="price"
                   type="number"
@@ -157,6 +161,20 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
                   className="bg-slate-50 border-slate-200"
                 />
               </div>
+
+              {isOwner && (
+                <div className="space-y-2">
+                  <Label htmlFor="costPrice">Cost Price (USD)</Label>
+                  <Input
+                    id="costPrice"
+                    type="number"
+                    placeholder="8500"
+                    value={formData.costPrice}
+                    onChange={(e) => handleChange('costPrice', e.target.value)}
+                    className="bg-slate-50 border-slate-200"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>

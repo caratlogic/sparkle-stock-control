@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Diamond } from '../types/diamond';
 import { Search, Filter, Edit, Eye, ArrowUpDown, Download } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DiamondTableProps {
   diamonds: Diamond[];
@@ -15,6 +15,7 @@ interface DiamondTableProps {
 }
 
 export const DiamondTable = ({ diamonds, onEdit, onDelete }: DiamondTableProps) => {
+  const { isOwner } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortField, setSortField] = useState<keyof Diamond>('dateAdded');
@@ -61,7 +62,7 @@ export const DiamondTable = ({ diamonds, onEdit, onDelete }: DiamondTableProps) 
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Carat', 'Cut', 'Color', 'Clarity', 'Price', 'Certificate', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Carat', 'Cut', 'Color', 'Clarity', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredDiamonds.map(diamond => [
@@ -71,6 +72,7 @@ export const DiamondTable = ({ diamonds, onEdit, onDelete }: DiamondTableProps) 
         diamond.color,
         diamond.clarity,
         diamond.price,
+        ...(isOwner ? [diamond.costPrice] : []),
         diamond.certificateNumber,
         diamond.status,
         diamond.dateAdded
@@ -156,10 +158,21 @@ export const DiamondTable = ({ diamonds, onEdit, onDelete }: DiamondTableProps) 
                   onClick={() => handleSort('price')}
                 >
                   <div className="flex items-center space-x-1">
-                    <span>Price</span>
+                    <span>Selling Price</span>
                     <ArrowUpDown className="w-4 h-4" />
                   </div>
                 </th>
+                {isOwner && (
+                  <th 
+                    className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
+                    onClick={() => handleSort('costPrice')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Cost Price</span>
+                      <ArrowUpDown className="w-4 h-4" />
+                    </div>
+                  </th>
+                )}
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Certificate</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
                 <th 
@@ -192,6 +205,11 @@ export const DiamondTable = ({ diamonds, onEdit, onDelete }: DiamondTableProps) 
                   <td className="py-4 px-4">
                     <div className="font-semibold text-slate-800">${diamond.price.toLocaleString()}</div>
                   </td>
+                  {isOwner && (
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-emerald-600">${diamond.costPrice.toLocaleString()}</div>
+                    </td>
+                  )}
                   <td className="py-4 px-4">
                     <div className="text-sm text-slate-600 font-mono">{diamond.certificateNumber}</div>
                   </td>
