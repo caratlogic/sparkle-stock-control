@@ -1,14 +1,16 @@
-
 import { useState } from 'react';
 import { GemTable } from './GemTable';
 import { GemForm } from './GemForm';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { InvoiceCreation } from './InvoiceCreation';
+import { AnalyticsDashboard } from './AnalyticsDashboard';
+import { CustomerDashboard } from './CustomerDashboard';
+import { TransactionDashboard } from './TransactionDashboard';
 import { useGems } from '@/hooks/useGems';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { Plus, ArrowLeft, BarChart3, Users, Receipt, Package } from 'lucide-react';
 
-type View = 'inventory' | 'gemCreation' | 'gemEdit' | 'invoiceCreation' | 'consignmentCreation';
+type View = 'inventory' | 'analytics' | 'customers' | 'transactions' | 'gemCreation' | 'gemEdit' | 'invoiceCreation' | 'consignmentCreation';
 
 export const Dashboard = () => {
   const { gems, loading, error, addGem, updateGem, deleteGem } = useGems();
@@ -16,6 +18,14 @@ export const Dashboard = () => {
   const [selectedGem, setSelectedGem] = useState(null);
   const [selectedGemForInvoice, setSelectedGemForInvoice] = useState(null);
   const [selectedGemForConsignment, setSelectedGemForConsignment] = useState(null);
+
+  // Navigation handlers
+  const handleViewChange = (view: View) => {
+    setActiveView(view);
+    setSelectedGem(null);
+    setSelectedGemForInvoice(null);
+    setSelectedGemForConsignment(null);
+  };
 
   const handleCreateGem = () => {
     setSelectedGem(null);
@@ -73,6 +83,14 @@ export const Dashboard = () => {
 
   const getViewTitle = () => {
     switch (activeView) {
+      case 'inventory':
+        return 'Gem Inventory Dashboard';
+      case 'analytics':
+        return 'Analytics Dashboard';
+      case 'customers':
+        return 'Customer Management';
+      case 'transactions':
+        return 'Transaction History';
       case 'gemCreation':
         return 'Add New Gem';
       case 'gemEdit':
@@ -82,22 +100,48 @@ export const Dashboard = () => {
       case 'consignmentCreation':
         return 'Create Consignment';
       default:
-        return 'Gem Inventory Dashboard';
+        return 'Dashboard';
     }
   };
 
+  const navigationButtons = [
+    { key: 'inventory', label: 'Inventory', icon: Package },
+    { key: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { key: 'customers', label: 'Customers', icon: Users },
+    { key: 'transactions', label: 'Transactions', icon: Receipt },
+  ];
+
+  const isMainView = ['inventory', 'analytics', 'customers', 'transactions'].includes(activeView);
+
   return (
     <div className="container py-12">
+      {/* Navigation Tabs */}
+      {isMainView && (
+        <div className="flex space-x-2 mb-6 border-b border-slate-200">
+          {navigationButtons.map((nav) => (
+            <Button
+              key={nav.key}
+              variant={activeView === nav.key ? "default" : "ghost"}
+              onClick={() => handleViewChange(nav.key as View)}
+              className="flex items-center space-x-2 rounded-b-none"
+            >
+              <nav.icon className="w-4 h-4" />
+              <span>{nav.label}</span>
+            </Button>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
-          {activeView !== 'inventory' && (
+          {!isMainView && (
             <Button
               variant="outline"
               onClick={handleCancel}
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Inventory</span>
+              <span>Back to Dashboard</span>
             </Button>
           )}
           <h1 className="text-3xl font-bold text-slate-800">{getViewTitle()}</h1>
@@ -113,6 +157,7 @@ export const Dashboard = () => {
       {loading && <div className="text-center">Loading gems...</div>}
       {error && <div className="text-red-500 text-center mb-4">Error: {error}</div>}
 
+      {/* Main Dashboard Views */}
       {activeView === 'inventory' && !loading && (
         <GemTable
           gems={gems}
@@ -123,6 +168,19 @@ export const Dashboard = () => {
         />
       )}
 
+      {activeView === 'analytics' && (
+        <AnalyticsDashboard />
+      )}
+
+      {activeView === 'customers' && (
+        <CustomerDashboard />
+      )}
+
+      {activeView === 'transactions' && (
+        <TransactionDashboard />
+      )}
+
+      {/* Form Views */}
       {activeView === 'gemCreation' && (
         <GemForm
           onSubmit={handleGemSubmit}
