@@ -31,7 +31,8 @@ export const useGems = () => {
         certificateNumber: gem.certificate_number,
         status: gem.status as any,
         dateAdded: gem.date_added,
-        notes: gem.notes || undefined
+        notes: gem.notes || undefined,
+        imageUrl: gem.image_url || undefined
       }));
 
       setGems(transformedGems);
@@ -57,7 +58,8 @@ export const useGems = () => {
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
-          notes: gemData.notes
+          notes: gemData.notes,
+          image_url: gemData.imageUrl
         }])
         .select()
         .single();
@@ -84,7 +86,8 @@ export const useGems = () => {
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
-          notes: gemData.notes
+          notes: gemData.notes,
+          image_url: gemData.imageUrl
         })
         .eq('id', id);
 
