@@ -7,7 +7,7 @@ export interface Gem {
   gemType: GemType;
   carat: number;
   cut: 'Round' | 'Princess' | 'Emerald' | 'Asscher' | 'Marquise' | 'Oval' | 'Radiant' | 'Pear' | 'Heart' | 'Cushion' | 'Cabochon' | 'Faceted' | 'Raw';
-  color: string; // More flexible for different gem types
+  color: string;
   clarity: 'IF' | 'VVS1' | 'VVS2' | 'VS1' | 'VS2' | 'SI1' | 'SI2' | 'I1' | 'I2' | 'I3' | 'Transparent' | 'Translucent' | 'Opaque';
   price: number;
   costPrice: number;
@@ -16,6 +16,15 @@ export interface Gem {
   dateAdded: string;
   notes?: string;
   imageUrl?: string;
+  // New fields from database
+  measurementsMm?: string;
+  priceInLetters?: string;
+  totalInLetters?: string;
+  purchaseDate?: string;
+  oldCode?: string;
+  stoneDescription?: string;
+  shapeDetail?: string;
+  boxNumber?: string;
   consignmentInfo?: {
     id: string;
     consignmentNumber: string;

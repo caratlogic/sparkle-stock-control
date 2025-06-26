@@ -32,7 +32,16 @@ export const useGems = () => {
         status: gem.status as any,
         dateAdded: gem.date_added,
         notes: gem.notes || undefined,
-        imageUrl: gem.image_url || undefined
+        imageUrl: gem.image_url || undefined,
+        // New fields
+        measurementsMm: gem.measurements_mm || undefined,
+        priceInLetters: gem.price_in_letters || undefined,
+        totalInLetters: gem.total_in_letters || undefined,
+        purchaseDate: gem.purchase_date || undefined,
+        oldCode: gem.old_code || undefined,
+        stoneDescription: gem.stone_description || undefined,
+        shapeDetail: gem.shape_detail || undefined,
+        boxNumber: gem.box_number || undefined
       }));
 
       setGems(transformedGems);
@@ -59,7 +68,16 @@ export const useGems = () => {
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
           notes: gemData.notes,
-          image_url: gemData.imageUrl
+          image_url: gemData.imageUrl,
+          // New fields
+          measurements_mm: gemData.measurementsMm,
+          price_in_letters: gemData.priceInLetters,
+          total_in_letters: gemData.totalInLetters,
+          purchase_date: gemData.purchaseDate,
+          old_code: gemData.oldCode,
+          stone_description: gemData.stoneDescription,
+          shape_detail: gemData.shapeDetail,
+          box_number: gemData.boxNumber
         }])
         .select()
         .single();
@@ -87,7 +105,16 @@ export const useGems = () => {
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
           notes: gemData.notes,
-          image_url: gemData.imageUrl
+          image_url: gemData.imageUrl,
+          // New fields
+          measurements_mm: gemData.measurementsMm,
+          price_in_letters: gemData.priceInLetters,
+          total_in_letters: gemData.totalInLetters,
+          purchase_date: gemData.purchaseDate,
+          old_code: gemData.oldCode,
+          stone_description: gemData.stoneDescription,
+          shape_detail: gemData.shapeDetail,
+          box_number: gemData.boxNumber
         })
         .eq('id', id);
 

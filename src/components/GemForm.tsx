@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES, CUT_OPTIONS, CLARITY_OPTIONS, STATUS_OPTIONS, GEM_COLORS } from '../types/gem';
-import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
+import { ArrowLeft, Save, Gem as GemIcon, Image, Package } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
 
@@ -30,7 +30,16 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     certificateNumber: '',
     status: 'In Stock',
     notes: '',
-    imageUrl: ''
+    imageUrl: '',
+    // New fields
+    measurementsMm: '',
+    priceInLetters: '',
+    totalInLetters: '',
+    purchaseDate: '',
+    oldCode: '',
+    stoneDescription: '',
+    shapeDetail: '',
+    boxNumber: ''
   });
 
   useEffect(() => {
@@ -46,7 +55,16 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         certificateNumber: gem.certificateNumber,
         status: gem.status,
         notes: gem.notes || '',
-        imageUrl: gem.imageUrl || ''
+        imageUrl: gem.imageUrl || '',
+        // New fields
+        measurementsMm: gem.measurementsMm || '',
+        priceInLetters: gem.priceInLetters || '',
+        totalInLetters: gem.totalInLetters || '',
+        purchaseDate: gem.purchaseDate || '',
+        oldCode: gem.oldCode || '',
+        stoneDescription: gem.stoneDescription || '',
+        shapeDetail: gem.shapeDetail || '',
+        boxNumber: gem.boxNumber || ''
       });
     }
   }, [gem]);
@@ -79,7 +97,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const availableColors = GEM_COLORS[formData.gemType as keyof typeof GEM_COLORS] || [];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="flex items-center space-x-4 mb-6">
         <Button variant="ghost" onClick={onCancel} className="p-2">
           <ArrowLeft className="w-5 h-5" />
@@ -94,8 +112,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
           <Card className="diamond-sparkle">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -105,6 +123,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="gemType">Gem Type</Label>
@@ -177,57 +196,146 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="price">Selling Price (USD)</Label>
+                    <Label htmlFor="measurementsMm">Measurements (mm)</Label>
                     <Input
-                      id="price"
-                      type="number"
-                      placeholder="12500"
-                      value={formData.price}
-                      onChange={(e) => handleChange('price', e.target.value)}
-                      required
+                      id="measurementsMm"
+                      placeholder="7.5 x 5.2 x 3.1"
+                      value={formData.measurementsMm}
+                      onChange={(e) => handleChange('measurementsMm', e.target.value)}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
 
-                  {isOwner && (
-                    <div className="space-y-2">
-                      <Label htmlFor="costPrice">Cost Price (USD)</Label>
-                      <Input
-                        id="costPrice"
-                        type="number"
-                        placeholder="8500"
-                        value={formData.costPrice}
-                        onChange={(e) => handleChange('costPrice', e.target.value)}
-                        className="bg-slate-50 border-slate-200"
-                      />
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="shapeDetail">Shape Detail</Label>
+                    <Input
+                      id="shapeDetail"
+                      placeholder="Modified brilliant cut"
+                      value={formData.shapeDetail}
+                      onChange={(e) => handleChange('shapeDetail', e.target.value)}
+                      className="bg-slate-50 border-slate-200"
+                    />
+                  </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        {STATUS_OPTIONS.map((status) => (
-                          <SelectItem key={status} value={status}>{status}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="boxNumber">Box Number</Label>
+                    <Input
+                      id="boxNumber"
+                      placeholder="Box-A-001"
+                      value={formData.boxNumber}
+                      onChange={(e) => handleChange('boxNumber', e.target.value)}
+                      className="bg-slate-50 border-slate-200"
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="certificateNumber">Certificate Number</Label>
-                  <Input
-                    id="certificateNumber"
-                    placeholder="GIA-1234567890"
-                    value={formData.certificateNumber}
-                    onChange={(e) => handleChange('certificateNumber', e.target.value)}
-                    required
-                    className="bg-slate-50 border-slate-200"
-                  />
+                {/* Pricing Section */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Pricing Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="price">Selling Price (USD)</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        placeholder="12500"
+                        value={formData.price}
+                        onChange={(e) => handleChange('price', e.target.value)}
+                        required
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="priceInLetters">Price in Letters</Label>
+                      <Input
+                        id="priceInLetters"
+                        placeholder="Twelve thousand five hundred dollars"
+                        value={formData.priceInLetters}
+                        onChange={(e) => handleChange('priceInLetters', e.target.value)}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    {isOwner && (
+                      <div className="space-y-2">
+                        <Label htmlFor="costPrice">Cost Price (USD)</Label>
+                        <Input
+                          id="costPrice"
+                          type="number"
+                          placeholder="8500"
+                          value={formData.costPrice}
+                          onChange={(e) => handleChange('costPrice', e.target.value)}
+                          className="bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="totalInLetters">Total in Letters</Label>
+                      <Input
+                        id="totalInLetters"
+                        placeholder="Twelve thousand five hundred dollars only"
+                        value={formData.totalInLetters}
+                        onChange={(e) => handleChange('totalInLetters', e.target.value)}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Information */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Additional Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="certificateNumber">Certificate Number</Label>
+                      <Input
+                        id="certificateNumber"
+                        placeholder="GIA-1234567890"
+                        value={formData.certificateNumber}
+                        onChange={(e) => handleChange('certificateNumber', e.target.value)}
+                        required
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="oldCode">Old Code</Label>
+                      <Input
+                        id="oldCode"
+                        placeholder="Legacy inventory code"
+                        value={formData.oldCode}
+                        onChange={(e) => handleChange('oldCode', e.target.value)}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="purchaseDate">Purchase Date</Label>
+                      <Input
+                        id="purchaseDate"
+                        type="date"
+                        value={formData.purchaseDate}
+                        onChange={(e) => handleChange('purchaseDate', e.target.value)}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Status</Label>
+                      <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+                        <SelectTrigger className="bg-slate-50 border-slate-200">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-slate-200">
+                          {STATUS_OPTIONS.map((status) => (
+                            <SelectItem key={status} value={status}>{status}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -255,6 +363,18 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       />
                     </div>
                   )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="stoneDescription">Stone Description</Label>
+                  <Textarea
+                    id="stoneDescription"
+                    placeholder="Detailed description of the stone's characteristics..."
+                    value={formData.stoneDescription}
+                    onChange={(e) => handleChange('stoneDescription', e.target.value)}
+                    rows={3}
+                    className="bg-slate-50 border-slate-200"
+                  />
                 </div>
 
                 <div className="space-y-2">
