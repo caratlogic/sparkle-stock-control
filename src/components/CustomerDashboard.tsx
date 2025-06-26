@@ -57,6 +57,12 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
     setCustomers(customers.filter(c => c.id !== id));
   };
 
+  const handleUpdateDiscount = (customerId: string, discount: number) => {
+    setCustomers(customers.map(c => 
+      c.id === customerId ? { ...c, discount } : c
+    ));
+  };
+
   if (showForm) {
     return (
       <div className="animate-fade-in">
@@ -151,6 +157,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
             onDelete={handleDeleteCustomer}
             onCreateInvoice={onCreateInvoice}
             onCreateConsignment={onCreateConsignment}
+            onUpdateDiscount={handleUpdateDiscount}
           />
         </CardContent>
       </Card>

@@ -26,10 +26,11 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
     state: customer?.address.state || '',
     zipCode: customer?.address.zipCode || '',
     country: customer?.address.country || 'USA',
+    discount: customer?.discount || 0,
     notes: customer?.notes || '',
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -50,6 +51,7 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
         zipCode: formData.zipCode,
         country: formData.country,
       },
+      discount: formData.discount,
       notes: formData.notes || undefined,
       lastPurchaseDate: customer?.lastPurchaseDate,
     };
@@ -129,6 +131,22 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
                   value={formData.taxId}
                   onChange={(e) => handleInputChange('taxId', e.target.value)}
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="discount">Discount (%)</Label>
+                <Input
+                  id="discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={formData.discount}
+                  onChange={(e) => handleInputChange('discount', parseFloat(e.target.value) || 0)}
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Default discount percentage for this customer (0-100%)
+                </p>
               </div>
             </CardContent>
           </Card>

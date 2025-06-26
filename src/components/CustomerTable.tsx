@@ -1,8 +1,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, FileText, Receipt } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Edit, Trash2, FileText, Receipt, Check, X } from 'lucide-react';
 import { Customer } from '../types/customer';
+import { useState } from 'react';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -10,9 +12,37 @@ interface CustomerTableProps {
   onDelete: (id: string) => void;
   onCreateInvoice?: (customer: Customer) => void;
   onCreateConsignment?: (customer: Customer) => void;
+  onUpdateDiscount?: (customerId: string, discount: number) => void;
 }
 
-export const CustomerTable = ({ customers, onEdit, onDelete, onCreateInvoice, onCreateConsignment }: CustomerTableProps) => {
+export const CustomerTable = ({ 
+  customers, 
+  onEdit, 
+  onDelete, 
+  onCreateInvoice, 
+  onCreateConsignment,
+  onUpdateDiscount 
+}: CustomerTableProps) => {
+  const [editingDiscount, setEditingDiscount] = useState<string | null>(null);
+  const [tempDiscount, setTempDiscount] = useState<number>(0);
+
+  const handleEditDiscount = (customer: Customer) => {
+    setEditingDiscount(customer.id);
+    setTempDiscount(customer.discount || 0);
+  };
+
+  const handleSaveDiscount = (customerId: string) => {
+    if (onUpdateDiscount) {
+      onUpdateDiscount(customerId, tempDiscount);
+    }
+    setEditingDiscount(null);
+  };
+
+  const handleCancelDiscount = () => {
+    setEditingDiscount(null);
+    setTempDiscount(0);
+  };
+
   if (customers.length === 0) {
     return (
       <div className="text-center py-12">
@@ -32,6 +62,7 @@ export const CustomerTable = ({ customers, onEdit, onDelete, onCreateInvoice, on
             <th className="text-left py-3 px-4 font-medium text-slate-600">Email</th>
             <th className="text-left py-3 px-4 font-medium text-slate-600">Phone</th>
             <th className="text-left py-3 px-4 font-medium text-slate-600">Company</th>
+            <th className="text-left py-3 px-4 font-medium text-slate-600">Discount (%)</th>
             <th className="text-left py-3 px-4 font-medium text-slate-600">Total Purchases</th>
             <th className="text-left py-3 px-4 font-medium text-slate-600">Last Purchase</th>
             <th className="text-left py-3 px-4 font-medium text-slate-600">Actions</th>
@@ -56,6 +87,44 @@ export const CustomerTable = ({ customers, onEdit, onDelete, onCreateInvoice, on
               </td>
               <td className="py-4 px-4">
                 <div className="text-sm text-slate-600">{customer.company || '-'}</div>
+              </td>
+              <td className="py-4 px-4">
+                {editingDiscount === customer.id ? (
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={tempDiscount}
+                      onChange={(e) => setTempDiscount(parseFloat(e.target.value) || 0)}
+                      className="w-20"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSaveDiscount(customer.id)}
+                    >
+                      <Check className="w-4 h-4 text-green-600" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancelDiscount}
+                    >
+                      <X className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    className="cursor-pointer hover:bg-slate-100 p-1 rounded"
+                    onClick={() => handleEditDiscount(customer)}
+                  >
+                    <span className="font-medium text-blue-600">
+                      {customer.discount || 0}%
+                    </span>
+                  </div>
+                )}
               </td>
               <td className="py-4 px-4">
                 <div className="font-semibold text-emerald-600">

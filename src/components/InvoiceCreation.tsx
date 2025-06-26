@@ -30,8 +30,16 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [taxRate, setTaxRate] = useState(8.5);
+  const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
+
+  // Set discount when customer is selected
+  useEffect(() => {
+    if (selectedCustomer) {
+      setDiscount(selectedCustomer.discount || 0);
+    }
+  }, [selectedCustomer]);
 
   // Auto-add preselected gem to items and check for existing consignment
   useEffect(() => {
@@ -87,6 +95,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
     setCustomerSearch(customer.name);
+    setDiscount(customer.discount || 0);
   };
 
   const handleProductSelect = (product: Gem) => {
@@ -125,8 +134,10 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   };
 
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
-  const taxAmount = (subtotal * taxRate) / 100;
-  const total = subtotal + taxAmount;
+  const discountAmount = (subtotal * discount) / 100;
+  const afterDiscount = subtotal - discountAmount;
+  const taxAmount = (afterDiscount * taxRate) / 100;
+  const total = afterDiscount + taxAmount;
 
   const handleSaveInvoice = async () => {
     if (!selectedCustomer || items.length === 0) return;
@@ -261,6 +272,14 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                 <span>${subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
+                <span>Discount ({discount}%):</span>
+                <span>-${discountAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>After Discount:</span>
+                <span>${afterDiscount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
                 <span>Tax ({taxRate}%):</span>
                 <span>${taxAmount.toLocaleString()}</span>
               </div>
@@ -268,6 +287,22 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                 <span>Total:</span>
                 <span>${total.toLocaleString()}</span>
               </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="discount">Discount (%)</Label>
+              <Input
+                id="discount"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={discount}
+                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Adjust discount for this invoice
+              </p>
             </div>
             
             <div>

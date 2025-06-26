@@ -106,6 +106,7 @@ export type Database = {
           created_at: string | null
           customer_id: string
           date_added: string
+          discount: number | null
           email: string
           id: string
           last_purchase_date: string | null
@@ -126,6 +127,7 @@ export type Database = {
           created_at?: string | null
           customer_id: string
           date_added?: string
+          discount?: number | null
           email: string
           id?: string
           last_purchase_date?: string | null
@@ -146,6 +148,7 @@ export type Database = {
           created_at?: string | null
           customer_id?: string
           date_added?: string
+          discount?: number | null
           email?: string
           id?: string
           last_purchase_date?: string | null

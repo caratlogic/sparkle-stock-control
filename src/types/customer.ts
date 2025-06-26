@@ -1,4 +1,3 @@
-
 export interface Customer {
   id: string;
   customerId: string;
@@ -18,6 +17,7 @@ export interface Customer {
   totalPurchases: number;
   lastPurchaseDate?: string;
   notes?: string;
+  discount?: number; // Discount percentage (0-100)
 }
 
 export interface InvoiceItem {
