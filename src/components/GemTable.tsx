@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES, GEM_COLORS, CUT_OPTIONS } from '../types/gem';
-import { Search, Filter, Edit, Eye, ArrowUpDown, Download, FileText, Receipt } from 'lucide-react';
+import { Search, Filter, Edit, Eye, ArrowUpDown, Download, FileText, Receipt, QrCode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { BarcodeDisplay } from './BarcodeDisplay';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface GemTableProps {
   gems: Gem[];
@@ -24,7 +26,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   const [filterColor, setFilterColor] = useState('all');
   const [filterCut, setFilterCut] = useState('all');
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortDirection, setSortDirection = useState<'asc' | 'desc'>('desc');
 
   // Get unique colors from filtered gems
   const availableColors = filterGemType === 'all' 
@@ -294,6 +296,9 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                     </Badge>
                   </td>
                   <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{new Date(gem.dateAdded).toLocaleDateString()}</div>
+                  </td>
+                  <td className="py-4 px-4">
                     <div className="flex space-x-2">
                       <Button
                         variant="ghost"
@@ -302,6 +307,30 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="View Barcode"
+                          >
+                            <QrCode className="w-4 h-4 text-indigo-600" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Barcode for {gem.stockId}</DialogTitle>
+                          </DialogHeader>
+                          <div className="flex justify-center py-4">
+                            <BarcodeDisplay 
+                              stockId={gem.stockId} 
+                              gemType={gem.gemType}
+                              size="medium"
+                              showDownload={true}
+                            />
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                       {gem.status === 'In Stock' && onCreateInvoice && (
                         <Button
                           variant="ghost"
