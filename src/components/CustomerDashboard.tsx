@@ -6,9 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Users, UserPlus, DollarSign, Calendar, Search, Edit, Eye } from 'lucide-react';
 import { Customer } from '../types/customer';
-import { sampleCustomers } from '../data/sampleCustomers';
+import { useCustomers } from '../hooks/useCustomers';
+import { supabase } from '@/integrations/supabase/client';
 import { CustomerForm } from './CustomerForm';
 import { CustomerTable } from './CustomerTable';
+import { useToast } from '@/hooks/use-toast';
 
 interface CustomerDashboardProps {
   onCreateInvoice?: (customer: Customer) => void;
@@ -16,7 +18,8 @@ interface CustomerDashboardProps {
 }
 
 export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: CustomerDashboardProps) => {
-  const [customers, setCustomers] = useState<Customer[]>(sampleCustomers);
+  const { customers, loading, refetch } = useCustomers();
+  const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,33 +38,144 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
     (customer.company && customer.company.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleAddCustomer = (customer: Omit<Customer, 'id' | 'customerId' | 'dateAdded' | 'totalPurchases'>) => {
-    const newCustomer: Customer = {
-      ...customer,
-      id: Date.now().toString(),
-      customerId: `CUST${String(totalCustomers + 1).padStart(3, '0')}`,
-      dateAdded: new Date().toISOString().split('T')[0],
-      totalPurchases: 0,
-    };
-    setCustomers([newCustomer, ...customers]);
-    setShowForm(false);
+  const handleAddCustomer = async (customer: Omit<Customer, 'id' | 'customerId' | 'dateAdded' | 'totalPurchases'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .insert([{
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          company: customer.company,
+          tax_id: customer.taxId,
+          street: customer.address.street,
+          city: customer.address.city,
+          state: customer.address.state,
+          zip_code: customer.address.zipCode,
+          country: customer.address.country || 'USA',
+          notes: customer.notes,
+          discount: customer.discount || 0,
+          customer_id: `CUST${String(totalCustomers + 1).padStart(3, '0')}`
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Customer added successfully",
+      });
+      
+      refetch();
+      setShowForm(false);
+    } catch (error) {
+      console.error('Error adding customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add customer",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditCustomer = (customer: Customer) => {
-    setCustomers(customers.map(c => c.id === customer.id ? customer : c));
-    setEditingCustomer(null);
-    setShowForm(false);
+  const handleEditCustomer = async (customer: Customer) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          company: customer.company,
+          tax_id: customer.taxId,
+          street: customer.address.street,
+          city: customer.address.city,
+          state: customer.address.state,
+          zip_code: customer.address.zipCode,
+          country: customer.address.country || 'USA',
+          notes: customer.notes,
+          discount: customer.discount || 0
+        })
+        .eq('id', customer.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Customer updated successfully",
+      });
+      
+      refetch();
+      setEditingCustomer(null);
+      setShowForm(false);
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update customer",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteCustomer = (id: string) => {
-    setCustomers(customers.filter(c => c.id !== id));
+  const handleDeleteCustomer = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Customer deleted successfully",
+      });
+      
+      refetch();
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete customer",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleUpdateDiscount = (customerId: string, discount: number) => {
-    setCustomers(customers.map(c => 
-      c.id === customerId ? { ...c, discount } : c
-    ));
+  const handleUpdateDiscount = async (customerId: string, discount: number) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({ discount })
+        .eq('id', customerId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Discount updated successfully",
+      });
+      
+      refetch();
+    } catch (error) {
+      console.error('Error updating discount:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update discount",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-lg">Loading customers...</div>
+      </div>
+    );
+  }
 
   if (showForm) {
     return (
