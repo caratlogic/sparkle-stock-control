@@ -59,7 +59,8 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
           carat: preselectedGem.carat,
           cut: preselectedGem.cut,
           color: preselectedGem.color,
-          clarity: preselectedGem.clarity,
+          description: preselectedGem.description,
+          measurements: preselectedGem.measurements,
           certificateNumber: preselectedGem.certificateNumber,
           gemType: preselectedGem.gemType,
         },
@@ -82,7 +83,8 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     gem.status === 'In Stock' &&
     (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
-    gem.gemType.toLowerCase().includes(productSearch.toLowerCase()))
+    gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.description.toLowerCase().includes(productSearch.toLowerCase()))
   ).slice(0, 5);
 
   const handleCustomerSelect = (customer: Customer) => {
@@ -106,7 +108,8 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
         carat: selectedProduct.carat,
         cut: selectedProduct.cut,
         color: selectedProduct.color,
-        clarity: selectedProduct.clarity,
+        description: selectedProduct.description,
+        measurements: selectedProduct.measurements,
         certificateNumber: selectedProduct.certificateNumber,
         gemType: selectedProduct.gemType,
       },
@@ -207,6 +210,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
             <tr>
               <th>Stock ID</th>
               <th>Description</th>
+              <th>Measurements</th>
               <th>Quantity</th>
               <th>Estimated Value</th>
             </tr>
@@ -215,8 +219,10 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
             ${items.map(item => `
               <tr>
                 <td>${item.productDetails.stockId}</td>
-                <td>${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} ${item.productDetails.clarity}<br>
+                <td>${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color}<br>
+                ${item.productDetails.description}<br>
                 Cert: ${item.productDetails.certificateNumber}</td>
+                <td>${item.productDetails.measurements}</td>
                 <td>${item.quantity}</td>
                 <td>$${item.totalPrice.toLocaleString()}</td>
               </tr>
@@ -364,7 +370,10 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
                       >
                         <div className="font-medium">{product.stockId}</div>
                         <div className="text-sm text-slate-500">
-                          {product.carat}ct {product.gemType} {product.cut} {product.color} {product.clarity} - ${product.price.toLocaleString()}
+                          {product.carat}ct {product.gemType} {product.cut} {product.color} - ${product.price.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-slate-400 truncate">
+                          {product.description}
                         </div>
                       </div>
                     ))}
@@ -405,10 +414,13 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
                       <div className="flex-1">
                         <div className="font-medium">{item.productDetails.stockId}</div>
                         <div className="text-sm text-slate-600">
-                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color} {item.productDetails.clarity}
+                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color}
                         </div>
-                        <div className="text-sm text-slate-500">
-                          Cert: {item.productDetails.certificateNumber}
+                        <div className="text-sm text-slate-500 truncate max-w-md">
+                          {item.productDetails.description}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          Cert: {item.productDetails.certificateNumber} | Size: {item.productDetails.measurements}
                         </div>
                       </div>
                       <div className="text-right mr-4">

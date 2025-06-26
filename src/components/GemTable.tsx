@@ -42,7 +42,8 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
         gem.certificateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         gem.cut.toLowerCase().includes(searchTerm.toLowerCase()) ||
         gem.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.clarity.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        gem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        gem.measurements.toLowerCase().includes(searchTerm.toLowerCase()) ||
         gem.gemType.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = filterStatus === 'all' || gem.status === filterStatus;
@@ -79,7 +80,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Clarity', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Description', 'Measurements', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -88,7 +89,8 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
         gem.carat,
         gem.cut,
         gem.color,
-        gem.clarity,
+        `"${gem.description}"`,
+        gem.measurements,
         gem.price,
         ...(isOwner ? [gem.costPrice] : []),
         gem.certificateNumber,
@@ -241,7 +243,8 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Shape</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Color</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Clarity</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Description</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Measurements</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
                   onClick={() => handleSort('price')}
@@ -316,8 +319,13 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                     <td className="py-4 px-4">
                       <div className="text-sm text-slate-600">{gem.color}</div>
                     </td>
+                    <td className="py-4 px-4 max-w-48">
+                      <div className="text-sm text-slate-600 truncate" title={gem.description}>
+                        {gem.description}
+                      </div>
+                    </td>
                     <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600">{gem.clarity}</div>
+                      <div className="text-sm text-slate-600">{gem.measurements}</div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>

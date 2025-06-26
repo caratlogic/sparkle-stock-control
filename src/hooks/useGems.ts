@@ -25,7 +25,8 @@ export const useGems = () => {
         carat: parseFloat(gem.carat.toString()),
         cut: gem.shape as any, // Map shape to cut for frontend compatibility
         color: gem.color,
-        clarity: 'Transparent' as any, // Default clarity since it doesn't exist in DB
+        description: gem.description || 'No description available',
+        measurements: gem.measurements || 'Not specified',
         price: parseFloat(gem.price.toString()),
         costPrice: parseFloat(gem.cost_price.toString()),
         certificateNumber: gem.certificate_number,
@@ -53,6 +54,8 @@ export const useGems = () => {
           carat: gemData.carat,
           shape: gemData.cut, // Map cut to shape for database
           color: gemData.color,
+          description: gemData.description,
+          measurements: gemData.measurements,
           price: gemData.price,
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
@@ -80,7 +83,8 @@ export const useGems = () => {
       if (gemData.carat !== undefined) updateData.carat = gemData.carat;
       if (gemData.cut !== undefined) updateData.shape = gemData.cut; // Map cut to shape
       if (gemData.color !== undefined) updateData.color = gemData.color;
-      // Skip clarity since it doesn't exist in the database
+      if (gemData.description !== undefined) updateData.description = gemData.description;
+      if (gemData.measurements !== undefined) updateData.measurements = gemData.measurements;
       if (gemData.price !== undefined) updateData.price = gemData.price;
       if (gemData.costPrice !== undefined) updateData.cost_price = gemData.costPrice;
       if (gemData.certificateNumber !== undefined) updateData.certificate_number = gemData.certificateNumber;

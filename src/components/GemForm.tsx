@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, CLARITY_OPTIONS, STATUS_OPTIONS, GEM_COLORS } from '../types/gem';
+import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS } from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
@@ -24,7 +24,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     carat: '',
     cut: '',
     color: '',
-    clarity: '',
+    description: '',
+    measurements: '',
     price: '',
     costPrice: '',
     certificateNumber: '',
@@ -40,7 +41,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         carat: gem.carat.toString(),
         cut: gem.cut,
         color: gem.color,
-        clarity: gem.clarity,
+        description: gem.description,
+        measurements: gem.measurements,
         price: gem.price.toString(),
         costPrice: gem.costPrice.toString(),
         certificateNumber: gem.certificateNumber,
@@ -162,18 +164,29 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     </Select>
                   </div>
 
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Enter gem description..."
+                      value={formData.description}
+                      onChange={(e) => handleChange('description', e.target.value)}
+                      required
+                      className="bg-slate-50 border-slate-200"
+                      rows={2}
+                    />
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="clarity">Clarity</Label>
-                    <Select value={formData.clarity} onValueChange={(value) => handleChange('clarity', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select clarity" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        {CLARITY_OPTIONS.map((clarity) => (
-                          <SelectItem key={clarity} value={clarity}>{clarity}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="measurements">Measurements</Label>
+                    <Input
+                      id="measurements"
+                      placeholder="e.g., 7.5 x 5.2 x 3.1 mm"
+                      value={formData.measurements}
+                      onChange={(e) => handleChange('measurements', e.target.value)}
+                      required
+                      className="bg-slate-50 border-slate-200"
+                    />
                   </div>
 
                   <div className="space-y-2">

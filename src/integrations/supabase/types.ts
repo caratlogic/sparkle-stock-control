@@ -173,9 +173,11 @@ export type Database = {
           cost_price: number
           created_at: string | null
           date_added: string
+          description: string | null
           gem_type: string
           id: string
           image_url: string | null
+          measurements: string | null
           measurements_mm: string | null
           notes: string | null
           old_code: string | null
@@ -198,9 +200,11 @@ export type Database = {
           cost_price: number
           created_at?: string | null
           date_added?: string
+          description?: string | null
           gem_type: string
           id?: string
           image_url?: string | null
+          measurements?: string | null
           measurements_mm?: string | null
           notes?: string | null
           old_code?: string | null
@@ -223,9 +227,11 @@ export type Database = {
           cost_price?: number
           created_at?: string | null
           date_added?: string
+          description?: string | null
           gem_type?: string
           id?: string
           image_url?: string | null
+          measurements?: string | null
           measurements_mm?: string | null
           notes?: string | null
           old_code?: string | null

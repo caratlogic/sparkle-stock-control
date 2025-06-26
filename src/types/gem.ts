@@ -7,8 +7,9 @@ export interface Gem {
   gemType: GemType;
   carat: number;
   cut: 'Round' | 'Princess' | 'Emerald' | 'Asscher' | 'Marquise' | 'Oval' | 'Radiant' | 'Pear' | 'Heart' | 'Cushion' | 'Cabochon' | 'Faceted' | 'Raw';
-  color: string; // More flexible for different gem types
-  clarity: 'IF' | 'VVS1' | 'VVS2' | 'VS1' | 'VS2' | 'SI1' | 'SI2' | 'I1' | 'I2' | 'I3' | 'Transparent' | 'Translucent' | 'Opaque';
+  color: string;
+  description: string;
+  measurements: string;
   price: number;
   costPrice: number;
   certificateNumber: string;
@@ -35,10 +36,6 @@ export const GEM_TYPES = [
 export const CUT_OPTIONS = [
   'Round', 'Princess', 'Emerald', 'Asscher', 'Marquise', 
   'Oval', 'Radiant', 'Pear', 'Heart', 'Cushion', 'Cabochon', 'Faceted', 'Raw'
-] as const;
-
-export const CLARITY_OPTIONS = [
-  'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'I1', 'I2', 'I3', 'Transparent', 'Translucent', 'Opaque'
 ] as const;
 
 export const STATUS_OPTIONS = [
