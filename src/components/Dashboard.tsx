@@ -68,6 +68,13 @@ export const Dashboard = () => {
   };
 
   const handleSaveInvoice = (invoice: Invoice) => {
+    // Update gem statuses to 'Sold' for all items in the invoice
+    const updatedGems = gems.map(gem => {
+      const isInInvoice = invoice.items.some(item => item.productId === gem.id);
+      return isInInvoice ? { ...gem, status: 'Sold' as const } : gem;
+    });
+    setGems(updatedGems);
+    
     setInvoices([...invoices, invoice]);
     setPreselectedGem(null);
     setPreselectedCustomer(null);
@@ -75,12 +82,13 @@ export const Dashboard = () => {
   };
 
   const handleSaveConsignment = (consignment: Consignment) => {
-    // Update gem status to Reserved for consigned items
+    // Update gem statuses to 'Reserved' for all items in the consignment
     const updatedGems = gems.map(gem => {
-      const isConsigned = consignment.items.some(item => item.productId === gem.id);
-      return isConsigned ? { ...gem, status: 'Reserved' as const } : gem;
+      const isInConsignment = consignment.items.some(item => item.productId === gem.id);
+      return isInConsignment ? { ...gem, status: 'Reserved' as const } : gem;
     });
     setGems(updatedGems);
+    
     setConsignments([...consignments, consignment]);
     setPreselectedGem(null);
     setPreselectedCustomer(null);
