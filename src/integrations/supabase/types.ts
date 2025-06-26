@@ -173,7 +173,6 @@ export type Database = {
           date_added: string
           gem_type: string
           id: string
-          image_url: string | null
           notes: string | null
           price: number
           status: string
@@ -191,7 +190,6 @@ export type Database = {
           date_added?: string
           gem_type: string
           id?: string
-          image_url?: string | null
           notes?: string | null
           price: number
           status?: string
@@ -209,7 +207,6 @@ export type Database = {
           date_added?: string
           gem_type?: string
           id?: string
-          image_url?: string | null
           notes?: string | null
           price?: number
           status?: string

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES, GEM_COLORS, CUT_OPTIONS } from '../types/gem';
-import { Search, Filter, Edit, Eye, ArrowUpDown, Download, FileText, Receipt, QrCode, Image } from 'lucide-react';
+import { Search, Filter, Edit, Eye, ArrowUpDown, Download, FileText, Receipt, QrCode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -27,7 +26,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   const [filterColor, setFilterColor] = useState('all');
   const [filterCut, setFilterCut] = useState('all');
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [sortDirection, setSortDirection = useState<'asc' | 'desc'>('desc');
 
   // Get unique colors from filtered gems
   const availableColors = filterGemType === 'all' 
@@ -104,23 +103,6 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
     a.download = 'gem-inventory.csv';
     a.click();
     window.URL.revokeObjectURL(url);
-  };
-
-  // Helper function to determine what actions are available for each gem
-  const getAvailableActions = (gem: Gem) => {
-    const actions = [];
-    
-    // Can create invoice for Reserved products (for same customer) or In Stock products
-    if ((gem.status === 'Reserved' || gem.status === 'In Stock') && onCreateInvoice) {
-      actions.push('invoice');
-    }
-    
-    // Can create consignment only for In Stock products
-    if (gem.status === 'In Stock' && onCreateConsignment) {
-      actions.push('consignment');
-    }
-    
-    return actions;
   };
 
   return (
@@ -205,7 +187,6 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Image</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
                   onClick={() => handleSort('stockId')}
@@ -271,131 +252,109 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
               </tr>
             </thead>
             <tbody>
-              {filteredGems.map((gem) => {
-                const availableActions = getAvailableActions(gem);
-                return (
-                  <tr key={gem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+              {filteredGems.map((gem) => (
+                <tr key={gem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <td className="py-4 px-4">
+                    <div className="font-medium text-slate-800">{gem.stockId}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <Badge variant="outline" className="font-medium">
+                      {gem.gemType}
+                    </Badge>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="font-medium text-slate-800">{gem.carat}ct</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.cut}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.color}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.clarity}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
+                  </td>
+                  {isOwner && (
                     <td className="py-4 px-4">
-                      {gem.imageUrl ? (
-                        <img 
-                          src={gem.imageUrl} 
-                          alt={`${gem.gemType} ${gem.stockId}`}
-                          className="w-12 h-12 object-cover rounded border"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '';
-                            target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-slate-100 rounded border flex items-center justify-center">
-                          <Image className="w-6 h-6 text-slate-400" />
-                        </div>
-                      )}
+                      <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-slate-800">{gem.stockId}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge variant="outline" className="font-medium">
-                        {gem.gemType}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-slate-800">{gem.carat}ct</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600">{gem.cut}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600">{gem.color}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600">{gem.clarity}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
-                    </td>
-                    {isOwner && (
-                      <td className="py-4 px-4">
-                        <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
-                      </td>
-                    )}
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600 font-mono">{gem.certificateNumber}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge 
-                        variant={
-                          gem.status === 'In Stock' ? 'secondary' : 
-                          gem.status === 'Sold' ? 'destructive' : 
-                          gem.status === 'Reserved' ? 'default' : 'secondary'
-                        }
+                  )}
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600 font-mono">{gem.certificateNumber}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <Badge 
+                      variant={
+                        gem.status === 'In Stock' ? 'secondary' : 
+                        gem.status === 'Sold' ? 'destructive' : 'default'
+                      }
+                    >
+                      {gem.status}
+                    </Badge>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{new Date(gem.dateAdded).toLocaleDateString()}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit(gem)}
                       >
-                        {gem.status}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600">{new Date(gem.dateAdded).toLocaleDateString()}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex space-x-2">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="View Barcode"
+                          >
+                            <QrCode className="w-4 h-4 text-indigo-600" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Barcode for {gem.stockId}</DialogTitle>
+                          </DialogHeader>
+                          <div className="flex justify-center py-4">
+                            <BarcodeDisplay 
+                              stockId={gem.stockId} 
+                              gemType={gem.gemType}
+                              size="medium"
+                              showDownload={true}
+                            />
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      {gem.status === 'In Stock' && onCreateInvoice && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onEdit(gem)}
+                          onClick={() => onCreateInvoice(gem)}
+                          title="Create Invoice"
                         >
-                          <Edit className="w-4 h-4" />
+                          <FileText className="w-4 h-4 text-blue-600" />
                         </Button>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              title="View Barcode"
-                            >
-                              <QrCode className="w-4 h-4 text-indigo-600" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Barcode for {gem.stockId}</DialogTitle>
-                            </DialogHeader>
-                            <div className="flex justify-center py-4">
-                              <BarcodeDisplay 
-                                stockId={gem.stockId} 
-                                gemType={gem.gemType}
-                                size="medium"
-                                showDownload={true}
-                              />
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                        {availableActions.includes('invoice') && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onCreateInvoice!(gem)}
-                            title={gem.status === 'Reserved' ? 'Create Invoice for Reserved Product' : 'Create Invoice'}
-                          >
-                            <FileText className="w-4 h-4 text-blue-600" />
-                          </Button>
-                        )}
-                        {availableActions.includes('consignment') && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onCreateConsignment!(gem)}
-                            title="Create Consignment"
-                          >
-                            <Receipt className="w-4 h-4 text-purple-600" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      )}
+                      {gem.status === 'In Stock' && onCreateConsignment && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onCreateConsignment(gem)}
+                          title="Create Consignment"
+                        >
+                          <Receipt className="w-4 h-4 text-purple-600" />
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
           

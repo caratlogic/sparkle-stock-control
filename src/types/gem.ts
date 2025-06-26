@@ -15,7 +15,6 @@ export interface Gem {
   status: 'In Stock' | 'Sold' | 'Reserved';
   dateAdded: string;
   notes?: string;
-  imageUrl?: string;
 }
 
 export const GEM_TYPES = [

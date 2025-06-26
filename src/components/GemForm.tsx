@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES, CUT_OPTIONS, CLARITY_OPTIONS, STATUS_OPTIONS, GEM_COLORS } from '../types/gem';
-import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
+import { ArrowLeft, Save, Gem as GemIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
 
@@ -29,8 +29,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     costPrice: '',
     certificateNumber: '',
     status: 'In Stock',
-    notes: '',
-    imageUrl: ''
+    notes: ''
   });
 
   useEffect(() => {
@@ -45,8 +44,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         costPrice: gem.costPrice.toString(),
         certificateNumber: gem.certificateNumber,
         status: gem.status,
-        notes: gem.notes || '',
-        imageUrl: gem.imageUrl || ''
+        notes: gem.notes || ''
       });
     }
   }, [gem]);
@@ -228,33 +226,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     required
                     className="bg-slate-50 border-slate-200"
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="imageUrl" className="flex items-center space-x-2">
-                    <Image className="w-4 h-4" />
-                    <span>Product Image URL (Optional)</span>
-                  </Label>
-                  <Input
-                    id="imageUrl"
-                    placeholder="https://example.com/product-image.jpg"
-                    value={formData.imageUrl}
-                    onChange={(e) => handleChange('imageUrl', e.target.value)}
-                    className="bg-slate-50 border-slate-200"
-                  />
-                  {formData.imageUrl && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.imageUrl} 
-                        alt="Product preview" 
-                        className="w-20 h-20 object-cover rounded border"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <div className="space-y-2">
