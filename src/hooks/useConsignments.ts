@@ -1,30 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Consignment {
-  id: string;
-  consignmentNumber: string;
-  customerId: string;
-  status: 'pending' | 'returned' | 'purchased' | 'inactive';
-  dateCreated: string;
-  returnDate: string;
-  notes?: string;
-  items: ConsignmentItem[];
-}
-
-interface ConsignmentItem {
-  id: string;
-  gemId: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-}
+import { Consignment } from '../types/consignment';
 
 export const useConsignments = () => {
   const [consignments, setConsignments] = useState<Consignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
 
   const fetchConsignments = async () => {
     try {
@@ -33,34 +15,71 @@ export const useConsignments = () => {
         .from('consignments')
         .select(`
           *,
-          consignment_items (*)
+          consignment_items (
+            *,
+            gems (*)
+          ),
+          customers (*)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      const transformedConsignments: Consignment[] = data.map(consignment => ({
-        id: consignment.id,
-        consignmentNumber: consignment.consignment_number,
-        customerId: consignment.customer_id,
-        status: consignment.status as any,
-        dateCreated: consignment.date_created,
-        returnDate: consignment.return_date,
-        notes: consignment.notes || undefined,
-        items: consignment.consignment_items.map((item: any) => ({
-          id: item.id,
-          gemId: item.gem_id,
-          quantity: item.quantity,
-          unitPrice: parseFloat(item.unit_price.toString()),
-          totalPrice: parseFloat(item.total_price.toString())
-        }))
-      }));
-
-      setConsignments(transformedConsignments);
+      setConsignments(data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch consignments');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createConsignment = async (consignmentData: any) => {
+    try {
+      // Generate consignment number
+      const consignmentNumber = `CON-${String(consignments.length + 1).padStart(6, '0')}`;
+      
+      // Create consignment
+      const { data: consignment, error: consignmentError } = await supabase
+        .from('consignments')
+        .insert([{
+          consignment_number: consignmentNumber,
+          customer_id: consignmentData.customerId,
+          return_date: consignmentData.returnDate,
+          notes: consignmentData.notes,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (consignmentError) throw consignmentError;
+
+      // Create consignment items
+      const items = consignmentData.items.map((item: any) => ({
+        consignment_id: consignment.id,
+        gem_id: item.gemId,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        total_price: item.totalPrice
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('consignment_items')
+        .insert(items);
+
+      if (itemsError) throw itemsError;
+
+      // Update gem status to Reserved
+      const gemIds = consignmentData.items.map((item: any) => item.gemId);
+      const { error: gemUpdateError } = await supabase
+        .from('gems')
+        .update({ status: 'Reserved' })
+        .in('id', gemIds);
+
+      if (gemUpdateError) throw gemUpdateError;
+
+      await fetchConsignments();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to create consignment' };
     }
   };
 
@@ -72,24 +91,35 @@ export const useConsignments = () => {
         .eq('id', consignmentId);
 
       if (error) throw error;
-
-      // If consignment is returned, update gem status to 'In Stock'
-      if (status === 'returned') {
-        const consignment = consignments.find(c => c.id === consignmentId);
-        if (consignment) {
-          for (const item of consignment.items) {
-            await supabase
-              .from('gems')
-              .update({ status: 'In Stock' })
-              .eq('id', item.gemId);
-          }
-        }
-      }
-
       await fetchConsignments();
       return { success: true };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Failed to update consignment' };
+    }
+  };
+
+  const deleteConsignment = async (consignmentId: string) => {
+    try {
+      // Delete consignment items first
+      const { error: itemsError } = await supabase
+        .from('consignment_items')
+        .delete()
+        .eq('consignment_id', consignmentId);
+
+      if (itemsError) throw itemsError;
+
+      // Delete consignment
+      const { error: consignmentError } = await supabase
+        .from('consignments')
+        .delete()
+        .eq('id', consignmentId);
+
+      if (consignmentError) throw consignmentError;
+
+      await fetchConsignments();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to delete consignment' };
     }
   };
 
@@ -102,40 +132,12 @@ export const useConsignments = () => {
           consignments (*)
         `)
         .eq('gem_id', gemId)
-        .eq('consignments.status', 'pending')
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      return data ? {
-        id: data.consignments.id,
-        consignmentNumber: data.consignments.consignment_number,
-        customerId: data.consignments.customer_id,
-        status: data.consignments.status,
-        dateCreated: data.consignments.date_created,
-        returnDate: data.consignments.return_date,
-        notes: data.consignments.notes || undefined,
-        items: []
-      } : null;
-    } catch (err) {
-      console.error('Error fetching consignment by gem ID:', err);
-      return null;
-    }
-  };
-
-  const deleteConsignment = async (consignmentId: string) => {
-    try {
-      const { error } = await supabase
-        .from('consignments')
-        .delete()
-        .eq('id', consignmentId);
-
       if (error) throw error;
-
-      await fetchConsignments();
-      return { success: true };
+      return { success: true, data };
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to delete consignment' };
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch consignment' };
     }
   };
 
@@ -147,6 +149,7 @@ export const useConsignments = () => {
     consignments,
     loading,
     error,
+    createConsignment,
     updateConsignmentStatus,
     deleteConsignment,
     getConsignmentByGemId,

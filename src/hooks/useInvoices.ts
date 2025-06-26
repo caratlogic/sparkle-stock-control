@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Invoice } from '../types/customer';
+import { Invoice } from '../types/invoice';
 
 export const useInvoices = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
 
   const fetchInvoices = async () => {
     try {
@@ -15,70 +15,75 @@ export const useInvoices = () => {
         .from('invoices')
         .select(`
           *,
-          customers (*),
-          invoice_items (*,
+          invoice_items (
+            *,
             gems (*)
-          )
+          ),
+          customers (*)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      const transformedInvoices: Invoice[] = data.map(invoice => ({
-        id: invoice.id,
-        invoiceNumber: invoice.invoice_number,
-        customerId: invoice.customer_id,
-        customerDetails: {
-          id: invoice.customers.id,
-          customerId: invoice.customers.customer_id,
-          name: invoice.customers.name,
-          email: invoice.customers.email,
-          phone: invoice.customers.phone,
-          company: invoice.customers.company || undefined,
-          taxId: invoice.customers.tax_id || undefined,
-          address: {
-            street: invoice.customers.street,
-            city: invoice.customers.city,
-            state: invoice.customers.state,
-            zipCode: invoice.customers.zip_code,
-            country: invoice.customers.country || undefined
-          },
-          dateAdded: invoice.customers.date_added,
-          totalPurchases: parseFloat(invoice.customers.total_purchases?.toString() || '0'),
-          lastPurchaseDate: invoice.customers.last_purchase_date || undefined,
-          notes: invoice.customers.notes || undefined
-        },
-        items: invoice.invoice_items.map((item: any) => ({
-          productId: item.gem_id,
-          productType: 'gem',
-          productDetails: {
-            stockId: item.gems.stock_id,
-            carat: parseFloat(item.gems.carat.toString()),
-            cut: item.gems.cut,
-            color: item.gems.color,
-            clarity: item.gems.clarity,
-            certificateNumber: item.gems.certificate_number,
-            gemType: item.gems.gem_type
-          },
-          quantity: item.quantity,
-          unitPrice: parseFloat(item.unit_price.toString()),
-          totalPrice: parseFloat(item.total_price.toString())
-        })),
-        subtotal: parseFloat(invoice.subtotal.toString()),
-        taxRate: parseFloat(invoice.tax_rate.toString()),
-        taxAmount: parseFloat(invoice.tax_amount.toString()),
-        total: parseFloat(invoice.total.toString()),
-        status: invoice.status as any,
-        dateCreated: invoice.date_created,
-        dateDue: invoice.date_due,
-        notes: invoice.notes || undefined
-      }));
-
-      setInvoices(transformedInvoices);
+      setInvoices(data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch invoices');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createInvoice = async (invoiceData: any) => {
+    try {
+      // Generate invoice number
+      const invoiceNumber = `INV-${String(invoices.length + 1).padStart(6, '0')}`;
+      
+      // Create invoice
+      const { data: invoice, error: invoiceError } = await supabase
+        .from('invoices')
+        .insert([{
+          invoice_number: invoiceNumber,
+          customer_id: invoiceData.customerId,
+          date_due: invoiceData.dateDue,
+          notes: invoiceData.notes,
+          subtotal: invoiceData.subtotal,
+          tax_rate: invoiceData.taxRate,
+          tax_amount: invoiceData.taxAmount,
+          total: invoiceData.total,
+          status: 'draft'
+        }])
+        .select()
+        .single();
+
+      if (invoiceError) throw invoiceError;
+
+      // Create invoice items
+      const items = invoiceData.items.map((item: any) => ({
+        invoice_id: invoice.id,
+        gem_id: item.gemId,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        total_price: item.totalPrice
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('invoice_items')
+        .insert(items);
+
+      if (itemsError) throw itemsError;
+
+      // Update gem status to Sold
+      const gemIds = invoiceData.items.map((item: any) => item.gemId);
+      const { error: gemUpdateError } = await supabase
+        .from('gems')
+        .update({ status: 'Sold' })
+        .in('id', gemIds);
+
+      if (gemUpdateError) throw gemUpdateError;
+
+      await fetchInvoices();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to create invoice' };
     }
   };
 
@@ -90,6 +95,7 @@ export const useInvoices = () => {
     invoices,
     loading,
     error,
+    createInvoice,
     refetch: fetchInvoices
   };
 };
