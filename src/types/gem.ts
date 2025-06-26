@@ -23,6 +23,7 @@ export interface Gem {
   stoneDescription?: string;
   shapeDetail?: string;
   boxNumber?: string;
+  shape?: string; // New shape field
   consignmentInfo?: {
     id: string;
     consignmentNumber: string;
@@ -41,6 +42,12 @@ export const GEM_TYPES = [
 
 export const STATUS_OPTIONS = [
   'In Stock', 'Sold', 'Reserved'
+] as const;
+
+// Shape options for gems
+export const GEM_SHAPES = [
+  'Round', 'Princess', 'Emerald', 'Asscher', 'Oval', 'Radiant',
+  'Cushion', 'Heart', 'Pear', 'Marquise', 'Baguette', 'Trillion'
 ] as const;
 
 // Color options by gem type

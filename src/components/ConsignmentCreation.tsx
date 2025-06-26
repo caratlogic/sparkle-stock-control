@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
           stoneDescription: preselectedGem.stoneDescription,
           certificateNumber: preselectedGem.certificateNumber,
           gemType: preselectedGem.gemType,
+          shape: preselectedGem.shape,
         },
         quantity: 1,
         unitPrice: preselectedGem.price,
@@ -90,6 +90,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
         stoneDescription: selectedProduct.stoneDescription,
         certificateNumber: selectedProduct.certificateNumber,
         gemType: selectedProduct.gemType,
+        shape: selectedProduct.shape,
       },
       quantity,
       unitPrice: selectedProduct.price,
@@ -178,7 +179,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
             ${items.map(item => `
               <tr>
                 <td>${item.productDetails.stockId}</td>
-                <td>${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.measurementsMm || ''} ${item.productDetails.color} ${item.productDetails.stoneDescription || ''}<br>
+                <td>${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.shape || ''} ${item.productDetails.measurementsMm || ''} ${item.productDetails.color} ${item.productDetails.stoneDescription || ''}<br>
                 Cert: ${item.productDetails.certificateNumber}</td>
                 <td>${item.quantity}</td>
                 <td>$${item.totalPrice.toLocaleString()}</td>
@@ -327,7 +328,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
                       >
                         <div className="font-medium">{product.stockId}</div>
                         <div className="text-sm text-slate-500">
-                          {product.carat}ct {product.gemType} {product.measurementsMm || ''} {product.color} {product.stoneDescription || ''} - ${product.price.toLocaleString()}
+                          {product.carat}ct {product.gemType} {product.shape || ''} {product.measurementsMm || ''} {product.color} {product.stoneDescription || ''} - ${product.price.toLocaleString()}
                         </div>
                       </div>
                     ))}
@@ -368,7 +369,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
                       <div className="flex-1">
                         <div className="font-medium">{item.productDetails.stockId}</div>
                         <div className="text-sm text-slate-600">
-                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.measurementsMm || ''} {item.productDetails.color} {item.productDetails.stoneDescription || ''}
+                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.shape || ''} {item.productDetails.measurementsMm || ''} {item.productDetails.color} {item.productDetails.stoneDescription || ''}
                         </div>
                         <div className="text-sm text-slate-500">
                           Cert: {item.productDetails.certificateNumber}

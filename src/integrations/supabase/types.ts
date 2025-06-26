@@ -182,6 +182,7 @@ export type Database = {
           price: number
           price_in_letters: string | null
           purchase_date: string | null
+          shape: string | null
           shape_detail: string | null
           status: string
           stock_id: string
@@ -206,6 +207,7 @@ export type Database = {
           price: number
           price_in_letters?: string | null
           purchase_date?: string | null
+          shape?: string | null
           shape_detail?: string | null
           status?: string
           stock_id: string
@@ -230,6 +232,7 @@ export type Database = {
           price?: number
           price_in_letters?: string | null
           purchase_date?: string | null
+          shape?: string | null
           shape_detail?: string | null
           status?: string
           stock_id?: string

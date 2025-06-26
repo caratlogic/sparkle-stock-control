@@ -15,7 +15,8 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-20',
     notes: 'Excellent quality diamond with perfect cut',
     measurementsMm: '7.2 x 7.2 x 4.3',
-    stoneDescription: 'Round brilliant cut with excellent proportions'
+    stoneDescription: 'Round brilliant cut with excellent proportions',
+    shape: 'Round'
   },
   {
     id: '2',
@@ -30,7 +31,8 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-18',
     notes: 'Large emerald with excellent color',
     measurementsMm: '8.5 x 6.2 x 5.1',
-    stoneDescription: 'Emerald cut with minor inclusions'
+    stoneDescription: 'Emerald cut with minor inclusions',
+    shape: 'Emerald'
   },
   {
     id: '3',
@@ -44,7 +46,8 @@ export const sampleGems: Gem[] = [
     status: 'In Stock',
     dateAdded: '2024-06-15',
     measurementsMm: '6.1 x 4.8 x 3.2',
-    stoneDescription: 'Oval cut with excellent color saturation'
+    stoneDescription: 'Oval cut with excellent color saturation',
+    shape: 'Oval'
   },
   {
     id: '4',
@@ -59,7 +62,8 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-10',
     notes: 'Sold to Johnson Jewelry',
     measurementsMm: '7.0 x 7.0 x 4.1',
-    stoneDescription: 'Round cut with deep blue color'
+    stoneDescription: 'Round cut with deep blue color',
+    shape: 'Round'
   },
   {
     id: '5',
@@ -74,7 +78,8 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-25',
     notes: 'Large amethyst with excellent clarity',
     measurementsMm: '10.2 x 8.1 x 6.5',
-    stoneDescription: 'Emerald cut with exceptional clarity'
+    stoneDescription: 'Emerald cut with exceptional clarity',
+    shape: 'Emerald'
   },
   {
     id: '6',
@@ -89,6 +94,7 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-22',
     notes: 'Beautiful aquamarine with excellent blue color',
     measurementsMm: '12.0 x 9.5 x 7.2',
-    stoneDescription: 'Oval cut with beautiful transparency'
+    stoneDescription: 'Oval cut with beautiful transparency',
+    shape: 'Oval'
   }
 ];

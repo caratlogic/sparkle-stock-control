@@ -41,7 +41,8 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
         gem.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
         gem.gemType.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (gem.measurementsMm?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        (gem.stoneDescription?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+        (gem.stoneDescription?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (gem.shape?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
       
       const matchesStatus = filterStatus === 'all' || gem.status === filterStatus;
       const matchesGemType = filterGemType === 'all' || gem.gemType === filterGemType;
@@ -76,7 +77,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Color', 'Measurements', 'Description', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Color', 'Shape', 'Measurements', 'Description', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -84,6 +85,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
         gem.gemType,
         gem.carat,
         gem.color,
+        gem.shape || '',
         gem.measurementsMm || '',
         gem.stoneDescription || '',
         gem.price,
@@ -225,6 +227,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                   </div>
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Color</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Shape</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Measurements</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Description</th>
                 <th 
@@ -297,6 +300,9 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                     </td>
                     <td className="py-4 px-4">
                       <div className="text-sm text-slate-600">{gem.color}</div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="text-sm text-slate-600">{gem.shape || '-'}</div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="text-sm text-slate-600">{gem.measurementsMm || '-'}</div>

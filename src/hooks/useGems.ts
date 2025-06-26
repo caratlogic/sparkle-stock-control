@@ -39,7 +39,8 @@ export const useGems = () => {
         oldCode: gem.old_code || undefined,
         stoneDescription: gem.stone_description || undefined,
         shapeDetail: gem.shape_detail || undefined,
-        boxNumber: gem.box_number || undefined
+        boxNumber: gem.box_number || undefined,
+        shape: gem.shape || undefined
       }));
 
       setGems(transformedGems);
@@ -73,7 +74,8 @@ export const useGems = () => {
           old_code: gemData.oldCode,
           stone_description: gemData.stoneDescription,
           shape_detail: gemData.shapeDetail,
-          box_number: gemData.boxNumber
+          box_number: gemData.boxNumber,
+          shape: gemData.shape
         }])
         .select()
         .single();
@@ -108,7 +110,8 @@ export const useGems = () => {
           old_code: gemData.oldCode,
           stone_description: gemData.stoneDescription,
           shape_detail: gemData.shapeDetail,
-          box_number: gemData.boxNumber
+          box_number: gemData.boxNumber,
+          shape: gemData.shape
         })
         .eq('id', id);
 
