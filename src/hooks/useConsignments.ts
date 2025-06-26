@@ -24,7 +24,42 @@ export const useConsignments = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setConsignments(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData = (data || []).map((consignment: any) => ({
+        id: consignment.id,
+        consignmentNumber: consignment.consignment_number,
+        customerId: consignment.customer_id,
+        dateCreated: consignment.date_created,
+        returnDate: consignment.return_date,
+        status: consignment.status,
+        notes: consignment.notes,
+        items: consignment.consignment_items?.map((item: any) => ({
+          id: item.id,
+          consignmentId: item.consignment_id,
+          gemId: item.gem_id,
+          quantity: item.quantity,
+          unitPrice: item.unit_price,
+          totalPrice: item.total_price,
+          gem: item.gems ? {
+            id: item.gems.id,
+            stockId: item.gems.stock_id,
+            gemType: item.gems.gem_type,
+            carat: item.gems.carat,
+            color: item.gems.color,
+            shape: item.gems.shape,
+            measurementsMm: item.gems.measurements_mm,
+            stoneDescription: item.gems.stone_description
+          } : undefined
+        })) || [],
+        customer: consignment.customers ? {
+          id: consignment.customers.id,
+          name: consignment.customers.name,
+          email: consignment.customers.email
+        } : undefined
+      }));
+      
+      setConsignments(transformedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch consignments');
     } finally {

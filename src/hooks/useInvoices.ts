@@ -24,7 +24,46 @@ export const useInvoices = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInvoices(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData = (data || []).map((invoice: any) => ({
+        id: invoice.id,
+        invoiceNumber: invoice.invoice_number,
+        customerId: invoice.customer_id,
+        dateCreated: invoice.date_created,
+        dateDue: invoice.date_due,
+        subtotal: invoice.subtotal,
+        taxRate: invoice.tax_rate,
+        taxAmount: invoice.tax_amount,
+        total: invoice.total,
+        status: invoice.status,
+        notes: invoice.notes,
+        items: invoice.invoice_items?.map((item: any) => ({
+          id: item.id,
+          invoiceId: item.invoice_id,
+          gemId: item.gem_id,
+          quantity: item.quantity,
+          unitPrice: item.unit_price,
+          totalPrice: item.total_price,
+          gem: item.gems ? {
+            id: item.gems.id,
+            stockId: item.gems.stock_id,
+            gemType: item.gems.gem_type,
+            carat: item.gems.carat,
+            color: item.gems.color,
+            shape: item.gems.shape,
+            measurementsMm: item.gems.measurements_mm,
+            stoneDescription: item.gems.stone_description
+          } : undefined
+        })) || [],
+        customer: invoice.customers ? {
+          id: invoice.customers.id,
+          name: invoice.customers.name,
+          email: invoice.customers.email
+        } : undefined
+      }));
+      
+      setInvoices(transformedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch invoices');
     } finally {
