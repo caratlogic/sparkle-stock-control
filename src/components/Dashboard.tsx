@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { GemTable } from './GemTable';
 import { GemForm } from './GemForm';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { InvoiceCreation } from './InvoiceCreation';
 import { useGems } from '@/hooks/useGems';
 import { Button } from '@/components/ui/button';
-import { Plus, Package, FileText } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 type View = 'inventory' | 'gemCreation' | 'gemEdit' | 'invoiceCreation' | 'consignmentCreation';
 
@@ -15,10 +16,6 @@ export const Dashboard = () => {
   const [selectedGem, setSelectedGem] = useState(null);
   const [selectedGemForInvoice, setSelectedGemForInvoice] = useState(null);
   const [selectedGemForConsignment, setSelectedGemForConsignment] = useState(null);
-
-  useEffect(() => {
-    refetch();
-  }, [activeView, refetch]);
 
   const handleCreateGem = () => {
     setActiveView('gemCreation');
@@ -32,7 +29,8 @@ export const Dashboard = () => {
   const handleDeleteGem = async (id) => {
     const result = await deleteGem(id);
     if (result.success) {
-      refetch();
+      // Don't call refetch here as deleteGem already does it
+      console.log('Gem deleted successfully');
     } else {
       alert(result.error || 'Failed to delete gem');
     }
@@ -59,7 +57,7 @@ export const Dashboard = () => {
     if (result.success) {
       setActiveView('inventory');
       setSelectedGem(null);
-      refetch();
+      // Don't call refetch here as updateGem/addGem already does it
     } else {
       alert(result.error || 'Failed to save gem');
     }
@@ -68,6 +66,8 @@ export const Dashboard = () => {
   const handleCancel = () => {
     setActiveView('inventory');
     setSelectedGem(null);
+    setSelectedGemForInvoice(null);
+    setSelectedGemForConsignment(null);
   };
 
   return (
@@ -110,21 +110,21 @@ export const Dashboard = () => {
         />
       )}
 
-        {activeView === 'invoiceCreation' && (
-          <InvoiceCreation
-            gems={gems}
-            onCancel={() => setActiveView('inventory')}
-            selectedGem={selectedGemForInvoice}
-          />
-        )}
+      {activeView === 'invoiceCreation' && (
+        <InvoiceCreation
+          gems={gems}
+          onCancel={handleCancel}
+          selectedGem={selectedGemForInvoice}
+        />
+      )}
 
-        {activeView === 'consignmentCreation' && (
-          <ConsignmentCreation
-            gems={gems}
-            onCancel={() => setActiveView('inventory')}
-            selectedGem={selectedGemForConsignment}
-          />
-        )}
+      {activeView === 'consignmentCreation' && (
+        <ConsignmentCreation
+          gems={gems}
+          onCancel={handleCancel}
+          selectedGem={selectedGemForConsignment}
+        />
+      )}
     </div>
   );
 };

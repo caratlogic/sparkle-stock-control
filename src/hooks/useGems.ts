@@ -90,35 +90,48 @@ export const useGems = () => {
 
   const updateGem = async (id: string, gemData: Partial<Gem>) => {
     try {
+      console.log('Updating gem with ID:', id);
+      console.log('Gem data:', gemData);
+
+      // Prepare the update object with proper field mapping
+      const updateData: any = {};
+      
+      if (gemData.gemType !== undefined) updateData.gem_type = gemData.gemType;
+      if (gemData.carat !== undefined) updateData.carat = gemData.carat;
+      if (gemData.color !== undefined) updateData.color = gemData.color;
+      if (gemData.price !== undefined) updateData.price = gemData.price;
+      if (gemData.costPrice !== undefined) updateData.cost_price = gemData.costPrice;
+      if (gemData.certificateNumber !== undefined) updateData.certificate_number = gemData.certificateNumber;
+      if (gemData.status !== undefined) updateData.status = gemData.status;
+      if (gemData.notes !== undefined) updateData.notes = gemData.notes;
+      if (gemData.imageUrl !== undefined) updateData.image_url = gemData.imageUrl;
+      if (gemData.measurementsMm !== undefined) updateData.measurements_mm = gemData.measurementsMm;
+      if (gemData.priceInLetters !== undefined) updateData.price_in_letters = gemData.priceInLetters;
+      if (gemData.totalInLetters !== undefined) updateData.total_in_letters = gemData.totalInLetters;
+      if (gemData.purchaseDate !== undefined) updateData.purchase_date = gemData.purchaseDate;
+      if (gemData.oldCode !== undefined) updateData.old_code = gemData.oldCode;
+      if (gemData.stoneDescription !== undefined) updateData.stone_description = gemData.stoneDescription;
+      if (gemData.shapeDetail !== undefined) updateData.shape_detail = gemData.shapeDetail;
+      if (gemData.boxNumber !== undefined) updateData.box_number = gemData.boxNumber;
+      if (gemData.shape !== undefined) updateData.shape = gemData.shape;
+
+      console.log('Update data being sent:', updateData);
+
       const { error } = await supabase
         .from('gems')
-        .update({
-          gem_type: gemData.gemType,
-          carat: gemData.carat,
-          color: gemData.color,
-          price: gemData.price,
-          cost_price: gemData.costPrice,
-          certificate_number: gemData.certificateNumber,
-          status: gemData.status,
-          notes: gemData.notes,
-          image_url: gemData.imageUrl,
-          // Updated fields
-          measurements_mm: gemData.measurementsMm,
-          price_in_letters: gemData.priceInLetters,
-          total_in_letters: gemData.totalInLetters,
-          purchase_date: gemData.purchaseDate,
-          old_code: gemData.oldCode,
-          stone_description: gemData.stoneDescription,
-          shape_detail: gemData.shapeDetail,
-          box_number: gemData.boxNumber,
-          shape: gemData.shape
-        })
+        .update(updateData)
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('Update successful, fetching gems...');
       await fetchGems();
       return { success: true };
     } catch (err) {
+      console.error('Update gem error:', err);
       return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem' };
     }
   };
