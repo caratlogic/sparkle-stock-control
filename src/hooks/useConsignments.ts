@@ -6,7 +6,7 @@ interface Consignment {
   id: string;
   consignmentNumber: string;
   customerId: string;
-  status: 'pending' | 'returned' | 'purchased' | 'inactive';
+  status: 'pending' | 'returned' | 'purchased';
   dateCreated: string;
   returnDate: string;
   notes?: string;
@@ -64,7 +64,7 @@ export const useConsignments = () => {
     }
   };
 
-  const updateConsignmentStatus = async (consignmentId: string, status: 'returned' | 'purchased' | 'inactive') => {
+  const updateConsignmentStatus = async (consignmentId: string, status: 'returned' | 'purchased') => {
     try {
       const { error } = await supabase
         .from('consignments')
@@ -90,36 +90,6 @@ export const useConsignments = () => {
       return { success: true };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Failed to update consignment' };
-    }
-  };
-
-  const getConsignmentByGemId = async (gemId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('consignment_items')
-        .select(`
-          *,
-          consignments (*)
-        `)
-        .eq('gem_id', gemId)
-        .eq('consignments.status', 'pending')
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      return data ? {
-        id: data.consignments.id,
-        consignmentNumber: data.consignments.consignment_number,
-        customerId: data.consignments.customer_id,
-        status: data.consignments.status,
-        dateCreated: data.consignments.date_created,
-        returnDate: data.consignments.return_date,
-        notes: data.consignments.notes || undefined,
-        items: []
-      } : null;
-    } catch (err) {
-      console.error('Error fetching consignment by gem ID:', err);
-      return null;
     }
   };
 
@@ -149,7 +119,6 @@ export const useConsignments = () => {
     error,
     updateConsignmentStatus,
     deleteConsignment,
-    getConsignmentByGemId,
     refetch: fetchConsignments
   };
 };

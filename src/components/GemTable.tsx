@@ -123,11 +123,6 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
     return actions;
   };
 
-  const handleCreateInvoice = (gem: Gem) => {
-    if (!onCreateInvoice) return;
-    onCreateInvoice(gem);
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -370,8 +365,6 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                               <BarcodeDisplay 
                                 stockId={gem.stockId} 
                                 gemType={gem.gemType}
-                                color={gem.color}
-                                cut={gem.cut}
                                 size="medium"
                                 showDownload={true}
                               />
@@ -382,7 +375,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleCreateInvoice(gem)}
+                            onClick={() => onCreateInvoice!(gem)}
                             title={gem.status === 'Reserved' ? 'Create Invoice for Reserved Product' : 'Create Invoice'}
                           >
                             <FileText className="w-4 h-4 text-blue-600" />
