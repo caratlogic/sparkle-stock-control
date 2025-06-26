@@ -23,9 +23,9 @@ export const useGems = () => {
         stockId: gem.stock_id,
         gemType: gem.gem_type as any,
         carat: parseFloat(gem.carat.toString()),
-        cut: gem.cut as any,
+        cut: gem.shape as any, // Map shape to cut for frontend compatibility
         color: gem.color,
-        clarity: gem.clarity as any,
+        clarity: 'Transparent' as any, // Default clarity since it doesn't exist in DB
         price: parseFloat(gem.price.toString()),
         costPrice: parseFloat(gem.cost_price.toString()),
         certificateNumber: gem.certificate_number,
@@ -51,9 +51,8 @@ export const useGems = () => {
           stock_id: `${gemData.gemType.substring(0, 2).toUpperCase()}${String(gems.length + 1).padStart(4, '0')}`,
           gem_type: gemData.gemType,
           carat: gemData.carat,
-          cut: gemData.cut,
+          shape: gemData.cut, // Map cut to shape for database
           color: gemData.color,
-          clarity: gemData.clarity,
           price: gemData.price,
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
@@ -79,9 +78,9 @@ export const useGems = () => {
       
       if (gemData.gemType !== undefined) updateData.gem_type = gemData.gemType;
       if (gemData.carat !== undefined) updateData.carat = gemData.carat;
-      if (gemData.cut !== undefined) updateData.cut = gemData.cut;
+      if (gemData.cut !== undefined) updateData.shape = gemData.cut; // Map cut to shape
       if (gemData.color !== undefined) updateData.color = gemData.color;
-      if (gemData.clarity !== undefined) updateData.clarity = gemData.clarity;
+      // Skip clarity since it doesn't exist in the database
       if (gemData.price !== undefined) updateData.price = gemData.price;
       if (gemData.costPrice !== undefined) updateData.cost_price = gemData.costPrice;
       if (gemData.certificateNumber !== undefined) updateData.certificate_number = gemData.certificateNumber;
