@@ -29,10 +29,10 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  // Get unique colors from filtered gems
+  // Get unique colors from filtered gems - filter out empty strings
   const availableColors = filterGemType === 'all' 
-    ? Array.from(new Set(gems.map(gem => gem.color)))
-    : GEM_COLORS[filterGemType as keyof typeof GEM_COLORS] || [];
+    ? Array.from(new Set(gems.map(gem => gem.color).filter(color => color && color.trim() !== '')))
+    : (GEM_COLORS[filterGemType as keyof typeof GEM_COLORS] || []).filter(color => color && color.trim() !== '');
 
   // Filter and sort gems
   const filteredGems = gems
@@ -124,8 +124,9 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   };
 
   const handleCreateInvoice = (gem: Gem) => {
-    if (!onCreateInvoice) return;
-    onCreateInvoice(gem);
+    if (onCreateInvoice) {
+      onCreateInvoice(gem);
+    }
   };
 
   return (
@@ -388,11 +389,11 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                             <FileText className="w-4 h-4 text-blue-600" />
                           </Button>
                         )}
-                        {availableActions.includes('consignment') && (
+                        {availableActions.includes('consignment') && onCreateConsignment && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => onCreateConsignment!(gem)}
+                            onClick={() => onCreateConsignment(gem)}
                             title="Create Consignment"
                           >
                             <Receipt className="w-4 h-4 text-purple-600" />
