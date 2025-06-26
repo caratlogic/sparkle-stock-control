@@ -26,7 +26,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   const [filterColor, setFilterColor] = useState('all');
   const [filterCut, setFilterCut] = useState('all');
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
-  const [sortDirection, setSortDirection = useState<'asc' | 'desc'>('desc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Get unique colors from filtered gems
   const availableColors = filterGemType === 'all' 
