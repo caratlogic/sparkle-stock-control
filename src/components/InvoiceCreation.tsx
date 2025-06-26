@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { Gem } from '../types/gem';
 import { sampleCustomers } from '../data/sampleCustomers';
 import { sampleGems } from '../data/sampleGems';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
+import { useConsignments } from '../hooks/useConsignments';
 
 interface InvoiceCreationProps {
   onCancel: () => void;
@@ -22,6 +22,7 @@ interface InvoiceCreationProps {
 }
 
 export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: InvoiceCreationProps) => {
+  const { getConsignmentByGemId, updateConsignmentStatus } = useConsignments();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer || null);
   const [customerSearch, setCustomerSearch] = useState(preselectedCustomer?.name || '');
   const [items, setItems] = useState<InvoiceItem[]>([]);
@@ -30,8 +31,9 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const [quantity, setQuantity] = useState(1);
   const [taxRate, setTaxRate] = useState(8.5);
   const [notes, setNotes] = useState('');
+  const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
 
-  // Auto-add preselected gem to items
+  // Auto-add preselected gem to items and check for existing consignment
   useEffect(() => {
     if (preselectedGem && items.length === 0) {
       const newItem: InvoiceItem = {
@@ -51,8 +53,23 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         totalPrice: preselectedGem.price,
       };
       setItems([newItem]);
+
+      // If gem is reserved, check for existing consignment
+      if (preselectedGem.status === 'Reserved') {
+        getConsignmentByGemId(preselectedGem.id).then(consignment => {
+          if (consignment) {
+            setRelatedConsignmentId(consignment.id);
+            // Auto-select customer from consignment
+            const consignmentCustomer = sampleCustomers.find(c => c.id === consignment.customerId);
+            if (consignmentCustomer && !selectedCustomer) {
+              setSelectedCustomer(consignmentCustomer);
+              setCustomerSearch(consignmentCustomer.name);
+            }
+          }
+        });
+      }
     }
-  }, [preselectedGem]);
+  }, [preselectedGem, selectedCustomer]);
 
   // Customer search results
   const customerResults = sampleCustomers.filter(customer =>
@@ -111,7 +128,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const taxAmount = (subtotal * taxRate) / 100;
   const total = subtotal + taxAmount;
 
-  const handleSaveInvoice = () => {
+  const handleSaveInvoice = async () => {
     if (!selectedCustomer || items.length === 0) return;
 
     const invoice: Invoice = {
@@ -129,6 +146,11 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
       dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       notes,
     };
+
+    // If there's a related consignment, mark it as inactive
+    if (relatedConsignmentId) {
+      await updateConsignmentStatus(relatedConsignmentId, 'inactive');
+    }
 
     onSave(invoice);
   };
@@ -165,6 +187,11 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Create Invoice</h2>
           <p className="text-slate-600">Generate a new invoice for gem sales</p>
+          {relatedConsignmentId && (
+            <p className="text-amber-600 text-sm mt-1">
+              Note: This invoice is for a reserved item from an active consignment
+            </p>
+          )}
         </div>
       </div>
 

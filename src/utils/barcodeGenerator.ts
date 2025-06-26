@@ -1,9 +1,16 @@
 
 import JsBarcode from 'jsbarcode';
 
-export const generateBarcode = (stockId: string): string => {
+export const generateBarcode = (stockId: string, gemType?: string, color?: string, cut?: string): string => {
   // Create a canvas element
   const canvas = document.createElement('canvas');
+  
+  // Create display text with additional gem information
+  let displayText = stockId;
+  if (gemType || color || cut) {
+    const additionalInfo = [gemType, color, cut].filter(Boolean).join(' ');
+    displayText = `${stockId} | ${additionalInfo}`;
+  }
   
   // Generate barcode using CODE128 format
   JsBarcode(canvas, stockId, {
@@ -11,7 +18,8 @@ export const generateBarcode = (stockId: string): string => {
     width: 2,
     height: 100,
     displayValue: true,
-    fontSize: 16,
+    text: displayText,
+    fontSize: 14,
     margin: 10
   });
   
@@ -19,8 +27,8 @@ export const generateBarcode = (stockId: string): string => {
   return canvas.toDataURL('image/png');
 };
 
-export const downloadBarcode = (stockId: string, gemType: string) => {
-  const barcodeDataUrl = generateBarcode(stockId);
+export const downloadBarcode = (stockId: string, gemType: string, color?: string, cut?: string) => {
+  const barcodeDataUrl = generateBarcode(stockId, gemType, color, cut);
   
   // Create a download link
   const link = document.createElement('a');

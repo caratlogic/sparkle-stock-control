@@ -365,6 +365,8 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                               <BarcodeDisplay 
                                 stockId={gem.stockId} 
                                 gemType={gem.gemType}
+                                color={gem.color}
+                                cut={gem.cut}
                                 size="medium"
                                 showDownload={true}
                               />
