@@ -175,10 +175,10 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
 
             <Select value={filterCut} onValueChange={setFilterCut}>
               <SelectTrigger className="w-full sm:w-32 bg-slate-50 border-slate-200">
-                <SelectValue placeholder="Shape" />
+                <SelectValue placeholder="Cut" />
               </SelectTrigger>
               <SelectContent className="bg-white border-slate-200">
-                <SelectItem value="all">All Shapes</SelectItem>
+                <SelectItem value="all">All Cuts</SelectItem>
                 {CUT_OPTIONS.map((cut) => (
                   <SelectItem key={cut} value={cut}>{cut}</SelectItem>
                 ))}
@@ -239,7 +239,7 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                     <ArrowUpDown className="w-4 h-4" />
                   </div>
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Shape</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Cut</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Color</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Clarity</th>
                 <th 
