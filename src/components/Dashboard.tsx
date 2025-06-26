@@ -14,6 +14,7 @@ import { CustomerDashboard } from './CustomerDashboard';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { TransactionDashboard } from './TransactionDashboard';
+import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -23,7 +24,8 @@ import {
   Users, 
   FileText,
   Gem as GemIcon,
-  Receipt
+  Receipt,
+  PieChart
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -162,7 +164,7 @@ export const Dashboard = () => {
               </div>
               <Button
                 onClick={() => setActiveTab('add-gem')}
-                className="bg-diamond-gradient hover:opacity-90"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Gem
@@ -220,6 +222,14 @@ export const Dashboard = () => {
             consignments={consignments}
           />
         );
+      case 'analytics':
+        return (
+          <AnalyticsDashboard
+            gems={gems}
+            customers={sampleCustomers}
+            invoices={invoices}
+          />
+        );
       default:
         return (
           <div className="space-y-6">
@@ -227,7 +237,7 @@ export const Dashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-3xl font-bold text-slate-800">Dashboard</h2>
-                <p className="text-slate-600 mt-2">Welcome to your gem inventory management system</p>
+                <p className="text-slate-600 mt-2">Welcome to your gems inventory management system</p>
               </div>
               <div className="flex space-x-4">
                 <Select value={selectedGemType} onValueChange={setSelectedGemType}>
@@ -246,7 +256,7 @@ export const Dashboard = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="diamond-sparkle">
+              <Card className="gem-sparkle">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-slate-600">Total Inventory Value</CardTitle>
                   <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -261,7 +271,7 @@ export const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="diamond-sparkle">
+              <Card className="gem-sparkle">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-slate-600">Total Gems</CardTitle>
                   <Package className="h-4 w-4 text-blue-600" />
@@ -274,7 +284,7 @@ export const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="diamond-sparkle">
+              <Card className="gem-sparkle">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-slate-600">In Stock</CardTitle>
                   <BarChart3 className="h-4 w-4 text-green-600" />
@@ -285,7 +295,7 @@ export const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="diamond-sparkle">
+              <Card className="gem-sparkle">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-slate-600">Sold</CardTitle>
                   <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -313,7 +323,7 @@ export const Dashboard = () => {
                   {filteredGems.slice(0, 5).map((gem) => (
                     <div key={gem.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                       <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-diamond-gradient rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                           <GemIcon className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -355,7 +365,7 @@ export const Dashboard = () => {
               onClick={() => setActiveTab('dashboard')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'dashboard'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-purple-500 text-purple-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >
@@ -366,7 +376,7 @@ export const Dashboard = () => {
               onClick={() => setActiveTab('inventory')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'inventory' || activeTab === 'add-gem' || activeTab === 'edit-gem'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-purple-500 text-purple-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >
@@ -377,7 +387,7 @@ export const Dashboard = () => {
               onClick={() => setActiveTab('customers')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'customers'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-purple-500 text-purple-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >
@@ -385,10 +395,21 @@ export const Dashboard = () => {
               Customers
             </button>
             <button
+              onClick={() => setActiveTab('analytics')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'analytics'
+                  ? 'border-purple-500 text-purple-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <PieChart className="w-4 h-4 inline mr-2" />
+              Analytics
+            </button>
+            <button
               onClick={() => setActiveTab('create-invoice')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'create-invoice'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-purple-500 text-purple-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >
@@ -399,7 +420,7 @@ export const Dashboard = () => {
               onClick={() => setActiveTab('create-consignment')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'create-consignment'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-purple-500 text-purple-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >
@@ -410,7 +431,7 @@ export const Dashboard = () => {
               onClick={() => setActiveTab('transactions')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'transactions'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-purple-500 text-purple-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
               }`}
             >

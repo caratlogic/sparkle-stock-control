@@ -1,5 +1,5 @@
 
-import { Diamond, LogOut, User } from 'lucide-react';
+import { Gem, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,11 +12,11 @@ export const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-diamond-gradient rounded-lg flex items-center justify-center">
-              <Diamond className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Gem className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-800">Diamond Inventory</h1>
+              <h1 className="text-xl font-bold text-slate-800">GEMS Inventory</h1>
             </div>
           </div>
           
