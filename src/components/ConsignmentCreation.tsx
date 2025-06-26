@@ -126,7 +126,14 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
   };
 
   const handleSaveConsignment = () => {
-    if (!selectedCustomer || items.length === 0 || !returnDate) return;
+    if (!selectedCustomer || items.length === 0 || !returnDate) {
+      console.log('Validation failed:', {
+        hasCustomer: !!selectedCustomer,
+        hasItems: items.length > 0,
+        hasReturnDate: !!returnDate
+      });
+      return;
+    }
 
     const consignment: Consignment = {
       id: Date.now().toString(),
@@ -142,6 +149,17 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
 
     onSave(consignment);
   };
+
+  // Check if form is valid
+  const isFormValid = selectedCustomer && items.length > 0 && returnDate.trim() !== '';
+  
+  console.log('Form validation:', {
+    selectedCustomer: !!selectedCustomer,
+    itemsLength: items.length,
+    returnDate: returnDate,
+    returnDateValid: returnDate.trim() !== '',
+    isFormValid
+  });
 
   const downloadConsignment = () => {
     if (!selectedCustomer || items.length === 0) return;
@@ -436,7 +454,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
         </Button>
         <Button
           onClick={downloadConsignment}
-          disabled={!selectedCustomer || items.length === 0 || !returnDate}
+          disabled={!isFormValid}
           variant="outline"
         >
           <Download className="w-4 h-4 mr-2" />
@@ -444,7 +462,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
         </Button>
         <Button
           onClick={handleSaveConsignment}
-          disabled={!selectedCustomer || items.length === 0 || !returnDate}
+          disabled={!isFormValid}
           className="bg-diamond-gradient hover:opacity-90"
         >
           <FileText className="w-4 h-4 mr-2" />
