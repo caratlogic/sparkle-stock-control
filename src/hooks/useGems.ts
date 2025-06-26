@@ -74,27 +74,37 @@ export const useGems = () => {
 
   const updateGem = async (id: string, gemData: Partial<Gem>) => {
     try {
+      // Only include fields that exist in the database schema
+      const updateData: any = {};
+      
+      if (gemData.gemType !== undefined) updateData.gem_type = gemData.gemType;
+      if (gemData.carat !== undefined) updateData.carat = gemData.carat;
+      if (gemData.cut !== undefined) updateData.cut = gemData.cut;
+      if (gemData.color !== undefined) updateData.color = gemData.color;
+      if (gemData.clarity !== undefined) updateData.clarity = gemData.clarity;
+      if (gemData.price !== undefined) updateData.price = gemData.price;
+      if (gemData.costPrice !== undefined) updateData.cost_price = gemData.costPrice;
+      if (gemData.certificateNumber !== undefined) updateData.certificate_number = gemData.certificateNumber;
+      if (gemData.status !== undefined) updateData.status = gemData.status;
+      if (gemData.notes !== undefined) updateData.notes = gemData.notes;
+      if (gemData.imageUrl !== undefined) updateData.image_url = gemData.imageUrl;
+
+      console.log('Updating gem with data:', updateData);
+
       const { error } = await supabase
         .from('gems')
-        .update({
-          gem_type: gemData.gemType,
-          carat: gemData.carat,
-          cut: gemData.cut,
-          color: gemData.color,
-          clarity: gemData.clarity,
-          price: gemData.price,
-          cost_price: gemData.costPrice,
-          certificate_number: gemData.certificateNumber,
-          status: gemData.status,
-          notes: gemData.notes,
-          image_url: gemData.imageUrl
-        })
+        .update(updateData)
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+      
       await fetchGems();
       return { success: true };
     } catch (err) {
+      console.error('Update gem error:', err);
       return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem' };
     }
   };
