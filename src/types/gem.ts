@@ -16,6 +16,15 @@ export interface Gem {
   dateAdded: string;
   notes?: string;
   imageUrl?: string;
+  consignmentInfo?: {
+    id: string;
+    consignmentNumber: string;
+    customerId: string;
+    status: string;
+    dateCreated: string;
+    returnDate: string;
+    notes?: string;
+  };
 }
 
 export const GEM_TYPES = [
