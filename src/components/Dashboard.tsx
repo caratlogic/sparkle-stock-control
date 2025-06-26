@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -358,7 +359,7 @@ export const Dashboard = () => {
                         <div>
                           <div className="font-medium text-slate-800">{gem.stockId}</div>
                           <div className="text-sm text-slate-500">
-                            {gem.carat}ct {gem.gemType} {gem.cut} - {gem.color} {gem.clarity}
+                            {gem.carat}ct {gem.gemType} {gem.measurementsMm || ''} - {gem.color} {gem.stoneDescription || ''}
                           </div>
                         </div>
                       </div>

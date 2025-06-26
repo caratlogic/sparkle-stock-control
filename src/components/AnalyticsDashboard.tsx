@@ -84,29 +84,30 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
     sold: data.soldValue
   })).slice(0, 8);
 
-  // Analytics by Cut (Shape)
-  const cutAnalytics = gems.reduce((acc, gem) => {
-    if (!acc[gem.cut]) {
-      acc[gem.cut] = { 
+  // Analytics by Shape/Description (replacing cut analytics)
+  const shapeAnalytics = gems.reduce((acc, gem) => {
+    const shape = gem.shapeDetail || gem.stoneDescription || 'Unknown';
+    if (!acc[shape]) {
+      acc[shape] = { 
         count: 0, 
         totalValue: 0, 
         soldCount: 0, 
         soldValue: 0 
       };
     }
-    acc[gem.cut].count++;
-    acc[gem.cut].totalValue += gem.price;
+    acc[shape].count++;
+    acc[shape].totalValue += gem.price;
     
     if (gem.status === 'Sold') {
-      acc[gem.cut].soldCount++;
-      acc[gem.cut].soldValue += gem.price;
+      acc[shape].soldCount++;
+      acc[shape].soldValue += gem.price;
     }
     
     return acc;
   }, {} as Record<string, any>);
 
-  const cutChartData = Object.entries(cutAnalytics).map(([cut, data]) => ({
-    name: cut,
+  const shapeChartData = Object.entries(shapeAnalytics).map(([shape, data]) => ({
+    name: shape,
     count: data.count,
     value: data.totalValue,
     sold: data.soldValue
@@ -274,11 +275,11 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
 
         <Card>
           <CardHeader>
-            <CardTitle>Popular Cuts/Shapes</CardTitle>
+            <CardTitle>Popular Shapes/Descriptions</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={cutChartData}>
+              <BarChart data={shapeChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />

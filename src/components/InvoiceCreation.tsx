@@ -53,9 +53,9 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         productDetails: {
           stockId: preselectedGem.stockId,
           carat: preselectedGem.carat,
-          cut: preselectedGem.cut,
+          measurementsMm: preselectedGem.measurementsMm,
           color: preselectedGem.color,
-          clarity: preselectedGem.clarity,
+          stoneDescription: preselectedGem.stoneDescription,
           certificateNumber: preselectedGem.certificateNumber,
           gemType: preselectedGem.gemType,
         },
@@ -104,7 +104,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
 
   const handleProductSelect = (product: Gem) => {
     setSelectedProduct(product);
-    setProductSearch(`${product.stockId} - ${product.carat}ct ${product.gemType} ${product.cut}`);
+    setProductSearch(`${product.stockId} - ${product.carat}ct ${product.gemType}`);
   };
 
   const handleAddItem = () => {
@@ -116,9 +116,9 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
       productDetails: {
         stockId: selectedProduct.stockId,
         carat: selectedProduct.carat,
-        cut: selectedProduct.cut,
+        measurementsMm: selectedProduct.measurementsMm,
         color: selectedProduct.color,
-        clarity: selectedProduct.clarity,
+        stoneDescription: selectedProduct.stoneDescription,
         certificateNumber: selectedProduct.certificateNumber,
         gemType: selectedProduct.gemType,
       },
@@ -355,7 +355,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                       >
                         <div className="font-medium">{product.stockId}</div>
                         <div className="text-sm text-slate-500">
-                          {product.carat}ct {product.gemType} {product.cut} {product.color} {product.clarity} - ${product.price.toLocaleString()}
+                          {product.carat}ct {product.gemType} {product.measurementsMm || ''} {product.color} {product.stoneDescription || ''} - ${product.price.toLocaleString()}
                         </div>
                       </div>
                     ))}
@@ -396,7 +396,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                       <div className="flex-1">
                         <div className="font-medium">{item.productDetails.stockId}</div>
                         <div className="text-sm text-slate-600">
-                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color} {item.productDetails.clarity}
+                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.measurementsMm || ''} {item.productDetails.color} {item.productDetails.stoneDescription || ''}
                         </div>
                         <div className="text-sm text-slate-500">
                           Cert: {item.productDetails.certificateNumber}
