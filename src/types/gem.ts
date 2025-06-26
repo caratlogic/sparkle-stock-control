@@ -6,7 +6,9 @@ export interface Gem {
   stockId: string;
   gemType: GemType;
   carat: number;
-  color: string;
+  cut: 'Round' | 'Princess' | 'Emerald' | 'Asscher' | 'Marquise' | 'Oval' | 'Radiant' | 'Pear' | 'Heart' | 'Cushion' | 'Cabochon' | 'Faceted' | 'Raw';
+  color: string; // More flexible for different gem types
+  clarity: 'IF' | 'VVS1' | 'VVS2' | 'VS1' | 'VS2' | 'SI1' | 'SI2' | 'I1' | 'I2' | 'I3' | 'Transparent' | 'Translucent' | 'Opaque';
   price: number;
   costPrice: number;
   certificateNumber: string;
@@ -14,16 +16,6 @@ export interface Gem {
   dateAdded: string;
   notes?: string;
   imageUrl?: string;
-  // New fields from database
-  measurementsMm?: string;
-  priceInLetters?: string;
-  totalInLetters?: string;
-  purchaseDate?: string;
-  oldCode?: string;
-  stoneDescription?: string;
-  shapeDetail?: string;
-  boxNumber?: string;
-  shape?: string; // New shape field
   consignmentInfo?: {
     id: string;
     consignmentNumber: string;
@@ -40,14 +32,17 @@ export const GEM_TYPES = [
   'Aquamarine', 'Garnet', 'Opal', 'Topaz', 'Tourmaline'
 ] as const;
 
-export const STATUS_OPTIONS = [
-  'In Stock', 'Sold', 'Reserved'
+export const CUT_OPTIONS = [
+  'Round', 'Princess', 'Emerald', 'Asscher', 'Marquise', 
+  'Oval', 'Radiant', 'Pear', 'Heart', 'Cushion', 'Cabochon', 'Faceted', 'Raw'
 ] as const;
 
-// Shape options for gems
-export const GEM_SHAPES = [
-  'Round', 'Princess', 'Emerald', 'Asscher', 'Oval', 'Radiant',
-  'Cushion', 'Heart', 'Pear', 'Marquise', 'Baguette', 'Trillion'
+export const CLARITY_OPTIONS = [
+  'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'I1', 'I2', 'I3', 'Transparent', 'Translucent', 'Opaque'
+] as const;
+
+export const STATUS_OPTIONS = [
+  'In Stock', 'Sold', 'Reserved'
 ] as const;
 
 // Color options by gem type

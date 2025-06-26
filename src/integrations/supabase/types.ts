@@ -166,78 +166,57 @@ export type Database = {
       }
       gems: {
         Row: {
-          box_number: string | null
           carat: number
           certificate_number: string
+          clarity: string
           color: string
           cost_price: number
           created_at: string | null
+          cut: string
           date_added: string
           gem_type: string
           id: string
           image_url: string | null
-          measurements_mm: string | null
           notes: string | null
-          old_code: string | null
           price: number
-          price_in_letters: string | null
-          purchase_date: string | null
-          shape: string | null
-          shape_detail: string | null
           status: string
           stock_id: string
-          stone_description: string | null
-          total_in_letters: string | null
           updated_at: string | null
         }
         Insert: {
-          box_number?: string | null
           carat: number
           certificate_number: string
+          clarity: string
           color: string
           cost_price: number
           created_at?: string | null
+          cut: string
           date_added?: string
           gem_type: string
           id?: string
           image_url?: string | null
-          measurements_mm?: string | null
           notes?: string | null
-          old_code?: string | null
           price: number
-          price_in_letters?: string | null
-          purchase_date?: string | null
-          shape?: string | null
-          shape_detail?: string | null
           status?: string
           stock_id: string
-          stone_description?: string | null
-          total_in_letters?: string | null
           updated_at?: string | null
         }
         Update: {
-          box_number?: string | null
           carat?: number
           certificate_number?: string
+          clarity?: string
           color?: string
           cost_price?: number
           created_at?: string | null
+          cut?: string
           date_added?: string
           gem_type?: string
           id?: string
           image_url?: string | null
-          measurements_mm?: string | null
           notes?: string | null
-          old_code?: string | null
           price?: number
-          price_in_letters?: string | null
-          purchase_date?: string | null
-          shape?: string | null
-          shape_detail?: string | null
           status?: string
           stock_id?: string
-          stone_description?: string | null
-          total_in_letters?: string | null
           updated_at?: string | null
         }
         Relationships: []

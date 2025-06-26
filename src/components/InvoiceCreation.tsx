@@ -5,433 +5,460 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, ArrowLeft, Save, FileText, Plus, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { Gem } from '@/types/gem';
-import { Customer } from '@/types/customer';
-import { useCustomers } from '@/hooks/useCustomers';
-import { useInvoices } from '@/hooks/useInvoices';
-import { toast } from 'sonner';
+import { ArrowLeft, Save, Plus, Trash2, FileText, Download } from 'lucide-react';
+import { Customer } from '../types/customer';
+import { Invoice, InvoiceItem } from '../types/customer';
+import { Gem } from '../types/gem';
+import { sampleGems } from '../data/sampleGems';
+import { generateInvoicePDF } from '../utils/pdfGenerator';
+import { useConsignments } from '../hooks/useConsignments';
+import { useCustomers } from '../hooks/useCustomers';
 
 interface InvoiceCreationProps {
-  gems: Gem[];
   onCancel: () => void;
-  selectedGem?: Gem;
+  onSave: (invoice: Invoice) => void;
+  preselectedGem?: Gem | null;
+  preselectedCustomer?: Customer | null;
 }
 
-export const InvoiceCreation = ({ gems, onCancel, selectedGem }: InvoiceCreationProps) => {
-  const { customers } = useCustomers();
-  const { createInvoice } = useInvoices();
-  
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [dueDate, setDueDate] = useState<Date>();
-  const [notes, setNotes] = useState('');
+export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: InvoiceCreationProps) => {
+  const { getConsignmentByGemId, updateConsignmentStatus } = useConsignments();
+  const { customers } = useCustomers(); // Use actual customer data from database
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer || null);
+  const [customerSearch, setCustomerSearch] = useState(preselectedCustomer?.name || '');
+  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
+  const [quantity, setQuantity] = useState(1);
   const [taxRate, setTaxRate] = useState(8.5);
-  const [selectedGems, setSelectedGems] = useState<Array<{
-    gem: Gem;
-    quantity: number;  
-    unitPrice: number;
-  }>>([]);
+  const [discount, setDiscount] = useState(0);
+  const [notes, setNotes] = useState('');
+  const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
 
-  // Initialize with selected gem if provided
+  // Set discount when customer is selected
   useEffect(() => {
-    if (selectedGem) {
-      const gemData = {
-        stockId: selectedGem.stockId,
-        carat: selectedGem.carat,
-        shape: selectedGem.shape || '',
-        color: selectedGem.color,
-        measurementsMm: selectedGem.measurementsMm || '',
-        certificateNumber: selectedGem.certificateNumber,
-        gemType: selectedGem.gemType,
-        stoneDescription: selectedGem.stoneDescription || ''
-      };
-      
-      setSelectedGems([{
-        gem: selectedGem,
+    if (selectedCustomer) {
+      console.log('Setting discount for customer:', selectedCustomer.name, 'discount:', selectedCustomer.discount);
+      setDiscount(selectedCustomer.discount || 0);
+    }
+  }, [selectedCustomer]);
+
+  // Auto-add preselected gem to items and check for existing consignment
+  useEffect(() => {
+    if (preselectedGem && items.length === 0) {
+      const newItem: InvoiceItem = {
+        productId: preselectedGem.id,
+        productType: preselectedGem.gemType.toLowerCase() as 'diamond',
+        productDetails: {
+          stockId: preselectedGem.stockId,
+          carat: preselectedGem.carat,
+          cut: preselectedGem.cut,
+          color: preselectedGem.color,
+          clarity: preselectedGem.clarity,
+          certificateNumber: preselectedGem.certificateNumber,
+          gemType: preselectedGem.gemType,
+        },
         quantity: 1,
-        unitPrice: selectedGem.price
-      }]);
-    }
-  }, [selectedGem]);
+        unitPrice: preselectedGem.price,
+        totalPrice: preselectedGem.price,
+      };
+      setItems([newItem]);
 
-  const handleAddGem = (gemId: string) => {
-    const gem = gems.find(g => g.id === gemId);
-    if (!gem) return;
-
-    const isAlreadySelected = selectedGems.some(sg => sg.gem.id === gem.id);
-    if (isAlreadySelected) {
-      toast.error('This gem is already selected');
-      return;
-    }
-
-    // Allow Reserved gems if they are being invoiced to the same customer who reserved them
-    if (gem.status === 'Reserved' && gem.consignmentInfo) {
-      if (!selectedCustomer || gem.consignmentInfo.customerId !== selectedCustomer.id) {
-        toast.error('This gem is reserved for another customer');
-        return;
+      // If gem is reserved, check for existing consignment
+      if (preselectedGem.status === 'Reserved') {
+        getConsignmentByGemId(preselectedGem.id).then(consignment => {
+          if (consignment) {
+            setRelatedConsignmentId(consignment.id);
+            // Auto-select customer from consignment using database customers
+            const consignmentCustomer = customers.find(c => c.id === consignment.customerId);
+            if (consignmentCustomer && !selectedCustomer) {
+              setSelectedCustomer(consignmentCustomer);
+              setCustomerSearch(consignmentCustomer.name);
+            }
+          }
+        });
       }
-    } else if (gem.status !== 'In Stock' && gem.status !== 'Reserved') {
-      toast.error('Only gems that are In Stock or Reserved can be invoiced');
-      return;
     }
+  }, [preselectedGem, selectedCustomer, customers]);
 
-    const gemData = {
-      stockId: gem.stockId,
-      carat: gem.carat,
-      shape: gem.shape || '',
-      color: gem.color,
-      measurementsMm: gem.measurementsMm || '',
-      certificateNumber: gem.certificateNumber,
-      gemType: gem.gemType,
-      stoneDescription: gem.stoneDescription || ''
+  // Customer search results - use database customers
+  const customerResults = customers.filter(customer =>
+    customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    customer.customerId.toLowerCase().includes(customerSearch.toLowerCase())
+  ).slice(0, 5);
+
+  // Product search results
+  const productResults = sampleGems.filter(gem =>
+    gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.gemType.toLowerCase().includes(productSearch.toLowerCase())
+  ).slice(0, 5);
+
+  const handleCustomerSelect = (customer: Customer) => {
+    console.log('Customer selected:', customer.name, 'with discount:', customer.discount);
+    setSelectedCustomer(customer);
+    setCustomerSearch(customer.name);
+    setDiscount(customer.discount || 0);
+  };
+
+  const handleProductSelect = (product: Gem) => {
+    setSelectedProduct(product);
+    setProductSearch(`${product.stockId} - ${product.carat}ct ${product.gemType} ${product.cut}`);
+  };
+
+  const handleAddItem = () => {
+    if (!selectedProduct) return;
+
+    const newItem: InvoiceItem = {
+      productId: selectedProduct.id,
+      productType: selectedProduct.gemType.toLowerCase() as 'diamond',
+      productDetails: {
+        stockId: selectedProduct.stockId,
+        carat: selectedProduct.carat,
+        cut: selectedProduct.cut,
+        color: selectedProduct.color,
+        clarity: selectedProduct.clarity,
+        certificateNumber: selectedProduct.certificateNumber,
+        gemType: selectedProduct.gemType,
+      },
+      quantity,
+      unitPrice: selectedProduct.price,
+      totalPrice: selectedProduct.price * quantity,
     };
 
-    setSelectedGems(prev => [...prev, {
-      gem,
-      quantity: 1,
-      unitPrice: gem.price
-    }]);
+    setItems([...items, newItem]);
+    setSelectedProduct(null);
+    setProductSearch('');
+    setQuantity(1);
   };
 
-  const handleRemoveGem = (gemId: string) => {
-    setSelectedGems(prev => prev.filter(sg => sg.gem.id !== gemId));
+  const handleRemoveItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
   };
 
-  const handleQuantityChange = (gemId: string, quantity: number) => {
-    if (quantity < 1) return;
-    setSelectedGems(prev => prev.map(sg => 
-      sg.gem.id === gemId ? { ...sg, quantity } : sg
-    ));
-  };
+  const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const discountAmount = (subtotal * discount) / 100;
+  const afterDiscount = subtotal - discountAmount;
+  const taxAmount = (afterDiscount * taxRate) / 100;
+  const total = afterDiscount + taxAmount;
 
-  const handleUnitPriceChange = (gemId: string, unitPrice: number) => {
-    if (unitPrice < 0) return;
-    setSelectedGems(prev => prev.map(sg => 
-      sg.gem.id === gemId ? { ...sg, unitPrice } : sg
-    ));
-  };
+  const handleSaveInvoice = async () => {
+    if (!selectedCustomer || items.length === 0) return;
 
-  const calculateSubtotal = () => {
-    return selectedGems.reduce((total, sg) => total + (sg.quantity * sg.unitPrice), 0);
-  };
+    const invoice: Invoice = {
+      id: Date.now().toString(),
+      invoiceNumber: `INV-${Date.now()}`,
+      customerId: selectedCustomer.id,
+      customerDetails: selectedCustomer,
+      items,
+      subtotal,
+      taxRate,
+      taxAmount,
+      total,
+      status: 'draft',
+      dateCreated: new Date().toISOString().split('T')[0],
+      dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      notes,
+    };
 
-  const calculateTaxAmount = () => {
-    return (calculateSubtotal() * taxRate) / 100;
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateTaxAmount();
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedCustomer) {
-      toast.error('Please select a customer');
-      return;
+    // If there's a related consignment, mark it as inactive
+    if (relatedConsignmentId) {
+      await updateConsignmentStatus(relatedConsignmentId, 'inactive');
     }
 
-    if (!dueDate) {
-      toast.error('Please select a due date');
-      return;
-    }
-
-    if (selectedGems.length === 0) {
-      toast.error('Please select at least one gem');
-      return;
-    }
-
-    try {
-      const subtotal = calculateSubtotal();
-      const taxAmount = calculateTaxAmount();
-      const total = calculateTotal();
-
-      const invoiceData = {
-        customerId: selectedCustomer.id,
-        dueDate: format(dueDate, 'yyyy-MM-dd'),
-        notes,
-        taxRate,
-        subtotal,
-        taxAmount,
-        total,
-        items: selectedGems.map(sg => ({
-          gemId: sg.gem.id,
-          quantity: sg.quantity,
-          unitPrice: sg.unitPrice,
-          totalPrice: sg.quantity * sg.unitPrice
-        }))
-      };
-
-      const result = await createInvoice(invoiceData);
-      
-      if (result.success) {
-        toast.success('Invoice created successfully');
-        onCancel();
-      } else {
-        toast.error(result.error || 'Failed to create invoice');
-      }
-    } catch (error) {
-      console.error('Error creating invoice:', error);
-      toast.error('Failed to create invoice');
-    }
+    onSave(invoice);
   };
 
-  const availableGems = gems.filter(gem => {
-    if (gem.status === 'In Stock') return true;
-    if (gem.status === 'Reserved' && gem.consignmentInfo) {
-      return selectedCustomer && gem.consignmentInfo.customerId === selectedCustomer.id;
-    }
-    return false;
-  });
+  const downloadInvoice = () => {
+    if (!selectedCustomer || items.length === 0) return;
+
+    const invoice: Invoice = {
+      id: Date.now().toString(),
+      invoiceNumber: `INV-${Date.now()}`,
+      customerId: selectedCustomer.id,
+      customerDetails: selectedCustomer,
+      items,
+      subtotal,
+      taxRate,
+      taxAmount,
+      total,
+      status: 'draft',
+      dateCreated: new Date().toISOString().split('T')[0],
+      dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      notes,
+    };
+
+    generateInvoicePDF(invoice);
+  };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex items-center space-x-4 mb-6">
-        <Button variant="ghost" onClick={onCancel} className="p-2">
-          <ArrowLeft className="w-5 h-5" />
+    <div className="max-w-6xl mx-auto animate-fade-in">
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" onClick={onCancel} className="mr-4">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
         </Button>
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Create Invoice</h2>
-          <p className="text-slate-600">Create a new invoice for customer</p>
+          <p className="text-slate-600">Generate a new invoice for gem sales</p>
+          {relatedConsignmentId && (
+            <p className="text-amber-600 text-sm mt-1">
+              Note: This invoice is for a reserved item from an active consignment
+            </p>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Invoice Details */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="w-5 h-5 text-slate-600" />
-                <span>Invoice Details</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="customer">Customer</Label>
-                    <Select 
-                      value={selectedCustomer?.id || ''} 
-                      onValueChange={(value) => {
-                        const customer = customers.find(c => c.id === value);
-                        setSelectedCustomer(customer || null);
-                      }}
+        {/* Customer Selection */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg">Customer Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="customer-search">Search Customer</Label>
+              <Input
+                id="customer-search"
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+                placeholder="Enter customer name or ID..."
+              />
+              {customerSearch && !selectedCustomer && customerResults.length > 0 && (
+                <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
+                  {customerResults.map((customer) => (
+                    <div
+                      key={customer.id}
+                      className="p-3 hover:bg-slate-50 cursor-pointer border-b last:border-b-0"
+                      onClick={() => handleCustomerSelect(customer)}
                     >
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select customer" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.name} ({customer.email})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Due Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal bg-slate-50 border-slate-200",
-                            !dueDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {dueDate ? format(dueDate, "PPP") : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={dueDate}
-                          onSelect={setDueDate}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                    <Input
-                      id="taxRate"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="100"
-                      value={taxRate}
-                      onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
-                      className="bg-slate-50 border-slate-200"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Additional notes about this invoice..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                    className="bg-slate-50 border-slate-200"
-                  />
-                </div>
-
-                {/* Selected Gems */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Invoice Items</h3>
-                    <Badge variant="secondary">{selectedGems.length} items</Badge>
-                  </div>
-
-                  {selectedGems.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500">
-                      No gems selected. Add gems from the available inventory.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {selectedGems.map((sg) => (
-                        <div key={sg.gem.id} className="flex items-center justify-between p-4 border rounded-lg bg-slate-50">
-                          <div className="flex-1">
-                            <div className="font-medium">{sg.gem.stockId} - {sg.gem.gemType}</div>
-                            <div className="text-sm text-slate-600">
-                              {sg.gem.carat}ct {sg.gem.color} | {sg.gem.measurementsMm} | {sg.gem.stoneDescription}
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2">
-                              <Label className="text-sm">Qty:</Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={sg.quantity}
-                                onChange={(e) => handleQuantityChange(sg.gem.id, parseInt(e.target.value) || 1)}
-                                className="w-20"
-                              />
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Label className="text-sm">Price:</Label>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={sg.unitPrice}
-                                onChange={(e) => handleUnitPriceChange(sg.gem.id, parseFloat(e.target.value) || 0)}
-                                className="w-24"
-                              />
-                            </div>
-                            <div className="font-medium">${(sg.quantity * sg.unitPrice).toLocaleString()}</div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRemoveGem(sg.gem.id)}
-                            >
-                              <Trash2 className="w-4 h-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {/* Invoice Summary */}
-                      <div className="border-t pt-4 space-y-2">
-                        <div className="flex justify-between">
-                          <span>Subtotal:</span>
-                          <span className="font-medium">${calculateSubtotal().toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Tax ({taxRate}%):</span>
-                          <span className="font-medium">${calculateTaxAmount().toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                          <span>Total:</span>
-                          <span>${calculateTotal().toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex space-x-4 pt-4">
-                  <Button
-                    type="submit"
-                    className="flex-1 bg-diamond-gradient hover:opacity-90"
-                    disabled={!selectedCustomer || !dueDate || selectedGems.length === 0}
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Create Invoice
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onCancel}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Available Gems */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Available Gems</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {availableGems.map((gem) => (
-                  <div key={gem.id} className="p-3 border rounded-lg hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{gem.stockId} - {gem.gemType}</div>
-                        <div className="text-xs text-slate-600">
-                          {gem.carat}ct {gem.color} | {gem.measurementsMm} | {gem.stoneDescription}
-                        </div>
-                        <div className="text-xs font-medium text-emerald-600">${gem.price.toLocaleString()}</div>
-                        {gem.status === 'Reserved' && (
-                          <Badge variant="outline" className="text-xs">Reserved</Badge>
+                      <div className="font-medium">{customer.name}</div>
+                      <div className="text-sm text-slate-500">
+                        {customer.customerId} - {customer.email}
+                        {customer.discount && customer.discount > 0 && (
+                          <span className="ml-2 text-blue-600">({customer.discount}% discount)</span>
                         )}
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleAddGem(gem.id)}
-                        disabled={selectedGems.some(sg => sg.gem.id === gem.id)}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {selectedCustomer && (
+              <div className="p-4 bg-slate-50 rounded-lg">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">{selectedCustomer.name}</h3>
+                    <p className="text-sm text-slate-600">{selectedCustomer.email}</p>
+                    <p className="text-sm text-slate-600">{selectedCustomer.phone}</p>
+                    {selectedCustomer.company && (
+                      <p className="text-sm text-slate-600">{selectedCustomer.company}</p>
+                    )}
+                    {selectedCustomer.discount && selectedCustomer.discount > 0 && (
+                      <p className="text-sm text-blue-600 font-medium">
+                        Customer Discount: {selectedCustomer.discount}%
+                      </p>
+                    )}
                   </div>
-                ))}
-                
-                {availableGems.length === 0 && (
-                  <div className="text-center py-8 text-slate-500">
-                    No gems available for invoicing
+                  <Badge variant="secondary">{selectedCustomer.customerId}</Badge>
+                </div>
+                <div className="mt-2 text-sm text-slate-600">
+                  {selectedCustomer.address.street}, {selectedCustomer.address.city}, {selectedCustomer.address.state} {selectedCustomer.address.zipCode}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Invoice Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Invoice Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal:</span>
+                <span>${subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Discount ({discount}%):</span>
+                <span>-${discountAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>After Discount:</span>
+                <span>${afterDiscount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Tax ({taxRate}%):</span>
+                <span>${taxAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-semibold pt-2 border-t">
+                <span>Total:</span>
+                <span>${total.toLocaleString()}</span>
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="discount">Discount (%)</Label>
+              <Input
+                id="discount"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={discount}
+                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Adjust discount for this invoice (Customer default: {selectedCustomer?.discount || 0}%)
+              </p>
+            </div>
+            
+            <div>
+              <Label htmlFor="tax-rate">Tax Rate (%)</Label>
+              <Input
+                id="tax-rate"
+                type="number"
+                step="0.1"
+                value={taxRate}
+                onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Product Selection */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="text-lg">Add Products</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="product-search">Search Gem</Label>
+                <Input
+                  id="product-search"
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  placeholder="Enter stock ID, certificate number, or gem type..."
+                />
+                {productSearch && !selectedProduct && productResults.length > 0 && (
+                  <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
+                    {productResults.map((product) => (
+                      <div
+                        key={product.id}
+                        className="p-3 hover:bg-slate-50 cursor-pointer border-b last:border-b-0"
+                        onClick={() => handleProductSelect(product)}
+                      >
+                        <div className="font-medium">{product.stockId}</div>
+                        <div className="text-sm text-slate-500">
+                          {product.carat}ct {product.gemType} {product.cut} {product.color} {product.clarity} - ${product.price.toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              
+              <div>
+                <Label htmlFor="quantity">Quantity</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                />
+              </div>
+              
+              <div className="flex items-end">
+                <Button
+                  onClick={handleAddItem}
+                  disabled={!selectedProduct}
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Item
+                </Button>
+              </div>
+            </div>
+
+            {/* Invoice Items */}
+            {items.length > 0 && (
+              <div className="mt-6">
+                <h3 className="font-semibold mb-4">Invoice Items</h3>
+                <div className="space-y-3">
+                  {items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                      <div className="flex-1">
+                        <div className="font-medium">{item.productDetails.stockId}</div>
+                        <div className="text-sm text-slate-600">
+                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color} {item.productDetails.clarity}
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          Cert: {item.productDetails.certificateNumber}
+                        </div>
+                      </div>
+                      <div className="text-right mr-4">
+                        <div className="font-medium">${item.totalPrice.toLocaleString()}</div>
+                        <div className="text-sm text-slate-500">
+                          {item.quantity} × ${item.unitPrice.toLocaleString()}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveItem(index)}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Notes */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="text-lg">Additional Notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Enter any additional notes or terms..."
+              rows={3}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex justify-end space-x-4 mt-6">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          onClick={downloadInvoice}
+          disabled={!selectedCustomer || items.length === 0}
+          variant="outline"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Download PDF
+        </Button>
+        <Button
+          onClick={handleSaveInvoice}
+          disabled={!selectedCustomer || items.length === 0}
+          className="bg-diamond-gradient hover:opacity-90"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Create Invoice
+        </Button>
       </div>
     </div>
   );
