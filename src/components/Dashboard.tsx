@@ -6,18 +6,19 @@ import { ConsignmentCreation } from './ConsignmentCreation';
 import { InvoiceCreation } from './InvoiceCreation';
 import { useGems } from '@/hooks/useGems';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 
 type View = 'inventory' | 'gemCreation' | 'gemEdit' | 'invoiceCreation' | 'consignmentCreation';
 
 export const Dashboard = () => {
-  const { gems, loading, error, addGem, updateGem, deleteGem, refetch } = useGems();
+  const { gems, loading, error, addGem, updateGem, deleteGem } = useGems();
   const [activeView, setActiveView] = useState<View>('inventory');
   const [selectedGem, setSelectedGem] = useState(null);
   const [selectedGemForInvoice, setSelectedGemForInvoice] = useState(null);
   const [selectedGemForConsignment, setSelectedGemForConsignment] = useState(null);
 
   const handleCreateGem = () => {
+    setSelectedGem(null);
     setActiveView('gemCreation');
   };
 
@@ -27,12 +28,13 @@ export const Dashboard = () => {
   };
 
   const handleDeleteGem = async (id) => {
-    const result = await deleteGem(id);
-    if (result.success) {
-      // Don't call refetch here as deleteGem already does it
-      console.log('Gem deleted successfully');
-    } else {
-      alert(result.error || 'Failed to delete gem');
+    if (window.confirm('Are you sure you want to delete this gem?')) {
+      const result = await deleteGem(id);
+      if (result.success) {
+        console.log('Gem deleted successfully');
+      } else {
+        alert(result.error || 'Failed to delete gem');
+      }
     }
   };
 
@@ -57,7 +59,6 @@ export const Dashboard = () => {
     if (result.success) {
       setActiveView('inventory');
       setSelectedGem(null);
-      // Don't call refetch here as updateGem/addGem already does it
     } else {
       alert(result.error || 'Failed to save gem');
     }
@@ -70,10 +71,37 @@ export const Dashboard = () => {
     setSelectedGemForConsignment(null);
   };
 
+  const getViewTitle = () => {
+    switch (activeView) {
+      case 'gemCreation':
+        return 'Add New Gem';
+      case 'gemEdit':
+        return `Edit Gem - ${selectedGem?.stockId}`;
+      case 'invoiceCreation':
+        return 'Create Invoice';
+      case 'consignmentCreation':
+        return 'Create Consignment';
+      default:
+        return 'Gem Inventory Dashboard';
+    }
+  };
+
   return (
     <div className="container py-12">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Gem Inventory Dashboard</h1>
+        <div className="flex items-center space-x-4">
+          {activeView !== 'inventory' && (
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Inventory</span>
+            </Button>
+          )}
+          <h1 className="text-3xl font-bold text-slate-800">{getViewTitle()}</h1>
+        </div>
         {activeView === 'inventory' && (
           <Button onClick={handleCreateGem} className="bg-diamond-gradient hover:opacity-90">
             <Plus className="w-4 h-4 mr-2" />
@@ -83,9 +111,9 @@ export const Dashboard = () => {
       </div>
 
       {loading && <div className="text-center">Loading gems...</div>}
-      {error && <div className="text-red-500 text-center">Error: {error}</div>}
+      {error && <div className="text-red-500 text-center mb-4">Error: {error}</div>}
 
-      {activeView === 'inventory' && (
+      {activeView === 'inventory' && !loading && (
         <GemTable
           gems={gems}
           onEdit={handleEditGem}
@@ -110,7 +138,7 @@ export const Dashboard = () => {
         />
       )}
 
-      {activeView === 'invoiceCreation' && (
+      {activeView === 'invoiceCreation' && selectedGemForInvoice && (
         <InvoiceCreation
           gems={gems}
           onCancel={handleCancel}
@@ -118,7 +146,7 @@ export const Dashboard = () => {
         />
       )}
 
-      {activeView === 'consignmentCreation' && (
+      {activeView === 'consignmentCreation' && selectedGemForConsignment && (
         <ConsignmentCreation
           gems={gems}
           onCancel={handleCancel}
