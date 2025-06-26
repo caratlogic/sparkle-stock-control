@@ -10,7 +10,6 @@ import { Search, Filter, Edit, Eye, ArrowUpDown, Download, FileText, Receipt, Qr
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useConsignments } from '../hooks/useConsignments';
 
 interface GemTableProps {
   gems: Gem[];
@@ -22,7 +21,6 @@ interface GemTableProps {
 
 export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateConsignment }: GemTableProps) => {
   const { isOwner } = useAuth();
-  const { getConsignmentByGemId } = useConsignments();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterGemType, setFilterGemType] = useState('all');
@@ -125,19 +123,8 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
     return actions;
   };
 
-  const handleCreateInvoice = async (gem: Gem) => {
+  const handleCreateInvoice = (gem: Gem) => {
     if (!onCreateInvoice) return;
-
-    // If gem is reserved, check for existing consignment
-    if (gem.status === 'Reserved') {
-      const consignment = await getConsignmentByGemId(gem.id);
-      if (consignment) {
-        // Pass consignment info to the invoice creation
-        onCreateInvoice({ ...gem, consignmentInfo: consignment });
-        return;
-      }
-    }
-    
     onCreateInvoice(gem);
   };
 
