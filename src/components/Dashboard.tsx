@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { GemTable } from './GemTable';
 import { GemForm } from './GemForm';
@@ -7,6 +8,9 @@ import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { CustomerDashboard } from './CustomerDashboard';
 import { TransactionDashboard } from './TransactionDashboard';
 import { useGems } from '@/hooks/useGems';
+import { useCustomers } from '@/hooks/useCustomers';
+import { useInvoices } from '@/hooks/useInvoices';
+import { useConsignments } from '@/hooks/useConsignments';
 import { Button } from '@/components/ui/button';
 import { Plus, ArrowLeft, BarChart3, Users, Receipt, Package } from 'lucide-react';
 
@@ -14,6 +18,9 @@ type View = 'inventory' | 'analytics' | 'customers' | 'transactions' | 'gemCreat
 
 export const Dashboard = () => {
   const { gems, loading, error, addGem, updateGem, deleteGem } = useGems();
+  const { customers } = useCustomers();
+  const { invoices } = useInvoices();
+  const { consignments } = useConsignments();
   const [activeView, setActiveView] = useState<View>('inventory');
   const [selectedGem, setSelectedGem] = useState(null);
   const [selectedGemForInvoice, setSelectedGemForInvoice] = useState(null);
@@ -169,7 +176,11 @@ export const Dashboard = () => {
       )}
 
       {activeView === 'analytics' && (
-        <AnalyticsDashboard />
+        <AnalyticsDashboard 
+          gems={gems}
+          customers={customers}
+          invoices={invoices}
+        />
       )}
 
       {activeView === 'customers' && (
@@ -177,7 +188,10 @@ export const Dashboard = () => {
       )}
 
       {activeView === 'transactions' && (
-        <TransactionDashboard />
+        <TransactionDashboard 
+          invoices={invoices}
+          consignments={consignments}
+        />
       )}
 
       {/* Form Views */}
