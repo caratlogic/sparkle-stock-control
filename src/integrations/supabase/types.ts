@@ -169,11 +169,9 @@ export type Database = {
           box_number: string | null
           carat: number
           certificate_number: string
-          clarity: string
           color: string
           cost_price: number
           created_at: string | null
-          cut: string
           date_added: string
           gem_type: string
           id: string
@@ -195,11 +193,9 @@ export type Database = {
           box_number?: string | null
           carat: number
           certificate_number: string
-          clarity: string
           color: string
           cost_price: number
           created_at?: string | null
-          cut: string
           date_added?: string
           gem_type: string
           id?: string
@@ -221,11 +217,9 @@ export type Database = {
           box_number?: string | null
           carat?: number
           certificate_number?: string
-          clarity?: string
           color?: string
           cost_price?: number
           created_at?: string | null
-          cut?: string
           date_added?: string
           gem_type?: string
           id?: string

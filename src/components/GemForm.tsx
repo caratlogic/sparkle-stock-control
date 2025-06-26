@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, CLARITY_OPTIONS, STATUS_OPTIONS, GEM_COLORS } from '../types/gem';
+import { Gem, GEM_TYPES, STATUS_OPTIONS, GEM_COLORS } from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image, Package } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
@@ -22,16 +22,14 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const [formData, setFormData] = useState({
     gemType: 'Diamond',
     carat: '',
-    cut: '',
     color: '',
-    clarity: '',
     price: '',
     costPrice: '',
     certificateNumber: '',
     status: 'In Stock',
     notes: '',
     imageUrl: '',
-    // New fields
+    // Updated fields
     measurementsMm: '',
     priceInLetters: '',
     totalInLetters: '',
@@ -47,16 +45,14 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       setFormData({
         gemType: gem.gemType,
         carat: gem.carat.toString(),
-        cut: gem.cut,
         color: gem.color,
-        clarity: gem.clarity,
         price: gem.price.toString(),
         costPrice: gem.costPrice.toString(),
         certificateNumber: gem.certificateNumber,
         status: gem.status,
         notes: gem.notes || '',
         imageUrl: gem.imageUrl || '',
-        // New fields
+        // Updated fields
         measurementsMm: gem.measurementsMm || '',
         priceInLetters: gem.priceInLetters || '',
         totalInLetters: gem.totalInLetters || '',
@@ -154,20 +150,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="cut">Cut</Label>
-                    <Select value={formData.cut} onValueChange={(value) => handleChange('cut', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select cut" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        {CUT_OPTIONS.map((cut) => (
-                          <SelectItem key={cut} value={cut}>{cut}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="color">Color</Label>
                     <Select value={formData.color} onValueChange={(value) => handleChange('color', value)}>
                       <SelectTrigger className="bg-slate-50 border-slate-200">
@@ -176,20 +158,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       <SelectContent className="bg-white border-slate-200">
                         {availableColors.map((color) => (
                           <SelectItem key={color} value={color}>{color}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="clarity">Clarity</Label>
-                    <Select value={formData.clarity} onValueChange={(value) => handleChange('clarity', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select clarity" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        {CLARITY_OPTIONS.map((clarity) => (
-                          <SelectItem key={clarity} value={clarity}>{clarity}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

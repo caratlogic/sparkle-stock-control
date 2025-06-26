@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, GEM_COLORS, CUT_OPTIONS } from '../types/gem';
+import { Gem, GEM_TYPES, GEM_COLORS } from '../types/gem';
 import { Search, Filter, Edit, Eye, ArrowUpDown, Download, FileText, Receipt, QrCode, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
@@ -25,7 +24,6 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterGemType, setFilterGemType] = useState('all');
   const [filterColor, setFilterColor] = useState('all');
-  const [filterCut, setFilterCut] = useState('all');
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -40,17 +38,16 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
       const matchesSearch = 
         gem.stockId.toLowerCase().includes(searchTerm.toLowerCase()) ||
         gem.certificateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.cut.toLowerCase().includes(searchTerm.toLowerCase()) ||
         gem.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.clarity.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.gemType.toLowerCase().includes(searchTerm.toLowerCase());
+        gem.gemType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (gem.measurementsMm?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (gem.stoneDescription?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
       
       const matchesStatus = filterStatus === 'all' || gem.status === filterStatus;
       const matchesGemType = filterGemType === 'all' || gem.gemType === filterGemType;
       const matchesColor = filterColor === 'all' || gem.color === filterColor;
-      const matchesCut = filterCut === 'all' || gem.cut === filterCut;
       
-      return matchesSearch && matchesStatus && matchesGemType && matchesColor && matchesCut;
+      return matchesSearch && matchesStatus && matchesGemType && matchesColor;
     })
     .sort((a, b) => {
       const aValue = a[sortField];
@@ -79,16 +76,16 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Clarity', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Color', 'Measurements', 'Description', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
         gem.stockId,
         gem.gemType,
         gem.carat,
-        gem.cut,
         gem.color,
-        gem.clarity,
+        gem.measurementsMm || '',
+        gem.stoneDescription || '',
         gem.price,
         ...(isOwner ? [gem.costPrice] : []),
         gem.certificateNumber,
@@ -172,18 +169,6 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                 ))}
               </SelectContent>
             </Select>
-
-            <Select value={filterCut} onValueChange={setFilterCut}>
-              <SelectTrigger className="w-full sm:w-32 bg-slate-50 border-slate-200">
-                <SelectValue placeholder="Cut" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-slate-200">
-                <SelectItem value="all">All Cuts</SelectItem>
-                {CUT_OPTIONS.map((cut) => (
-                  <SelectItem key={cut} value={cut}>{cut}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-full sm:w-32 bg-slate-50 border-slate-200">
@@ -239,9 +224,9 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                     <ArrowUpDown className="w-4 h-4" />
                   </div>
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Cut</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Color</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Clarity</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Measurements</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Description</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
                   onClick={() => handleSort('price')}
@@ -311,13 +296,15 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                       <div className="font-medium text-slate-800">{gem.carat}ct</div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600">{gem.cut}</div>
-                    </td>
-                    <td className="py-4 px-4">
                       <div className="text-sm text-slate-600">{gem.color}</div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="text-sm text-slate-600">{gem.clarity}</div>
+                      <div className="text-sm text-slate-600">{gem.measurementsMm || '-'}</div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="text-sm text-slate-600 max-w-32 truncate" title={gem.stoneDescription}>
+                        {gem.stoneDescription || '-'}
+                      </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
@@ -372,7 +359,6 @@ export const GemTable = ({ gems, onEdit, onDelete, onCreateInvoice, onCreateCons
                                 stockId={gem.stockId} 
                                 gemType={gem.gemType}
                                 color={gem.color}
-                                cut={gem.cut}
                                 size="medium"
                                 showDownload={true}
                               />

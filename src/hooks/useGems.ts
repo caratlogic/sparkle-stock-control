@@ -23,9 +23,7 @@ export const useGems = () => {
         stockId: gem.stock_id,
         gemType: gem.gem_type as any,
         carat: parseFloat(gem.carat.toString()),
-        cut: gem.cut as any,
         color: gem.color,
-        clarity: gem.clarity as any,
         price: parseFloat(gem.price.toString()),
         costPrice: parseFloat(gem.cost_price.toString()),
         certificateNumber: gem.certificate_number,
@@ -33,7 +31,7 @@ export const useGems = () => {
         dateAdded: gem.date_added,
         notes: gem.notes || undefined,
         imageUrl: gem.image_url || undefined,
-        // New fields
+        // Updated fields
         measurementsMm: gem.measurements_mm || undefined,
         priceInLetters: gem.price_in_letters || undefined,
         totalInLetters: gem.total_in_letters || undefined,
@@ -60,16 +58,14 @@ export const useGems = () => {
           stock_id: `${gemData.gemType.substring(0, 2).toUpperCase()}${String(gems.length + 1).padStart(4, '0')}`,
           gem_type: gemData.gemType,
           carat: gemData.carat,
-          cut: gemData.cut,
           color: gemData.color,
-          clarity: gemData.clarity,
           price: gemData.price,
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
           notes: gemData.notes,
           image_url: gemData.imageUrl,
-          // New fields
+          // Updated fields
           measurements_mm: gemData.measurementsMm,
           price_in_letters: gemData.priceInLetters,
           total_in_letters: gemData.totalInLetters,
@@ -97,16 +93,14 @@ export const useGems = () => {
         .update({
           gem_type: gemData.gemType,
           carat: gemData.carat,
-          cut: gemData.cut,
           color: gemData.color,
-          clarity: gemData.clarity,
           price: gemData.price,
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
           notes: gemData.notes,
           image_url: gemData.imageUrl,
-          // New fields
+          // Updated fields
           measurements_mm: gemData.measurementsMm,
           price_in_letters: gemData.priceInLetters,
           total_in_letters: gemData.totalInLetters,
