@@ -146,19 +146,25 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
 
   const handleUpdateDiscount = async (customerId: string, discount: number) => {
     try {
+      console.log('Updating discount for customer:', customerId, 'with discount:', discount);
+      
       const { error } = await supabase
         .from('customers')
         .update({ discount })
         .eq('id', customerId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
-        description: "Discount updated successfully",
+        description: `Discount updated to ${discount}%`,
       });
       
-      refetch();
+      // Refresh the customer data to reflect the changes
+      await refetch();
     } catch (error) {
       console.error('Error updating discount:', error);
       toast({

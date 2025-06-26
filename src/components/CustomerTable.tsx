@@ -31,9 +31,9 @@ export const CustomerTable = ({
     setTempDiscount(customer.discount || 0);
   };
 
-  const handleSaveDiscount = (customerId: string) => {
+  const handleSaveDiscount = async (customerId: string) => {
     if (onUpdateDiscount) {
-      onUpdateDiscount(customerId, tempDiscount);
+      await onUpdateDiscount(customerId, tempDiscount);
     }
     setEditingDiscount(null);
   };
@@ -41,6 +41,21 @@ export const CustomerTable = ({
   const handleCancelDiscount = () => {
     setEditingDiscount(null);
     setTempDiscount(0);
+  };
+
+  const handleDiscountInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value >= 0 && value <= 100) {
+      setTempDiscount(value);
+    }
+  };
+
+  const handleDiscountKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, customerId: string) => {
+    if (e.key === 'Enter') {
+      handleSaveDiscount(customerId);
+    } else if (e.key === 'Escape') {
+      handleCancelDiscount();
+    }
   };
 
   if (customers.length === 0) {
@@ -97,8 +112,10 @@ export const CustomerTable = ({
                       max="100"
                       step="0.1"
                       value={tempDiscount}
-                      onChange={(e) => setTempDiscount(parseFloat(e.target.value) || 0)}
+                      onChange={handleDiscountInputChange}
+                      onKeyDown={(e) => handleDiscountKeyPress(e, customer.id)}
                       className="w-20"
+                      autoFocus
                     />
                     <Button
                       variant="ghost"
@@ -117,11 +134,12 @@ export const CustomerTable = ({
                   </div>
                 ) : (
                   <div 
-                    className="cursor-pointer hover:bg-slate-100 p-1 rounded"
+                    className="cursor-pointer hover:bg-slate-100 p-2 rounded transition-colors"
                     onClick={() => handleEditDiscount(customer)}
+                    title="Click to edit discount"
                   >
                     <span className="font-medium text-blue-600">
-                      {customer.discount || 0}%
+                      {(customer.discount || 0).toFixed(1)}%
                     </span>
                   </div>
                 )}
