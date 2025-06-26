@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gem, GEM_TYPES } from '../types/gem';
 import { Invoice, Consignment, Customer } from '../types/customer';
-import { sampleGems } from '../data/sampleGems';
-import { sampleCustomers } from '../data/sampleCustomers';
+import { useGems } from '../hooks/useGems';
+import { useCustomers } from '../hooks/useCustomers';
+import { useInvoices } from '../hooks/useInvoices';
 import { GemForm } from './GemForm';
 import { GemTable } from './GemTable';
 import { CustomerDashboard } from './CustomerDashboard';
@@ -25,17 +25,21 @@ import {
   FileText,
   Gem as GemIcon,
   Receipt,
-  PieChart
+  PieChart,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export const Dashboard = () => {
   const { isOwner } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [gems, setGems] = useState<Gem[]>(sampleGems);
+  const { gems, loading: gemsLoading, addGem, updateGem, deleteGem } = useGems();
+  const { customers, loading: customersLoading } = useCustomers();
+  const { invoices, loading: invoicesLoading } = useInvoices();
   const [editingGem, setEditingGem] = useState<Gem | null>(null);
   const [selectedGemType, setSelectedGemType] = useState<string>('all');
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [consignments, setConsignments] = useState<Consignment[]>([]);
   const [preselectedGem, setPreselectedGem] = useState<Gem | null>(null);
   const [preselectedCustomer, setPreselectedCustomer] = useState<Customer | null>(null);
@@ -45,52 +49,64 @@ export const Dashboard = () => {
     ? gems 
     : gems.filter(gem => gem.gemType === selectedGemType);
 
-  const handleAddGem = (gemData: any) => {
-    const newGem: Gem = {
-      ...gemData,
-      id: Date.now().toString(),
-      stockId: `${gemData.gemType.substring(0, 2).toUpperCase()}${String(gems.length + 1).padStart(4, '0')}`,
-      dateAdded: new Date().toISOString().split('T')[0]
-    };
-    setGems([...gems, newGem]);
-    setActiveTab('inventory');
+  const handleAddGem = async (gemData: any) => {
+    const result = await addGem(gemData);
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Gem added successfully",
+      });
+      setActiveTab('inventory');
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to add gem",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditGem = (gemData: any) => {
+  const handleEditGem = async (gemData: any) => {
     if (!editingGem) return;
     
-    const updatedGem = { ...editingGem, ...gemData };
-    setGems(gems.map(gem => gem.id === editingGem.id ? updatedGem : gem));
-    setEditingGem(null);
-    setActiveTab('inventory');
+    const result = await updateGem(editingGem.id, gemData);
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Gem updated successfully",
+      });
+      setEditingGem(null);
+      setActiveTab('inventory');
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update gem",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteGem = (id: string) => {
-    setGems(gems.filter(gem => gem.id !== id));
+  const handleDeleteGem = async (id: string) => {
+    const result = await deleteGem(id);
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Gem deleted successfully",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to delete gem",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveInvoice = (invoice: Invoice) => {
-    // Update gem statuses to 'Sold' for all items in the invoice
-    const updatedGems = gems.map(gem => {
-      const isInInvoice = invoice.items.some(item => item.productId === gem.id);
-      return isInInvoice ? { ...gem, status: 'Sold' as const } : gem;
-    });
-    setGems(updatedGems);
-    
-    setInvoices([...invoices, invoice]);
-    setPreselectedGem(null);
-    setPreselectedCustomer(null);
     setActiveTab('transactions');
   };
 
   const handleSaveConsignment = (consignment: Consignment) => {
-    // Update gem statuses to 'Reserved' for all items in the consignment
-    const updatedGems = gems.map(gem => {
-      const isInConsignment = consignment.items.some(item => item.productId === gem.id);
-      return isInConsignment ? { ...gem, status: 'Reserved' as const } : gem;
-    });
-    setGems(updatedGems);
-    
     setConsignments([...consignments, consignment]);
     setPreselectedGem(null);
     setPreselectedCustomer(null);
@@ -123,6 +139,19 @@ export const Dashboard = () => {
   const inStockCount = filteredGems.filter(gem => gem.status === 'In Stock').length;
   const soldCount = filteredGems.filter(gem => gem.status === 'Sold').length;
   const reservedCount = filteredGems.filter(gem => gem.status === 'Reserved').length;
+
+  const isLoading = gemsLoading || customersLoading || invoicesLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+          <span className="text-lg font-medium text-slate-700">Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -226,7 +255,7 @@ export const Dashboard = () => {
         return (
           <AnalyticsDashboard
             gems={gems}
-            customers={sampleCustomers}
+            customers={customers}
             invoices={invoices}
           />
         );
