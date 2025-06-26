@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,10 +10,10 @@ import { ArrowLeft, Save, Plus, Trash2, FileText, Download } from 'lucide-react'
 import { Customer } from '../types/customer';
 import { Invoice, InvoiceItem } from '../types/customer';
 import { Gem } from '../types/gem';
-import { sampleCustomers } from '../data/sampleCustomers';
 import { sampleGems } from '../data/sampleGems';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 import { useConsignments } from '../hooks/useConsignments';
+import { useCustomers } from '../hooks/useCustomers';
 
 interface InvoiceCreationProps {
   onCancel: () => void;
@@ -23,6 +24,7 @@ interface InvoiceCreationProps {
 
 export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: InvoiceCreationProps) => {
   const { getConsignmentByGemId, updateConsignmentStatus } = useConsignments();
+  const { customers } = useCustomers(); // Use actual customer data from database
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer || null);
   const [customerSearch, setCustomerSearch] = useState(preselectedCustomer?.name || '');
   const [items, setItems] = useState<InvoiceItem[]>([]);
@@ -37,6 +39,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   // Set discount when customer is selected
   useEffect(() => {
     if (selectedCustomer) {
+      console.log('Setting discount for customer:', selectedCustomer.name, 'discount:', selectedCustomer.discount);
       setDiscount(selectedCustomer.discount || 0);
     }
   }, [selectedCustomer]);
@@ -67,8 +70,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         getConsignmentByGemId(preselectedGem.id).then(consignment => {
           if (consignment) {
             setRelatedConsignmentId(consignment.id);
-            // Auto-select customer from consignment
-            const consignmentCustomer = sampleCustomers.find(c => c.id === consignment.customerId);
+            // Auto-select customer from consignment using database customers
+            const consignmentCustomer = customers.find(c => c.id === consignment.customerId);
             if (consignmentCustomer && !selectedCustomer) {
               setSelectedCustomer(consignmentCustomer);
               setCustomerSearch(consignmentCustomer.name);
@@ -77,10 +80,10 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         });
       }
     }
-  }, [preselectedGem, selectedCustomer]);
+  }, [preselectedGem, selectedCustomer, customers]);
 
-  // Customer search results
-  const customerResults = sampleCustomers.filter(customer =>
+  // Customer search results - use database customers
+  const customerResults = customers.filter(customer =>
     customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     customer.customerId.toLowerCase().includes(customerSearch.toLowerCase())
   ).slice(0, 5);
@@ -93,6 +96,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   ).slice(0, 5);
 
   const handleCustomerSelect = (customer: Customer) => {
+    console.log('Customer selected:', customer.name, 'with discount:', customer.discount);
     setSelectedCustomer(customer);
     setCustomerSearch(customer.name);
     setDiscount(customer.discount || 0);
@@ -232,6 +236,9 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                       <div className="font-medium">{customer.name}</div>
                       <div className="text-sm text-slate-500">
                         {customer.customerId} - {customer.email}
+                        {customer.discount && customer.discount > 0 && (
+                          <span className="ml-2 text-blue-600">({customer.discount}% discount)</span>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -248,6 +255,11 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                     <p className="text-sm text-slate-600">{selectedCustomer.phone}</p>
                     {selectedCustomer.company && (
                       <p className="text-sm text-slate-600">{selectedCustomer.company}</p>
+                    )}
+                    {selectedCustomer.discount && selectedCustomer.discount > 0 && (
+                      <p className="text-sm text-blue-600 font-medium">
+                        Customer Discount: {selectedCustomer.discount}%
+                      </p>
                     )}
                   </div>
                   <Badge variant="secondary">{selectedCustomer.customerId}</Badge>
@@ -301,7 +313,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
               />
               <p className="text-xs text-slate-500 mt-1">
-                Adjust discount for this invoice
+                Adjust discount for this invoice (Customer default: {selectedCustomer?.discount || 0}%)
               </p>
             </div>
             
