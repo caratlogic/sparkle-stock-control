@@ -19,8 +19,9 @@ interface ConsignmentCreationProps {
 }
 
 export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: ConsignmentCreationProps) => {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer || null);
-  const [customerSearch, setCustomerSearch] = useState(preselectedCustomer?.name || '');
+  // Initialize state with proper defaults
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerSearch, setCustomerSearch] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [productSearch, setProductSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
@@ -28,9 +29,28 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
   const [returnDate, setReturnDate] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Reset form when component mounts or when preselected values change
+  useEffect(() => {
+    // Reset all form state first
+    setSelectedCustomer(null);
+    setCustomerSearch('');
+    setItems([]);
+    setProductSearch('');
+    setSelectedProduct(null);
+    setQuantity(1);
+    setReturnDate('');
+    setNotes('');
+
+    // Then set preselected values if they exist
+    if (preselectedCustomer) {
+      setSelectedCustomer(preselectedCustomer);
+      setCustomerSearch(preselectedCustomer.name);
+    }
+  }, [preselectedCustomer, preselectedGem]); // Include both dependencies
+
   // Handle preselected gem
   useEffect(() => {
-    if (preselectedGem) {
+    if (preselectedGem && items.length === 0) {
       const newItem: InvoiceItem = {
         productId: preselectedGem.id,
         productType: preselectedGem.gemType.toLowerCase() as 'diamond',
@@ -49,7 +69,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
       };
       setItems([newItem]);
     }
-  }, [preselectedGem]);
+  }, [preselectedGem, items.length]);
 
   // Customer search results
   const customerResults = sampleCustomers.filter(customer =>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,9 +23,11 @@ interface InvoiceCreationProps {
 
 export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: InvoiceCreationProps) => {
   const { getConsignmentByGemId, updateConsignmentStatus } = useConsignments();
-  const { customers } = useCustomers(); // Use actual customer data from database
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(preselectedCustomer || null);
-  const [customerSearch, setCustomerSearch] = useState(preselectedCustomer?.name || '');
+  const { customers } = useCustomers();
+  
+  // Initialize state with proper defaults
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerSearch, setCustomerSearch] = useState('');
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [productSearch, setProductSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
@@ -35,6 +36,28 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
+
+  // Reset form when component mounts or when preselected values change
+  useEffect(() => {
+    // Reset all form state first
+    setSelectedCustomer(null);
+    setCustomerSearch('');
+    setItems([]);
+    setProductSearch('');
+    setSelectedProduct(null);
+    setQuantity(1);
+    setTaxRate(8.5);
+    setDiscount(0);
+    setNotes('');
+    setRelatedConsignmentId(null);
+
+    // Then set preselected values if they exist
+    if (preselectedCustomer) {
+      setSelectedCustomer(preselectedCustomer);
+      setCustomerSearch(preselectedCustomer.name);
+      setDiscount(preselectedCustomer.discount || 0);
+    }
+  }, [preselectedCustomer, preselectedGem]); // Include both dependencies
 
   // Set discount when customer is selected
   useEffect(() => {
@@ -80,7 +103,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         });
       }
     }
-  }, [preselectedGem, selectedCustomer, customers]);
+  }, [preselectedGem, selectedCustomer, customers, getConsignmentByGemId, items.length]);
 
   // Customer search results - use database customers
   const customerResults = customers.filter(customer =>

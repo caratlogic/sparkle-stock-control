@@ -103,34 +103,58 @@ export const Dashboard = () => {
   };
 
   const handleSaveInvoice = (invoice: Invoice) => {
+    // Clear preselected values after saving
+    setPreselectedGem(null);
+    setPreselectedCustomer(null);
     setActiveTab('transactions');
   };
 
   const handleSaveConsignment = (consignment: Consignment) => {
     setConsignments([...consignments, consignment]);
+    // Clear preselected values after saving
     setPreselectedGem(null);
     setPreselectedCustomer(null);
     setActiveTab('transactions');
   };
 
   const handleCreateInvoiceFromGem = (gem: Gem) => {
+    // Clear any existing preselected values first
+    setPreselectedCustomer(null);
     setPreselectedGem(gem);
     setActiveTab('create-invoice');
   };
 
   const handleCreateConsignmentFromGem = (gem: Gem) => {
+    // Clear any existing preselected values first
+    setPreselectedCustomer(null);
     setPreselectedGem(gem);
     setActiveTab('create-consignment');
   };
 
   const handleCreateInvoiceFromCustomer = (customer: Customer) => {
+    // Clear any existing preselected values first
+    setPreselectedGem(null);
     setPreselectedCustomer(customer);
     setActiveTab('create-invoice');
   };
 
   const handleCreateConsignmentFromCustomer = (customer: Customer) => {
+    // Clear any existing preselected values first
+    setPreselectedGem(null);
     setPreselectedCustomer(customer);
     setActiveTab('create-consignment');
+  };
+
+  // Clear preselected values when navigating to create forms manually
+  const handleTabChange = (newTab: string) => {
+    if (newTab === 'create-invoice' || newTab === 'create-consignment') {
+      // Only clear if switching tabs without preselection
+      if (activeTab !== 'create-invoice' && activeTab !== 'create-consignment') {
+        setPreselectedGem(null);
+        setPreselectedCustomer(null);
+      }
+    }
+    setActiveTab(newTab);
   };
 
   // Calculate statistics
@@ -391,7 +415,7 @@ export const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => handleTabChange('dashboard')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'dashboard'
                   ? 'border-purple-500 text-purple-600'
@@ -402,7 +426,7 @@ export const Dashboard = () => {
               Dashboard
             </button>
             <button
-              onClick={() => setActiveTab('inventory')}
+              onClick={() => handleTabChange('inventory')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'inventory' || activeTab === 'add-gem' || activeTab === 'edit-gem'
                   ? 'border-purple-500 text-purple-600'
@@ -413,7 +437,7 @@ export const Dashboard = () => {
               Inventory
             </button>
             <button
-              onClick={() => setActiveTab('customers')}
+              onClick={() => handleTabChange('customers')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'customers'
                   ? 'border-purple-500 text-purple-600'
@@ -424,7 +448,7 @@ export const Dashboard = () => {
               Customers
             </button>
             <button
-              onClick={() => setActiveTab('analytics')}
+              onClick={() => handleTabChange('analytics')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'analytics'
                   ? 'border-purple-500 text-purple-600'
@@ -435,7 +459,7 @@ export const Dashboard = () => {
               Analytics
             </button>
             <button
-              onClick={() => setActiveTab('create-invoice')}
+              onClick={() => handleTabChange('create-invoice')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'create-invoice'
                   ? 'border-purple-500 text-purple-600'
@@ -446,7 +470,7 @@ export const Dashboard = () => {
               Create Invoice
             </button>
             <button
-              onClick={() => setActiveTab('create-consignment')}
+              onClick={() => handleTabChange('create-consignment')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'create-consignment'
                   ? 'border-purple-500 text-purple-600'
@@ -457,7 +481,7 @@ export const Dashboard = () => {
               Create Consignment
             </button>
             <button
-              onClick={() => setActiveTab('transactions')}
+              onClick={() => handleTabChange('transactions')}
               className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'transactions'
                   ? 'border-purple-500 text-purple-600'
