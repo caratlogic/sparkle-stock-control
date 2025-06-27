@@ -50,13 +50,14 @@ export const useInvoices = () => {
         },
         items: invoice.invoice_items.map((item: any) => ({
           productId: item.gem_id,
-          productType: 'gem',
+          productType: (item.gems.gem_type?.toLowerCase() || 'diamond') as 'diamond' | 'emerald' | 'ruby' | 'sapphire' | 'amethyst' | 'aquamarine' | 'garnet' | 'opal' | 'topaz' | 'tourmaline',
           productDetails: {
             stockId: item.gems.stock_id,
             carat: parseFloat(item.gems.carat.toString()),
             cut: item.gems.cut,
             color: item.gems.color,
-            clarity: item.gems.clarity,
+            description: item.gems.description || item.gems.notes || 'No description available',
+            measurements: item.gems.measurements || item.gems.measurements_mm || 'Not specified',
             certificateNumber: item.gems.certificate_number,
             gemType: item.gems.gem_type
           },

@@ -155,7 +155,8 @@ export const generateInvoicePDF = (invoice: Invoice) => {
               <td><strong>${item.productDetails.stockId}</strong></td>
               <td>
                 ${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut}<br>
-                <small>Color: ${item.productDetails.color} | Clarity: ${item.productDetails.clarity}</small><br>
+                <small>Color: ${item.productDetails.color} | ${item.productDetails.description}</small><br>
+                <small>Measurements: ${item.productDetails.measurements}</small><br>
                 <small>Certificate: ${item.productDetails.certificateNumber}</small>
               </td>
               <td>${item.quantity}</td>
@@ -373,7 +374,8 @@ export const generateConsignmentPDF = (consignment: Consignment) => {
               <td><strong>${item.productDetails.stockId}</strong></td>
               <td>
                 ${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut}<br>
-                <small>Color: ${item.productDetails.color} | Clarity: ${item.productDetails.clarity}</small><br>
+                <small>Color: ${item.productDetails.color} | ${item.productDetails.description}</small><br>
+                <small>Measurements: ${item.productDetails.measurements}</small><br>
                 <small>Certificate: ${item.productDetails.certificateNumber}</small>
               </td>
               <td>${item.quantity}</td>

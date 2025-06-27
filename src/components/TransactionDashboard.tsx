@@ -320,7 +320,7 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
                       <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="returned">Returned</SelectItem>
-                      <SelectItem value="purchased">Purchased</SelectItem>
+                      <SelectItem value="sold">Sold</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -380,7 +380,7 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
                         <td className="py-4 px-4">
                           <Badge 
                             variant={
-                              consignment.status === 'purchased' ? 'secondary' : 
+                              consignment.status === 'sold' ? 'secondary' : 
                               consignment.status === 'returned' ? 'destructive' : 'default'
                             }
                           >
