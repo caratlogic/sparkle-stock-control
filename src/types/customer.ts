@@ -1,3 +1,4 @@
+
 export interface Customer {
   id: string;
   customerId: string;
@@ -11,24 +12,25 @@ export interface Customer {
     city: string;
     state: string;
     zipCode: string;
-    country?: string;
+    country: string;
   };
   dateAdded: string;
   totalPurchases: number;
   lastPurchaseDate?: string;
+  discount?: number;
   notes?: string;
-  discount?: number; // Discount percentage (0-100)
 }
 
 export interface InvoiceItem {
   productId: string;
-  productType: string;
+  productType: 'diamond' | 'emerald' | 'ruby' | 'sapphire' | 'amethyst' | 'aquamarine' | 'garnet' | 'opal' | 'topaz' | 'tourmaline';
   productDetails: {
     stockId: string;
     carat: number;
     cut: string;
     color: string;
-    clarity: string;
+    description: string;
+    measurements: string;
     certificateNumber: string;
     gemType?: string;
   };
@@ -47,7 +49,7 @@ export interface Invoice {
   taxRate: number;
   taxAmount: number;
   total: number;
-  status: 'draft' | 'sent' | 'paid' | 'overdue';
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   dateCreated: string;
   dateDue: string;
   notes?: string;
@@ -59,7 +61,7 @@ export interface Consignment {
   customerId: string;
   customerDetails: Customer;
   items: InvoiceItem[];
-  status: 'pending' | 'returned' | 'purchased';
+  status: 'pending' | 'active' | 'returned' | 'sold' | 'inactive';
   dateCreated: string;
   returnDate: string;
   notes?: string;

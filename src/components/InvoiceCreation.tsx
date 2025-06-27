@@ -78,7 +78,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           carat: preselectedGem.carat,
           cut: preselectedGem.cut,
           color: preselectedGem.color,
-          clarity: preselectedGem.clarity,
+          description: preselectedGem.description,
+          measurements: preselectedGem.measurements,
           certificateNumber: preselectedGem.certificateNumber,
           gemType: preselectedGem.gemType,
         },
@@ -141,7 +142,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         carat: selectedProduct.carat,
         cut: selectedProduct.cut,
         color: selectedProduct.color,
-        clarity: selectedProduct.clarity,
+        description: selectedProduct.description,
+        measurements: selectedProduct.measurements,
         certificateNumber: selectedProduct.certificateNumber,
         gemType: selectedProduct.gemType,
       },
@@ -217,6 +219,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
 
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
+      
       <div className="flex items-center mb-6">
         <Button variant="ghost" onClick={onCancel} className="mr-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -240,6 +243,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
             <CardTitle className="text-lg">Customer Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            
             <div>
               <Label htmlFor="customer-search">Search Customer</Label>
               <Input
@@ -301,6 +305,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
             <CardTitle className="text-lg">Invoice Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
@@ -378,7 +383,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                       >
                         <div className="font-medium">{product.stockId}</div>
                         <div className="text-sm text-slate-500">
-                          {product.carat}ct {product.gemType} {product.cut} {product.color} {product.clarity} - ${product.price.toLocaleString()}
+                          {product.carat}ct {product.gemType} {product.cut} {product.color} - ${product.price.toLocaleString()}
                         </div>
                       </div>
                     ))}
@@ -419,10 +424,13 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
                       <div className="flex-1">
                         <div className="font-medium">{item.productDetails.stockId}</div>
                         <div className="text-sm text-slate-600">
-                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color} {item.productDetails.clarity}
+                          {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color}
                         </div>
-                        <div className="text-sm text-slate-500">
-                          Cert: {item.productDetails.certificateNumber}
+                        <div className="text-sm text-slate-500 truncate max-w-md">
+                          {item.productDetails.description}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          Cert: {item.productDetails.certificateNumber} | Size: {item.productDetails.measurements}
                         </div>
                       </div>
                       <div className="text-right mr-4">
