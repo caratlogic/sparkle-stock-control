@@ -280,12 +280,18 @@ export const TransactionDashboard = () => {
       </div>
 
       <Tabs defaultValue="invoices" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
-          <TabsTrigger value="invoices" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-2 mb-4 bg-slate-100">
+          <TabsTrigger 
+            value="invoices" 
+            className="flex items-center gap-2 text-slate-700 font-medium data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+          >
             <FileText className="w-4 h-4" />
             Invoices ({filteredInvoices.length})
           </TabsTrigger>
-          <TabsTrigger value="consignments" className="flex items-center gap-2">
+          <TabsTrigger 
+            value="consignments" 
+            className="flex items-center gap-2 text-slate-700 font-medium data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+          >
             <Receipt className="w-4 h-4" />
             Consignments ({filteredConsignments.length})
           </TabsTrigger>
