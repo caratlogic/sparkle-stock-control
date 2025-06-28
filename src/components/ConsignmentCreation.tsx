@@ -12,6 +12,7 @@ import { sampleCustomers } from '../data/sampleCustomers';
 import { sampleGems } from '../data/sampleGems';
 import { useConsignments } from '../hooks/useConsignments';
 import { useCustomers } from '../hooks/useCustomers';
+import { useGems } from '../hooks/useGems';
 
 interface ConsignmentCreationProps {
   onCancel: () => void;
@@ -23,6 +24,7 @@ interface ConsignmentCreationProps {
 export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: ConsignmentCreationProps) => {
   const { addConsignment } = useConsignments();
   const { customers } = useCustomers();
+  const { gems } = useGems();
   
   // Initialize state with proper defaults
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -52,7 +54,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
       setSelectedCustomer(preselectedCustomer);
       setCustomerSearch(preselectedCustomer.name);
     }
-  }, [preselectedCustomer, preselectedGem]); // Include both dependencies
+  }, [preselectedCustomer, preselectedGem]);
 
   // Handle preselected gem
   useEffect(() => {
@@ -84,14 +86,25 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     customer.customerId.toLowerCase().includes(customerSearch.toLowerCase())
   ).slice(0, 5);
 
-  // Product search results - only show available items
-  const productResults = sampleGems.filter(gem =>
+  // Product search results - use both database gems and sample gems, but prioritize database gems
+  const databaseGems = gems.filter(gem =>
+    gem.status === 'In Stock' &&
+    (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (gem.description && gem.description.toLowerCase().includes(productSearch.toLowerCase())))
+  );
+
+  const sampleGemsFiltered = sampleGems.filter(gem =>
     gem.status === 'In Stock' &&
     (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.description.toLowerCase().includes(productSearch.toLowerCase()))
-  ).slice(0, 5);
+  );
+
+  // Combine and prioritize database gems
+  const productResults = [...databaseGems, ...sampleGemsFiltered].slice(0, 5);
 
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -156,12 +169,34 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
         dateCreated: new Date().toISOString().split('T')[0],
         returnDate,
         notes,
-        items: items.map(item => ({
-          gemId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice
-        }))
+        items: items.map(item => {
+          // Check if this is a database gem (UUID format) or sample gem (numeric string)
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
+          
+          if (!isUuid) {
+            // This is a sample gem, try to find corresponding database gem by stock ID
+            const dbGem = gems.find(g => g.stockId === item.productDetails.stockId);
+            if (dbGem) {
+              console.log(`🔄 ConsignmentCreation: Mapping sample gem ${item.productId} to database gem ${dbGem.id}`);
+              return {
+                gemId: dbGem.id,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.totalPrice
+              };
+            } else {
+              console.error(`❌ ConsignmentCreation: No database gem found for stock ID ${item.productDetails.stockId}`);
+              throw new Error(`Gem with stock ID ${item.productDetails.stockId} not found in database. Please ensure all gems are properly imported.`);
+            }
+          }
+          
+          return {
+            gemId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice
+          };
+        })
       };
 
       console.log('🔄 ConsignmentCreation: Saving consignment data:', consignmentData);
@@ -191,7 +226,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
       }
     } catch (error) {
       console.error('❌ ConsignmentCreation: Error saving consignment:', error);
-      alert('An error occurred while saving the consignment');
+      alert('An error occurred while saving the consignment: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsSaving(false);
     }
