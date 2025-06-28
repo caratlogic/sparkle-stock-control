@@ -139,6 +139,72 @@ export const useConsignments = () => {
     }
   };
 
+  const addConsignment = async (consignmentData: any) => {
+    try {
+      console.log('🔄 useConsignments: Adding new consignment:', consignmentData);
+      
+      // First, create the consignment
+      const { data: consignmentResult, error: consignmentError } = await supabase
+        .from('consignments')
+        .insert({
+          consignment_number: consignmentData.consignmentNumber,
+          customer_id: consignmentData.customerId,
+          status: consignmentData.status || 'pending',
+          date_created: consignmentData.dateCreated,
+          return_date: consignmentData.returnDate,
+          notes: consignmentData.notes
+        })
+        .select()
+        .single();
+
+      if (consignmentError) {
+        console.error('❌ useConsignments: Error creating consignment:', consignmentError);
+        throw consignmentError;
+      }
+
+      console.log('✅ useConsignments: Successfully created consignment:', consignmentResult);
+
+      // Then, create the consignment items
+      if (consignmentData.items && consignmentData.items.length > 0) {
+        const itemsToInsert = consignmentData.items.map((item: any) => ({
+          consignment_id: consignmentResult.id,
+          gem_id: item.gemId,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          total_price: item.totalPrice
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('consignment_items')
+          .insert(itemsToInsert);
+
+        if (itemsError) {
+          console.error('❌ useConsignments: Error creating consignment items:', itemsError);
+          throw itemsError;
+        }
+
+        console.log('✅ useConsignments: Successfully created consignment items');
+      }
+
+      // Update gem status to 'On Consignment' for consigned gems
+      if (consignmentData.items && consignmentData.items.length > 0) {
+        for (const item of consignmentData.items) {
+          await supabase
+            .from('gems')
+            .update({ status: 'On Consignment' })
+            .eq('id', item.gemId);
+        }
+        console.log('✅ useConsignments: Successfully updated gem statuses to "On Consignment"');
+      }
+
+      await fetchConsignments();
+      return { success: true, data: consignmentResult };
+    } catch (err) {
+      console.error('❌ useConsignments: Error in addConsignment:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to create consignment' };
+    }
+  };
+
   const updateConsignmentStatus = async (consignmentId: string, status: 'returned' | 'purchased' | 'inactive') => {
     try {
       console.log(`🔄 useConsignments: Updating consignment ${consignmentId} status to ${status}`);
@@ -318,6 +384,7 @@ export const useConsignments = () => {
     consignments,
     loading,
     error,
+    addConsignment,
     updateConsignmentStatus,
     deleteConsignment,
     getConsignmentByGemId,
