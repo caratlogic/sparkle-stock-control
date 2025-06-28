@@ -15,6 +15,7 @@ import { generateInvoicePDF } from '../utils/pdfGenerator';
 import { useConsignments } from '../hooks/useConsignments';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
+import { useGems } from '../hooks/useGems';
 
 interface InvoiceCreationProps {
   onCancel: () => void;
@@ -27,6 +28,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const { getConsignmentByGemId, updateConsignmentStatus } = useConsignments();
   const { customers } = useCustomers();
   const { addInvoice } = useInvoices();
+  const { gems } = useGems();
   
   // Initialize state with proper defaults
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -61,7 +63,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
       setCustomerSearch(preselectedCustomer.name);
       setDiscount(preselectedCustomer.discount || 0);
     }
-  }, [preselectedCustomer, preselectedGem]); // Include both dependencies
+  }, [preselectedCustomer, preselectedGem]);
 
   // Set discount when customer is selected
   useEffect(() => {
@@ -116,12 +118,25 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
     customer.customerId.toLowerCase().includes(customerSearch.toLowerCase())
   ).slice(0, 5);
 
-  // Product search results
-  const productResults = sampleGems.filter(gem =>
-    gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
+  // Product search results - use both database gems and sample gems, but prioritize database gems
+  const databaseGems = gems.filter(gem =>
+    gem.status === 'In Stock' &&
+    (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
-    gem.gemType.toLowerCase().includes(productSearch.toLowerCase())
-  ).slice(0, 5);
+    gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (gem.description && gem.description.toLowerCase().includes(productSearch.toLowerCase())))
+  );
+
+  const sampleGemsFiltered = sampleGems.filter(gem =>
+    gem.status === 'In Stock' &&
+    (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
+    gem.description.toLowerCase().includes(productSearch.toLowerCase()))
+  );
+
+  // Combine and prioritize database gems
+  const productResults = [...databaseGems, ...sampleGemsFiltered].slice(0, 5);
 
   const handleCustomerSelect = (customer: Customer) => {
     console.log('Customer selected:', customer.name, 'with discount:', customer.discount);
@@ -191,12 +206,34 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         dateCreated: new Date().toISOString().split('T')[0],
         dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         notes,
-        items: items.map(item => ({
-          gemId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice
-        }))
+        items: items.map(item => {
+          // Check if this is a database gem (UUID format) or sample gem (numeric string)
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
+          
+          if (!isUuid) {
+            // This is a sample gem, try to find corresponding database gem by stock ID
+            const dbGem = gems.find(g => g.stockId === item.productDetails.stockId);
+            if (dbGem) {
+              console.log(`🔄 InvoiceCreation: Mapping sample gem ${item.productId} to database gem ${dbGem.id}`);
+              return {
+                gemId: dbGem.id,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalPrice: item.totalPrice
+              };
+            } else {
+              console.error(`❌ InvoiceCreation: No database gem found for stock ID ${item.productDetails.stockId}`);
+              throw new Error(`Gem with stock ID ${item.productDetails.stockId} not found in database. Please ensure all gems are properly imported.`);
+            }
+          }
+          
+          return {
+            gemId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice
+          };
+        })
       };
 
       console.log('🔄 InvoiceCreation: Saving invoice data:', invoiceData);
@@ -235,7 +272,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
       }
     } catch (error) {
       console.error('❌ InvoiceCreation: Error saving invoice:', error);
-      alert('An error occurred while saving the invoice');
+      alert('An error occurred while saving the invoice: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsSaving(false);
     }
