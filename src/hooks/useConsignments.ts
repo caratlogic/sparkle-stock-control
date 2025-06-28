@@ -253,7 +253,11 @@ export const useConsignments = () => {
           console.log('🔔 useConsignments: Real-time consignment change detected:', {
             event: payload.eventType,
             table: 'consignments',
-            id: payload.new?.id || payload.old?.id,
+            id: (payload.new && typeof payload.new === 'object' && 'id' in payload.new) 
+              ? payload.new.id 
+              : (payload.old && typeof payload.old === 'object' && 'id' in payload.old) 
+                ? payload.old.id 
+                : 'unknown',
             payload: payload
           });
           fetchConsignments();
@@ -265,7 +269,11 @@ export const useConsignments = () => {
           console.log('🔔 useConsignments: Real-time consignment_items change detected:', {
             event: payload.eventType,
             table: 'consignment_items',
-            id: payload.new?.id || payload.old?.id,
+            id: (payload.new && typeof payload.new === 'object' && 'id' in payload.new) 
+              ? payload.new.id 
+              : (payload.old && typeof payload.old === 'object' && 'id' in payload.old) 
+                ? payload.old.id 
+                : 'unknown',
             payload: payload
           });
           fetchConsignments();
@@ -277,7 +285,11 @@ export const useConsignments = () => {
           console.log('🔔 useConsignments: Real-time customers change detected:', {
             event: payload.eventType,
             table: 'customers',
-            id: payload.new?.id || payload.old?.id
+            id: (payload.new && typeof payload.new === 'object' && 'id' in payload.new) 
+              ? payload.new.id 
+              : (payload.old && typeof payload.old === 'object' && 'id' in payload.old) 
+                ? payload.old.id 
+                : 'unknown'
           });
           fetchConsignments();
         }
