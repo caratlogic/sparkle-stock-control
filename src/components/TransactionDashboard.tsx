@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,24 +7,31 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Invoice, Consignment } from '../types/customer';
-import { FileText, Receipt, Download, Search, Calendar, DollarSign, Package } from 'lucide-react';
+import { FileText, Receipt, Download, Search, Calendar, DollarSign, Package, RefreshCw } from 'lucide-react';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
+import { useInvoices } from '../hooks/useInvoices';
+import { useConsignments } from '../hooks/useConsignments';
 
-interface TransactionDashboardProps {
-  invoices: Invoice[];
-  consignments: Consignment[];
-}
-
-export const TransactionDashboard = ({ invoices, consignments }: TransactionDashboardProps) => {
+export const TransactionDashboard = () => {
+  const { invoices, loading: invoicesLoading, refetch: refetchInvoices } = useInvoices();
+  const { consignments, loading: consignmentsLoading, refetch: refetchConsignments } = useConsignments();
+  
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [consignmentSearch, setConsignmentSearch] = useState('');
   const [invoiceStatus, setInvoiceStatus] = useState('all');
   const [consignmentStatus, setConsignmentStatus] = useState('all');
   const [invoicePeriod, setInvoicePeriod] = useState('all');
   const [consignmentPeriod, setConsignmentPeriod] = useState('all');
+  const [refreshing, setRefreshing] = useState(false);
 
   console.log('TransactionDashboard - Invoices:', invoices);
   console.log('TransactionDashboard - Consignments:', consignments);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetchInvoices(), refetchConsignments()]);
+    setRefreshing(false);
+  };
 
   // Filter invoices
   const filteredInvoices = invoices.filter(invoice => {
@@ -118,6 +126,8 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
     window.URL.revokeObjectURL(url);
   };
 
+  const isLoading = invoicesLoading || consignmentsLoading;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -125,6 +135,15 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
           <h2 className="text-3xl font-bold text-slate-800">Transaction Dashboard</h2>
           <p className="text-slate-600 mt-1">Monitor all invoices and consignments</p>
         </div>
+        <Button 
+          onClick={handleRefresh} 
+          variant="outline" 
+          disabled={refreshing}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </Button>
       </div>
 
       {/* Summary Cards */}
@@ -175,16 +194,16 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
       </div>
 
       <Tabs defaultValue="invoices" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="invoices" className="text-sm font-medium">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="invoices" className="flex items-center gap-2">
+            <FileText className="w-4 h-4" />
             Invoices ({filteredInvoices.length})
           </TabsTrigger>
-          <TabsTrigger value="consignments" className="text-sm font-medium">
+          <TabsTrigger value="consignments" className="flex items-center gap-2">
+            <Receipt className="w-4 h-4" />
             Consignments ({filteredConsignments.length})
           </TabsTrigger>
         </TabsList>
-
-        
 
         <TabsContent value="invoices" className="space-y-4">
           <Card>
@@ -236,70 +255,76 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Invoice #</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Customer</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Date</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Due Date</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Total</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredInvoices.map((invoice) => (
-                      <tr key={invoice.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-4 px-4">
-                          <div className="font-medium text-slate-800">{invoice.invoiceNumber}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="font-medium">{invoice.customerDetails.name}</div>
-                          <div className="text-sm text-slate-500">{invoice.customerDetails.customerId}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm text-slate-600">{new Date(invoice.dateCreated).toLocaleDateString()}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm text-slate-600">{new Date(invoice.dateDue).toLocaleDateString()}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="font-semibold text-slate-800">${invoice.total.toLocaleString()}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Badge 
-                            variant={
-                              invoice.status === 'paid' ? 'secondary' : 
-                              invoice.status === 'overdue' ? 'destructive' : 'default'
-                            }
-                          >
-                            {invoice.status}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => generateInvoicePDF(invoice)}
-                            title="Download PDF"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </td>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-slate-500">Loading invoices...</div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Invoice #</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Customer</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Date</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Due Date</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Total</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {filteredInvoices.length === 0 && (
-                  <div className="text-center py-12">
-                    <div className="text-slate-400 text-lg mb-2">No invoices found</div>
-                    <div className="text-slate-500">Try adjusting your search or filter criteria</div>
-                  </div>
-                )}
-              </div>
+                    </thead>
+                    <tbody>
+                      {filteredInvoices.map((invoice) => (
+                        <tr key={invoice.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="py-4 px-4">
+                            <div className="font-medium text-slate-800">{invoice.invoiceNumber}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="font-medium">{invoice.customerDetails.name}</div>
+                            <div className="text-sm text-slate-500">{invoice.customerDetails.customerId}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-slate-600">{new Date(invoice.dateCreated).toLocaleDateString()}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-slate-600">{new Date(invoice.dateDue).toLocaleDateString()}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="font-semibold text-slate-800">${invoice.total.toLocaleString()}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Badge 
+                              variant={
+                                invoice.status === 'paid' ? 'secondary' : 
+                                invoice.status === 'overdue' ? 'destructive' : 'default'
+                              }
+                            >
+                              {invoice.status}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => generateInvoicePDF(invoice)}
+                              title="Download PDF"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  
+                  {filteredInvoices.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="text-slate-400 text-lg mb-2">No invoices found</div>
+                      <div className="text-slate-500">Try adjusting your search or filter criteria</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -328,7 +353,8 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
                       <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="returned">Returned</SelectItem>
-                      <SelectItem value="sold">Sold</SelectItem>
+                      <SelectItem value="purchased">Purchased</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -353,70 +379,76 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Consignment #</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Customer</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Date Created</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Return Date</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Items</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-slate-600">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredConsignments.map((consignment) => (
-                      <tr key={consignment.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-4 px-4">
-                          <div className="font-medium text-slate-800">{consignment.consignmentNumber}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="font-medium">{consignment.customerDetails?.name || 'Unknown Customer'}</div>
-                          <div className="text-sm text-slate-500">{consignment.customerDetails?.customerId || 'N/A'}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm text-slate-600">{new Date(consignment.dateCreated).toLocaleDateString()}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm text-slate-600">{new Date(consignment.returnDate).toLocaleDateString()}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm text-slate-600">{consignment.items.length} items</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Badge 
-                            variant={
-                              consignment.status === 'sold' ? 'secondary' : 
-                              consignment.status === 'returned' ? 'destructive' : 'default'
-                            }
-                          >
-                            {consignment.status}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => generateConsignmentPDF(consignment)}
-                            title="Download PDF"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </td>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-slate-500">Loading consignments...</div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Consignment #</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Customer</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Date Created</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Return Date</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Items</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-slate-600">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {filteredConsignments.length === 0 && (
-                  <div className="text-center py-12">
-                    <div className="text-slate-400 text-lg mb-2">No consignments found</div>
-                    <div className="text-slate-500">Try adjusting your search or filter criteria</div>
-                  </div>
-                )}
-              </div>
+                    </thead>
+                    <tbody>
+                      {filteredConsignments.map((consignment) => (
+                        <tr key={consignment.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="py-4 px-4">
+                            <div className="font-medium text-slate-800">{consignment.consignmentNumber}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="font-medium">{consignment.customerDetails?.name || 'Unknown Customer'}</div>
+                            <div className="text-sm text-slate-500">{consignment.customerDetails?.customerId || 'N/A'}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-slate-600">{new Date(consignment.dateCreated).toLocaleDateString()}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-slate-600">{new Date(consignment.returnDate).toLocaleDateString()}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-slate-600">{consignment.items.length} items</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Badge 
+                              variant={
+                                consignment.status === 'purchased' ? 'secondary' : 
+                                consignment.status === 'returned' ? 'destructive' : 'default'
+                              }
+                            >
+                              {consignment.status}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => generateConsignmentPDF(consignment)}
+                              title="Download PDF"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  
+                  {filteredConsignments.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="text-slate-400 text-lg mb-2">No consignments found</div>
+                      <div className="text-slate-500">Try adjusting your search or filter criteria</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

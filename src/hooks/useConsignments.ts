@@ -49,6 +49,8 @@ export const useConsignments = () => {
   const fetchConsignments = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('consignments')
         .select(`
@@ -59,6 +61,8 @@ export const useConsignments = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      console.log('Fetched consignments from database:', data);
 
       const transformedConsignments: Consignment[] = data.map(consignment => ({
         id: consignment.id,
@@ -92,13 +96,15 @@ export const useConsignments = () => {
           id: item.id,
           gemId: item.gem_id,
           quantity: item.quantity,
-          unitPrice: parseFloat(item.unit_price.toString()),
-          totalPrice: parseFloat(item.total_price.toString())
+          unitPrice: parseFloat(item.unit_price?.toString() || '0'),
+          totalPrice: parseFloat(item.total_price?.toString() || '0')
         }))
       }));
 
+      console.log('Transformed consignments:', transformedConsignments);
       setConsignments(transformedConsignments);
     } catch (err) {
+      console.error('Error fetching consignments:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch consignments');
     } finally {
       setLoading(false);
@@ -182,6 +188,29 @@ export const useConsignments = () => {
 
   useEffect(() => {
     fetchConsignments();
+    
+    // Set up real-time subscription for consignments
+    const channel = supabase
+      .channel('consignments-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'consignments' }, 
+        (payload) => {
+          console.log('Consignment change detected:', payload);
+          fetchConsignments();
+        }
+      )
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'consignment_items' }, 
+        (payload) => {
+          console.log('Consignment items change detected:', payload);
+          fetchConsignments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {

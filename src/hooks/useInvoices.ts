@@ -11,6 +11,8 @@ export const useInvoices = () => {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('invoices')
         .select(`
@@ -23,6 +25,8 @@ export const useInvoices = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      console.log('Fetched invoices from database:', data);
 
       const transformedInvoices: Invoice[] = data.map(invoice => ({
         id: invoice.id,
@@ -50,33 +54,35 @@ export const useInvoices = () => {
         },
         items: invoice.invoice_items.map((item: any) => ({
           productId: item.gem_id,
-          productType: (item.gems.gem_type?.toLowerCase() || 'diamond') as 'diamond' | 'emerald' | 'ruby' | 'sapphire' | 'amethyst' | 'aquamarine' | 'garnet' | 'opal' | 'topaz' | 'tourmaline',
+          productType: (item.gems?.gem_type?.toLowerCase() || 'diamond') as 'diamond' | 'emerald' | 'ruby' | 'sapphire' | 'amethyst' | 'aquamarine' | 'garnet' | 'opal' | 'topaz' | 'tourmaline',
           productDetails: {
-            stockId: item.gems.stock_id,
-            carat: parseFloat(item.gems.carat.toString()),
-            cut: item.gems.cut,
-            color: item.gems.color,
-            description: item.gems.description || item.gems.notes || 'No description available',
-            measurements: item.gems.measurements || item.gems.measurements_mm || 'Not specified',
-            certificateNumber: item.gems.certificate_number,
-            gemType: item.gems.gem_type
+            stockId: item.gems?.stock_id || '',
+            carat: parseFloat(item.gems?.carat?.toString() || '0'),
+            cut: item.gems?.cut || '',
+            color: item.gems?.color || '',
+            description: item.gems?.description || item.gems?.notes || 'No description available',
+            measurements: item.gems?.measurements || item.gems?.measurements_mm || 'Not specified',
+            certificateNumber: item.gems?.certificate_number || '',
+            gemType: item.gems?.gem_type
           },
           quantity: item.quantity,
-          unitPrice: parseFloat(item.unit_price.toString()),
-          totalPrice: parseFloat(item.total_price.toString())
+          unitPrice: parseFloat(item.unit_price?.toString() || '0'),
+          totalPrice: parseFloat(item.total_price?.toString() || '0')
         })),
-        subtotal: parseFloat(invoice.subtotal.toString()),
-        taxRate: parseFloat(invoice.tax_rate.toString()),
-        taxAmount: parseFloat(invoice.tax_amount.toString()),
-        total: parseFloat(invoice.total.toString()),
+        subtotal: parseFloat(invoice.subtotal?.toString() || '0'),
+        taxRate: parseFloat(invoice.tax_rate?.toString() || '0'),
+        taxAmount: parseFloat(invoice.tax_amount?.toString() || '0'),
+        total: parseFloat(invoice.total?.toString() || '0'),
         status: invoice.status as any,
         dateCreated: invoice.date_created,
         dateDue: invoice.date_due,
         notes: invoice.notes || undefined
       }));
 
+      console.log('Transformed invoices:', transformedInvoices);
       setInvoices(transformedInvoices);
     } catch (err) {
+      console.error('Error fetching invoices:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch invoices');
     } finally {
       setLoading(false);
@@ -85,6 +91,29 @@ export const useInvoices = () => {
 
   useEffect(() => {
     fetchInvoices();
+    
+    // Set up real-time subscription for invoices
+    const channel = supabase
+      .channel('invoices-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'invoices' }, 
+        (payload) => {
+          console.log('Invoice change detected:', payload);
+          fetchInvoices();
+        }
+      )
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'invoice_items' }, 
+        (payload) => {
+          console.log('Invoice items change detected:', payload);
+          fetchInvoices();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {
