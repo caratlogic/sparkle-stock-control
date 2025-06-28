@@ -10,6 +10,8 @@ import { Customer, Consignment, InvoiceItem } from '../types/customer';
 import { Gem } from '../types/gem';
 import { sampleCustomers } from '../data/sampleCustomers';
 import { sampleGems } from '../data/sampleGems';
+import { useConsignments } from '../hooks/useConsignments';
+import { useCustomers } from '../hooks/useCustomers';
 
 interface ConsignmentCreationProps {
   onCancel: () => void;
@@ -19,6 +21,9 @@ interface ConsignmentCreationProps {
 }
 
 export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: ConsignmentCreationProps) => {
+  const { addConsignment } = useConsignments();
+  const { customers } = useCustomers();
+  
   // Initialize state with proper defaults
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -28,6 +33,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
   const [quantity, setQuantity] = useState(1);
   const [returnDate, setReturnDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Reset form when component mounts or when preselected values change
   useEffect(() => {
@@ -72,8 +78,8 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     }
   }, [preselectedGem, items.length]);
 
-  // Customer search results
-  const customerResults = sampleCustomers.filter(customer =>
+  // Customer search results - use database customers
+  const customerResults = customers.filter(customer =>
     customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     customer.customerId.toLowerCase().includes(customerSearch.toLowerCase())
   ).slice(0, 5);
@@ -128,7 +134,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const handleSaveConsignment = () => {
+  const handleSaveConsignment = async () => {
     if (!selectedCustomer || items.length === 0 || !returnDate) {
       console.log('Validation failed:', {
         hasCustomer: !!selectedCustomer,
@@ -138,19 +144,57 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
       return;
     }
 
-    const consignment: Consignment = {
-      id: Date.now().toString(),
-      consignmentNumber: `CON-${Date.now()}`,
-      customerId: selectedCustomer.id,
-      customerDetails: selectedCustomer,
-      items,
-      status: 'pending',
-      dateCreated: new Date().toISOString().split('T')[0],
-      returnDate,
-      notes,
-    };
+    setIsSaving(true);
+    
+    try {
+      console.log('🔄 ConsignmentCreation: Preparing to save consignment');
+      
+      const consignmentData = {
+        consignmentNumber: `CON-${Date.now()}`,
+        customerId: selectedCustomer.id,
+        status: 'pending',
+        dateCreated: new Date().toISOString().split('T')[0],
+        returnDate,
+        notes,
+        items: items.map(item => ({
+          gemId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice
+        }))
+      };
 
-    onSave(consignment);
+      console.log('🔄 ConsignmentCreation: Saving consignment data:', consignmentData);
+      
+      const result = await addConsignment(consignmentData);
+      
+      if (result.success) {
+        console.log('✅ ConsignmentCreation: Successfully saved consignment');
+        
+        // Create the consignment object for the callback
+        const consignment: Consignment = {
+          id: result.data.id,
+          consignmentNumber: consignmentData.consignmentNumber,
+          customerId: selectedCustomer.id,
+          customerDetails: selectedCustomer,
+          items,
+          status: 'pending',
+          dateCreated: consignmentData.dateCreated,
+          returnDate,
+          notes,
+        };
+        
+        onSave(consignment);
+      } else {
+        console.error('❌ ConsignmentCreation: Failed to save consignment:', result.error);
+        alert('Failed to save consignment: ' + result.error);
+      }
+    } catch (error) {
+      console.error('❌ ConsignmentCreation: Error saving consignment:', error);
+      alert('An error occurred while saving the consignment');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Check if form is valid
@@ -474,11 +518,11 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
         </Button>
         <Button
           onClick={handleSaveConsignment}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isSaving}
           className="bg-diamond-gradient hover:opacity-90"
         >
           <FileText className="w-4 h-4 mr-2" />
-          Create Consignment
+          {isSaving ? 'Creating...' : 'Create Consignment'}
         </Button>
       </div>
     </div>

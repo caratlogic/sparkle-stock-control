@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { sampleGems } from '../data/sampleGems';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 import { useConsignments } from '../hooks/useConsignments';
 import { useCustomers } from '../hooks/useCustomers';
+import { useInvoices } from '../hooks/useInvoices';
 
 interface InvoiceCreationProps {
   onCancel: () => void;
@@ -24,6 +26,7 @@ interface InvoiceCreationProps {
 export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: InvoiceCreationProps) => {
   const { getConsignmentByGemId, updateConsignmentStatus } = useConsignments();
   const { customers } = useCustomers();
+  const { addInvoice } = useInvoices();
   
   // Initialize state with proper defaults
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -36,6 +39,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Reset form when component mounts or when preselected values change
   useEffect(() => {
@@ -171,28 +175,70 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const handleSaveInvoice = async () => {
     if (!selectedCustomer || items.length === 0) return;
 
-    const invoice: Invoice = {
-      id: Date.now().toString(),
-      invoiceNumber: `INV-${Date.now()}`,
-      customerId: selectedCustomer.id,
-      customerDetails: selectedCustomer,
-      items,
-      subtotal,
-      taxRate,
-      taxAmount,
-      total,
-      status: 'draft',
-      dateCreated: new Date().toISOString().split('T')[0],
-      dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      notes,
-    };
+    setIsSaving(true);
+    
+    try {
+      console.log('🔄 InvoiceCreation: Preparing to save invoice');
+      
+      const invoiceData = {
+        invoiceNumber: `INV-${Date.now()}`,
+        customerId: selectedCustomer.id,
+        subtotal,
+        taxRate,
+        taxAmount,
+        total,
+        status: 'draft',
+        dateCreated: new Date().toISOString().split('T')[0],
+        dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        notes,
+        items: items.map(item => ({
+          gemId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice
+        }))
+      };
 
-    // If there's a related consignment, mark it as inactive
-    if (relatedConsignmentId) {
-      await updateConsignmentStatus(relatedConsignmentId, 'inactive');
+      console.log('🔄 InvoiceCreation: Saving invoice data:', invoiceData);
+      
+      const result = await addInvoice(invoiceData);
+      
+      if (result.success) {
+        console.log('✅ InvoiceCreation: Successfully saved invoice');
+        
+        // If there's a related consignment, mark it as inactive
+        if (relatedConsignmentId) {
+          await updateConsignmentStatus(relatedConsignmentId, 'inactive');
+        }
+        
+        // Create the invoice object for the callback
+        const invoice: Invoice = {
+          id: result.data.id,
+          invoiceNumber: invoiceData.invoiceNumber,
+          customerId: selectedCustomer.id,
+          customerDetails: selectedCustomer,
+          items,
+          subtotal,
+          taxRate,
+          taxAmount,
+          total,
+          status: 'draft',
+          dateCreated: invoiceData.dateCreated,
+          dateDue: invoiceData.dateDue,
+          notes,
+        };
+        
+        onSave(invoice);
+      } else {
+        console.error('❌ InvoiceCreation: Failed to save invoice:', result.error);
+        alert('Failed to save invoice: ' + result.error);
+      }
+    } catch (error) {
+      console.error('❌ InvoiceCreation: Error saving invoice:', error);
+      alert('An error occurred while saving the invoice');
+    } finally {
+      setIsSaving(false);
     }
-
-    onSave(invoice);
   };
 
   const downloadInvoice = () => {
@@ -484,11 +530,11 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         </Button>
         <Button
           onClick={handleSaveInvoice}
-          disabled={!selectedCustomer || items.length === 0}
+          disabled={!selectedCustomer || items.length === 0 || isSaving}
           className="bg-diamond-gradient hover:opacity-90"
         >
           <FileText className="w-4 h-4 mr-2" />
-          Create Invoice
+          {isSaving ? 'Creating...' : 'Create Invoice'}
         </Button>
       </div>
     </div>
