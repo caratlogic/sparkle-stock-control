@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,11 +5,19 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Invoice, Consignment } from '../types/customer';
+import { Invoice, Consignment, InvoiceItem } from '../types/customer';
 import { FileText, Receipt, Download, Search, Calendar, DollarSign, Package, RefreshCw } from 'lucide-react';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
+
+interface ConsignmentItem {
+  id: string;
+  gemId: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
 
 export const TransactionDashboard = () => {
   const { invoices, loading: invoicesLoading, refetch: refetchInvoices } = useInvoices();
@@ -74,6 +81,30 @@ export const TransactionDashboard = () => {
     
     return matchesSearch && matchesStatus && matchesPeriod;
   });
+
+  // Transform consignment for PDF generation
+  const transformConsignmentForPDF = (consignment: any) => {
+    return {
+      ...consignment,
+      items: consignment.items.map((item: any) => ({
+        productId: item.gemId,
+        productType: 'diamond' as const, // Default to diamond since we don't have gem type info
+        productDetails: {
+          stockId: `GEM-${item.gemId.slice(0, 8)}`, // Generate a stock ID
+          carat: 0, // Default values since we don't have this info in consignment items
+          cut: 'N/A',
+          color: 'N/A',
+          description: 'Consignment Item',
+          measurements: 'N/A',
+          certificateNumber: 'N/A',
+          gemType: 'N/A'
+        },
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice
+      }))
+    };
+  };
 
   // Calculate metrics
   const totalInvoiceValue = filteredInvoices.reduce((sum, invoice) => sum + invoice.total, 0);
@@ -430,7 +461,7 @@ export const TransactionDashboard = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => generateConsignmentPDF(consignment)}
+                              onClick={() => generateConsignmentPDF(transformConsignmentForPDF(consignment))}
                               title="Download PDF"
                             >
                               <Download className="w-4 h-4" />
