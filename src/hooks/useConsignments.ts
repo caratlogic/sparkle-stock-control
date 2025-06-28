@@ -51,6 +51,8 @@ export const useConsignments = () => {
       setLoading(true);
       setError(null);
       
+      console.log('Fetching consignments from database...');
+      
       const { data, error } = await supabase
         .from('consignments')
         .select(`
@@ -60,51 +62,66 @@ export const useConsignments = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching consignments:', error);
+        throw error;
+      }
 
-      console.log('Fetched consignments from database:', data);
+      console.log('Raw consignments data from database:', data);
 
-      const transformedConsignments: Consignment[] = data.map(consignment => ({
-        id: consignment.id,
-        consignmentNumber: consignment.consignment_number,
-        customerId: consignment.customer_id,
-        customerDetails: {
-          id: consignment.customers.id,
-          customerId: consignment.customers.customer_id,
-          name: consignment.customers.name,
-          email: consignment.customers.email,
-          phone: consignment.customers.phone,
-          company: consignment.customers.company || undefined,
-          taxId: consignment.customers.tax_id || undefined,
-          address: {
-            street: consignment.customers.street,
-            city: consignment.customers.city,
-            state: consignment.customers.state,
-            zipCode: consignment.customers.zip_code,
-            country: consignment.customers.country || undefined
+      if (!data || data.length === 0) {
+        console.log('No consignments found in database');
+        setConsignments([]);
+        return;
+      }
+
+      const transformedConsignments: Consignment[] = data.map(consignment => {
+        console.log('Processing consignment:', consignment.id, consignment.consignment_number);
+        console.log('Customer data:', consignment.customers);
+        console.log('Items data:', consignment.consignment_items);
+        
+        return {
+          id: consignment.id,
+          consignmentNumber: consignment.consignment_number,
+          customerId: consignment.customer_id,
+          customerDetails: {
+            id: consignment.customers.id,
+            customerId: consignment.customers.customer_id,
+            name: consignment.customers.name,
+            email: consignment.customers.email,
+            phone: consignment.customers.phone,
+            company: consignment.customers.company || undefined,
+            taxId: consignment.customers.tax_id || undefined,
+            address: {
+              street: consignment.customers.street,
+              city: consignment.customers.city,
+              state: consignment.customers.state,
+              zipCode: consignment.customers.zip_code,
+              country: consignment.customers.country || undefined
+            },
+            dateAdded: consignment.customers.date_added,
+            totalPurchases: parseFloat(consignment.customers.total_purchases?.toString() || '0'),
+            lastPurchaseDate: consignment.customers.last_purchase_date || undefined,
+            notes: consignment.customers.notes || undefined
           },
-          dateAdded: consignment.customers.date_added,
-          totalPurchases: parseFloat(consignment.customers.total_purchases?.toString() || '0'),
-          lastPurchaseDate: consignment.customers.last_purchase_date || undefined,
-          notes: consignment.customers.notes || undefined
-        },
-        status: consignment.status as any,
-        dateCreated: consignment.date_created,
-        returnDate: consignment.return_date,
-        notes: consignment.notes || undefined,
-        items: consignment.consignment_items.map((item: any) => ({
-          id: item.id,
-          gemId: item.gem_id,
-          quantity: item.quantity,
-          unitPrice: parseFloat(item.unit_price?.toString() || '0'),
-          totalPrice: parseFloat(item.total_price?.toString() || '0')
-        }))
-      }));
+          status: consignment.status as any,
+          dateCreated: consignment.date_created,
+          returnDate: consignment.return_date,
+          notes: consignment.notes || undefined,
+          items: consignment.consignment_items.map((item: any) => ({
+            id: item.id,
+            gemId: item.gem_id,
+            quantity: item.quantity,
+            unitPrice: parseFloat(item.unit_price?.toString() || '0'),
+            totalPrice: parseFloat(item.total_price?.toString() || '0')
+          }))
+        };
+      });
 
       console.log('Transformed consignments:', transformedConsignments);
       setConsignments(transformedConsignments);
     } catch (err) {
-      console.error('Error fetching consignments:', err);
+      console.error('Error in fetchConsignments:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch consignments');
     } finally {
       setLoading(false);
@@ -187,6 +204,7 @@ export const useConsignments = () => {
   };
 
   useEffect(() => {
+    console.log('useConsignments: Setting up initial fetch and subscriptions');
     fetchConsignments();
     
     // Set up real-time subscription for consignments
@@ -209,6 +227,7 @@ export const useConsignments = () => {
       .subscribe();
 
     return () => {
+      console.log('useConsignments: Cleaning up subscriptions');
       supabase.removeChannel(channel);
     };
   }, []);

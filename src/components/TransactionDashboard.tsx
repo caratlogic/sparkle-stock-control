@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,10 +32,19 @@ export const TransactionDashboard = () => {
   const [consignmentPeriod, setConsignmentPeriod] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  console.log('TransactionDashboard - Invoices:', invoices);
-  console.log('TransactionDashboard - Consignments:', consignments);
+  // Add debugging logs
+  useEffect(() => {
+    console.log('TransactionDashboard - Invoices updated:', invoices);
+    console.log('TransactionDashboard - Invoices loading:', invoicesLoading);
+  }, [invoices, invoicesLoading]);
+
+  useEffect(() => {
+    console.log('TransactionDashboard - Consignments updated:', consignments);
+    console.log('TransactionDashboard - Consignments loading:', consignmentsLoading);
+  }, [consignments, consignmentsLoading]);
 
   const handleRefresh = async () => {
+    console.log('Manual refresh triggered');
     setRefreshing(true);
     await Promise.all([refetchInvoices(), refetchConsignments()]);
     setRefreshing(false);
@@ -81,6 +91,9 @@ export const TransactionDashboard = () => {
     
     return matchesSearch && matchesStatus && matchesPeriod;
   });
+
+  console.log('Filtered invoices:', filteredInvoices);
+  console.log('Filtered consignments:', filteredConsignments);
 
   // Transform consignment for PDF generation
   const transformConsignmentForPDF = (consignment: any) => {
@@ -159,12 +172,19 @@ export const TransactionDashboard = () => {
 
   const isLoading = invoicesLoading || consignmentsLoading;
 
+  if (isLoading) {
+    console.log('TransactionDashboard is loading...');
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-slate-800">Transaction Dashboard</h2>
           <p className="text-slate-600 mt-1">Monitor all invoices and consignments</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Debug: {invoices.length} invoices, {consignments.length} consignments loaded
+          </p>
         </div>
         <Button 
           onClick={handleRefresh} 
