@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,9 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
   const [consignmentStatus, setConsignmentStatus] = useState('all');
   const [invoicePeriod, setInvoicePeriod] = useState('all');
   const [consignmentPeriod, setConsignmentPeriod] = useState('all');
+
+  console.log('TransactionDashboard - Invoices:', invoices);
+  console.log('TransactionDashboard - Consignments:', consignments);
 
   // Filter invoices
   const filteredInvoices = invoices.filter(invoice => {
@@ -48,8 +50,8 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
   const filteredConsignments = consignments.filter(consignment => {
     const matchesSearch = 
       consignment.consignmentNumber.toLowerCase().includes(consignmentSearch.toLowerCase()) ||
-      consignment.customerDetails.name.toLowerCase().includes(consignmentSearch.toLowerCase()) ||
-      consignment.customerDetails.customerId.toLowerCase().includes(consignmentSearch.toLowerCase());
+      (consignment.customerDetails?.name || '').toLowerCase().includes(consignmentSearch.toLowerCase()) ||
+      (consignment.customerDetails?.customerId || '').toLowerCase().includes(consignmentSearch.toLowerCase());
     
     const matchesStatus = consignmentStatus === 'all' || consignment.status === consignmentStatus;
     
@@ -99,7 +101,7 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
       headers.join(','),
       ...filteredConsignments.map(consignment => [
         consignment.consignmentNumber,
-        consignment.customerDetails.name,
+        consignment.customerDetails?.name || 'Unknown',
         consignment.dateCreated,
         consignment.returnDate,
         consignment.items.length,
@@ -174,9 +176,15 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
 
       <Tabs defaultValue="invoices" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="consignments">Consignments</TabsTrigger>
+          <TabsTrigger value="invoices" className="text-sm font-medium">
+            Invoices ({filteredInvoices.length})
+          </TabsTrigger>
+          <TabsTrigger value="consignments" className="text-sm font-medium">
+            Consignments ({filteredConsignments.length})
+          </TabsTrigger>
         </TabsList>
+
+        
 
         <TabsContent value="invoices" className="space-y-4">
           <Card>
@@ -365,8 +373,8 @@ export const TransactionDashboard = ({ invoices, consignments }: TransactionDash
                           <div className="font-medium text-slate-800">{consignment.consignmentNumber}</div>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="font-medium">{consignment.customerDetails.name}</div>
-                          <div className="text-sm text-slate-500">{consignment.customerDetails.customerId}</div>
+                          <div className="font-medium">{consignment.customerDetails?.name || 'Unknown Customer'}</div>
+                          <div className="text-sm text-slate-500">{consignment.customerDetails?.customerId || 'N/A'}</div>
                         </td>
                         <td className="py-4 px-4">
                           <div className="text-sm text-slate-600">{new Date(consignment.dateCreated).toLocaleDateString()}</div>

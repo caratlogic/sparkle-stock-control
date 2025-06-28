@@ -6,6 +6,26 @@ interface Consignment {
   id: string;
   consignmentNumber: string;
   customerId: string;
+  customerDetails: {
+    id: string;
+    customerId: string;
+    name: string;
+    email: string;
+    phone: string;
+    company?: string;
+    taxId?: string;
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country?: string;
+    };
+    dateAdded: string;
+    totalPurchases: number;
+    lastPurchaseDate?: string;
+    notes?: string;
+  };
   status: 'pending' | 'returned' | 'purchased' | 'inactive';
   dateCreated: string;
   returnDate: string;
@@ -33,6 +53,7 @@ export const useConsignments = () => {
         .from('consignments')
         .select(`
           *,
+          customers (*),
           consignment_items (*)
         `)
         .order('created_at', { ascending: false });
@@ -43,6 +64,26 @@ export const useConsignments = () => {
         id: consignment.id,
         consignmentNumber: consignment.consignment_number,
         customerId: consignment.customer_id,
+        customerDetails: {
+          id: consignment.customers.id,
+          customerId: consignment.customers.customer_id,
+          name: consignment.customers.name,
+          email: consignment.customers.email,
+          phone: consignment.customers.phone,
+          company: consignment.customers.company || undefined,
+          taxId: consignment.customers.tax_id || undefined,
+          address: {
+            street: consignment.customers.street,
+            city: consignment.customers.city,
+            state: consignment.customers.state,
+            zipCode: consignment.customers.zip_code,
+            country: consignment.customers.country || undefined
+          },
+          dateAdded: consignment.customers.date_added,
+          totalPurchases: parseFloat(consignment.customers.total_purchases?.toString() || '0'),
+          lastPurchaseDate: consignment.customers.last_purchase_date || undefined,
+          notes: consignment.customers.notes || undefined
+        },
         status: consignment.status as any,
         dateCreated: consignment.date_created,
         returnDate: consignment.return_date,

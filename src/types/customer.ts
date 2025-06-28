@@ -12,7 +12,7 @@ export interface Customer {
     city: string;
     state: string;
     zipCode: string;
-    country: string;
+    country?: string;
   };
   dateAdded: string;
   totalPurchases: number;
