@@ -32,22 +32,35 @@ export const TransactionDashboard = () => {
   const [consignmentPeriod, setConsignmentPeriod] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Add debugging logs
+  // Enhanced debugging logs
   useEffect(() => {
-    console.log('TransactionDashboard - Invoices updated:', invoices);
-    console.log('TransactionDashboard - Invoices loading:', invoicesLoading);
+    console.log('🔍 TransactionDashboard: Invoices data updated:', {
+      count: invoices.length,
+      loading: invoicesLoading,
+      invoiceNumbers: invoices.map(inv => inv.invoiceNumber)
+    });
   }, [invoices, invoicesLoading]);
 
   useEffect(() => {
-    console.log('TransactionDashboard - Consignments updated:', consignments);
-    console.log('TransactionDashboard - Consignments loading:', consignmentsLoading);
+    console.log('🔍 TransactionDashboard: Consignments data updated:', {
+      count: consignments.length,
+      loading: consignmentsLoading,
+      consignmentNumbers: consignments.map(cons => cons.consignmentNumber),
+      fullData: consignments
+    });
   }, [consignments, consignmentsLoading]);
 
   const handleRefresh = async () => {
-    console.log('Manual refresh triggered');
+    console.log('🔄 TransactionDashboard: Manual refresh triggered');
     setRefreshing(true);
-    await Promise.all([refetchInvoices(), refetchConsignments()]);
-    setRefreshing(false);
+    try {
+      await Promise.all([refetchInvoices(), refetchConsignments()]);
+      console.log('✅ TransactionDashboard: Manual refresh completed');
+    } catch (error) {
+      console.error('❌ TransactionDashboard: Manual refresh failed:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Filter invoices
@@ -92,11 +105,25 @@ export const TransactionDashboard = () => {
     return matchesSearch && matchesStatus && matchesPeriod;
   });
 
-  console.log('Filtered invoices:', filteredInvoices);
-  console.log('Filtered consignments:', filteredConsignments);
+  // Enhanced debugging for filtered results
+  useEffect(() => {
+    console.log('🔍 TransactionDashboard: Filtered results updated:', {
+      filteredInvoices: filteredInvoices.length,
+      filteredConsignments: filteredConsignments.length,
+      filters: {
+        invoiceSearch,
+        consignmentSearch,
+        invoiceStatus,
+        consignmentStatus,
+        invoicePeriod,
+        consignmentPeriod
+      }
+    });
+  }, [filteredInvoices, filteredConsignments, invoiceSearch, consignmentSearch, invoiceStatus, consignmentStatus, invoicePeriod, consignmentPeriod]);
 
   // Transform consignment for PDF generation
   const transformConsignmentForPDF = (consignment: any) => {
+    console.log('📄 TransactionDashboard: Transforming consignment for PDF:', consignment.consignmentNumber);
     return {
       ...consignment,
       items: consignment.items.map((item: any) => ({
@@ -125,6 +152,7 @@ export const TransactionDashboard = () => {
     sum + consignment.items.reduce((itemSum, item) => itemSum + item.totalPrice, 0), 0);
 
   const exportInvoicesCSV = () => {
+    console.log('📤 TransactionDashboard: Exporting invoices CSV');
     const headers = ['Invoice Number', 'Customer', 'Date', 'Due Date', 'Total', 'Status'];
     const csvContent = [
       headers.join(','),
@@ -148,6 +176,7 @@ export const TransactionDashboard = () => {
   };
 
   const exportConsignmentsCSV = () => {
+    console.log('📤 TransactionDashboard: Exporting consignments CSV');
     const headers = ['Consignment Number', 'Customer', 'Date Created', 'Return Date', 'Items Count', 'Status'];
     const csvContent = [
       headers.join(','),
@@ -172,9 +201,14 @@ export const TransactionDashboard = () => {
 
   const isLoading = invoicesLoading || consignmentsLoading;
 
-  if (isLoading) {
-    console.log('TransactionDashboard is loading...');
-  }
+  // Enhanced loading state logging
+  useEffect(() => {
+    console.log('⏳ TransactionDashboard: Loading state changed:', {
+      isLoading,
+      invoicesLoading,
+      consignmentsLoading
+    });
+  }, [isLoading, invoicesLoading, consignmentsLoading]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -183,7 +217,8 @@ export const TransactionDashboard = () => {
           <h2 className="text-3xl font-bold text-slate-800">Transaction Dashboard</h2>
           <p className="text-slate-600 mt-1">Monitor all invoices and consignments</p>
           <p className="text-xs text-slate-400 mt-1">
-            Debug: {invoices.length} invoices, {consignments.length} consignments loaded
+            Debug: {invoices.length} invoices, {consignments.length} consignments loaded | 
+            Filtered: {filteredInvoices.length} invoices, {filteredConsignments.length} consignments
           </p>
         </div>
         <Button 
@@ -449,53 +484,64 @@ export const TransactionDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredConsignments.map((consignment) => (
-                        <tr key={consignment.id} className="border-b border-slate-100 hover:bg-slate-50">
-                          <td className="py-4 px-4">
-                            <div className="font-medium text-slate-800">{consignment.consignmentNumber}</div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="font-medium">{consignment.customerDetails?.name || 'Unknown Customer'}</div>
-                            <div className="text-sm text-slate-500">{consignment.customerDetails?.customerId || 'N/A'}</div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-sm text-slate-600">{new Date(consignment.dateCreated).toLocaleDateString()}</div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-sm text-slate-600">{new Date(consignment.returnDate).toLocaleDateString()}</div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-sm text-slate-600">{consignment.items.length} items</div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <Badge 
-                              variant={
-                                consignment.status === 'purchased' ? 'secondary' : 
-                                consignment.status === 'returned' ? 'destructive' : 'default'
-                              }
-                            >
-                              {consignment.status}
-                            </Badge>
-                          </td>
-                          <td className="py-4 px-4">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => generateConsignmentPDF(transformConsignmentForPDF(consignment))}
-                              title="Download PDF"
-                            >
-                              <Download className="w-4 h-4" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredConsignments.map((consignment) => {
+                        console.log('🖼️ TransactionDashboard: Rendering consignment row:', consignment.consignmentNumber);
+                        return (
+                          <tr key={consignment.id} className="border-b border-slate-100 hover:bg-slate-50">
+                            <td className="py-4 px-4">
+                              <div className="font-medium text-slate-800">{consignment.consignmentNumber}</div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="font-medium">{consignment.customerDetails?.name || 'Unknown Customer'}</div>
+                              <div className="text-sm text-slate-500">{consignment.customerDetails?.customerId || 'N/A'}</div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-sm text-slate-600">{new Date(consignment.dateCreated).toLocaleDateString()}</div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-sm text-slate-600">{new Date(consignment.returnDate).toLocaleDateString()}</div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-sm text-slate-600">{consignment.items.length} items</div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <Badge 
+                                variant={
+                                  consignment.status === 'purchased' ? 'secondary' : 
+                                  consignment.status === 'returned' ? 'destructive' : 'default'
+                                }
+                              >
+                                {consignment.status}
+                              </Badge>
+                            </td>
+                            <td className="py-4 px-4">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => generateConsignmentPDF(transformConsignmentForPDF(consignment))}
+                                title="Download PDF"
+                              >
+                                <Download className="w-4 h-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                   
                   {filteredConsignments.length === 0 && (
                     <div className="text-center py-12">
                       <div className="text-slate-400 text-lg mb-2">No consignments found</div>
-                      <div className="text-slate-500">Try adjusting your search or filter criteria</div>
+                      <div className="text-slate-500">
+                        {consignments.length === 0 
+                          ? "No consignments have been created yet"
+                          : "Try adjusting your search or filter criteria"
+                        }
+                      </div>
+                      <div className="text-xs text-slate-400 mt-2">
+                        Debug: {consignments.length} total consignments in state, {filteredConsignments.length} after filtering
+                      </div>
                     </div>
                   )}
                 </div>
