@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +25,7 @@ import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { ActivityLog } from './ActivityLog';
 import { ReminderDashboard } from './ReminderDashboard';
 import { Customer } from '../types/customer';
+import { Gem as GemType } from '../types/gem';
 import { useAuth } from '../contexts/AuthContext';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
@@ -34,6 +34,8 @@ import { sampleGems } from '../data/sampleGems';
 
 export const Dashboard = () => {
   const [activeView, setActiveView] = useState<'overview' | 'customers' | 'diamonds' | 'gems' | 'invoices' | 'consignments' | 'transactions' | 'analytics' | 'activity' | 'reminders'>('overview');
+  const [preselectedCustomer, setPreselectedCustomer] = useState<Customer | null>(null);
+  const [preselectedGem, setPreselectedGem] = useState<GemType | null>(null);
   const { logout } = useAuth();
   const { gems } = useGems();
   const { customers } = useCustomers();
@@ -52,29 +54,53 @@ export const Dashboard = () => {
     console.log('Delete gem:', id);
   };
 
-  const handleCreateInvoice = (gem: any) => {
+  const handleCreateInvoiceFromGem = (gem: GemType) => {
+    setPreselectedGem(gem);
+    setPreselectedCustomer(null);
     setActiveView('invoices');
   };
 
-  const handleCreateConsignment = (gem: any) => {
+  const handleCreateConsignmentFromGem = (gem: GemType) => {
+    setPreselectedGem(gem);
+    setPreselectedCustomer(null);
+    setActiveView('consignments');
+  };
+
+  const handleCreateInvoiceFromCustomer = (customer: Customer) => {
+    setPreselectedCustomer(customer);
+    setPreselectedGem(null);
+    setActiveView('invoices');
+  };
+
+  const handleCreateConsignmentFromCustomer = (customer: Customer) => {
+    setPreselectedCustomer(customer);
+    setPreselectedGem(null);
     setActiveView('consignments');
   };
 
   const handleCancelInvoice = () => {
+    setPreselectedCustomer(null);
+    setPreselectedGem(null);
     setActiveView('overview');
   };
 
   const handleCancelConsignment = () => {
+    setPreselectedCustomer(null);
+    setPreselectedGem(null);
     setActiveView('overview');
   };
 
   const handleSaveInvoice = (invoice: any) => {
     console.log('Invoice saved:', invoice);
+    setPreselectedCustomer(null);
+    setPreselectedGem(null);
     setActiveView('overview');
   };
 
   const handleSaveConsignment = (consignment: any) => {
     console.log('Consignment saved:', consignment);
+    setPreselectedCustomer(null);
+    setPreselectedGem(null);
     setActiveView('overview');
   };
 
@@ -132,12 +158,8 @@ export const Dashboard = () => {
         );
       case 'customers':
         return <CustomerDashboard 
-          onCreateInvoice={(customer: Customer) => {
-            setActiveView('invoices');
-          }}
-          onCreateConsignment={(customer: Customer) => {
-            setActiveView('consignments');
-          }}
+          onCreateInvoice={handleCreateInvoiceFromCustomer}
+          onCreateConsignment={handleCreateConsignmentFromCustomer}
         />;
       case 'diamonds':
         return <DiamondTable 
@@ -150,18 +172,22 @@ export const Dashboard = () => {
           gems={gems} 
           onEdit={handleEditGem} 
           onDelete={handleDeleteGem}
-          onCreateInvoice={handleCreateInvoice}
-          onCreateConsignment={handleCreateConsignment}
+          onCreateInvoice={handleCreateInvoiceFromGem}
+          onCreateConsignment={handleCreateConsignmentFromGem}
         />;
       case 'invoices':
         return <InvoiceCreation 
           onCancel={handleCancelInvoice}
           onSave={handleSaveInvoice}
+          preselectedGem={preselectedGem}
+          preselectedCustomer={preselectedCustomer}
         />;
       case 'consignments':
         return <ConsignmentCreation 
           onCancel={handleCancelConsignment}
           onSave={handleSaveConsignment}
+          preselectedGem={preselectedGem}
+          preselectedCustomer={preselectedCustomer}
         />;
       case 'transactions':
         return <TransactionDashboard />;
