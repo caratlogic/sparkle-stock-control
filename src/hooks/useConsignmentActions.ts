@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Customer, Consignment, InvoiceItem } from '../types/customer';
 import { useConsignments } from './useConsignments';
@@ -115,13 +116,22 @@ export const useConsignmentActions = () => {
       if (result.success) {
         console.log('✅ ConsignmentCreation: Successfully saved consignment');
         
-        // Create the consignment object for the callback
+        // Create the consignment object for the callback with proper ConsignmentItem structure
+        const consignmentItems = items.map(item => ({
+          id: `temp-${Date.now()}-${Math.random()}`,
+          gemId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice,
+          productDetails: item.productDetails
+        }));
+        
         const consignment: Consignment = {
           id: result.data.id,
           consignmentNumber: consignmentData.consignmentNumber,
           customerId: selectedCustomer.id,
           customerDetails: selectedCustomer,
-          items,
+          items: consignmentItems,
           status: 'pending',
           dateCreated: consignmentData.dateCreated,
           returnDate,

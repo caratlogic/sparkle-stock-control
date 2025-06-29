@@ -57,6 +57,16 @@ export interface ConsignmentItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  productDetails: {
+    stockId: string;
+    carat: number;
+    cut: string;
+    color: string;
+    description: string;
+    measurements: string;
+    certificateNumber: string;
+    gemType?: string;
+  };
 }
 
 export interface Invoice {
