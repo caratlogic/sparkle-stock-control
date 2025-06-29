@@ -11,6 +11,7 @@ import { AddPaymentDialog } from './payment/AddPaymentDialog';
 import { ReceivablesTracker } from './payment/ReceivablesTracker';
 import { PaymentExportDialog } from './payment/PaymentExportDialog';
 import { usePayments } from '../hooks/usePayments';
+import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { PaymentFilter } from '../types/payment';
 
 export const PaymentDashboard = () => {
@@ -23,6 +24,7 @@ export const PaymentDashboard = () => {
   });
 
   const { payments, summary, loading, refetch } = usePayments(filters);
+  const { payments: invoicePayments } = useInvoicePayments();
 
   const handleFilterChange = (key: keyof PaymentFilter, value: any) => {
     setFilters(prev => ({
@@ -30,6 +32,11 @@ export const PaymentDashboard = () => {
       [key]: value
     }));
   };
+
+  // Auto-refresh when invoice payments change (when payments are added from other dashboards)
+  useEffect(() => {
+    refetch();
+  }, [invoicePayments, refetch]);
 
   const filteredPayments = payments.filter(payment =>
     payment.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||

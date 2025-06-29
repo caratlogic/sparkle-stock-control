@@ -6,22 +6,27 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit } from 'lucide-react';
+import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart } from 'lucide-react';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useCustomers } from '../hooks/useCustomers';
 import { InvoicePaymentDialog } from './InvoicePaymentDialog';
+import { ConsignmentToInvoiceDialog } from './ConsignmentToInvoiceDialog';
 import { Invoice } from '../types/customer';
+import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
+import { useToast } from '@/hooks/use-toast';
 
 export const TransactionDashboard = () => {
   const { invoices, loading: invoicesLoading } = useInvoices();
-  const { consignments, loading: consignmentsLoading } = useConsignments();
+  const { consignments, loading: consignmentsLoading, updateConsignmentStatus } = useConsignments();
   const { addPayment, getTotalPaidAmount, fetchPayments } = useInvoicePayments();
   const { customers } = useCustomers();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'invoices' | 'consignments'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedConsignmentForInvoice, setSelectedConsignmentForInvoice] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPayments();
@@ -43,8 +48,54 @@ export const TransactionDashboard = () => {
     const result = await addPayment(payment);
     if (result.success) {
       await fetchPayments(); // Refresh payments after adding
+      toast({
+        title: "Success",
+        description: "Payment recorded successfully",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to record payment",
+        variant: "destructive",
+      });
     }
     return result;
+  };
+
+  const handleDownloadInvoice = (invoice: Invoice) => {
+    try {
+      generateInvoicePDF(invoice);
+      toast({
+        title: "Success",
+        description: "Invoice downloaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download invoice",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadConsignment = (consignment: any) => {
+    try {
+      generateConsignmentPDF(consignment);
+      toast({
+        title: "Success",
+        description: "Consignment downloaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download consignment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleConsignmentToInvoice = async (consignmentId: string) => {
+    setSelectedConsignmentForInvoice(consignmentId);
   };
 
   const filteredInvoices = invoices.filter(invoice => {
@@ -250,6 +301,14 @@ export const TransactionDashboard = () => {
                               <Button variant="ghost" size="sm">
                                 <Edit className="w-4 h-4" />
                               </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDownloadInvoice(invoice)}
+                                title="Download Invoice"
+                              >
+                                <Download className="w-4 h-4" />
+                              </Button>
                               <InvoicePaymentDialog
                                 invoice={{
                                   ...invoice,
@@ -318,6 +377,24 @@ export const TransactionDashboard = () => {
                             <Button variant="ghost" size="sm">
                               <Edit className="w-4 h-4" />
                             </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDownloadConsignment(consignment)}
+                              title="Download Consignment"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            {consignment.status === 'pending' && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleConsignmentToInvoice(consignment.id)}
+                                title="Convert to Invoice"
+                              >
+                                <ShoppingCart className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -329,6 +406,20 @@ export const TransactionDashboard = () => {
           )}
         </CardContent>
       </Card>
+
+      {selectedConsignmentForInvoice && (
+        <ConsignmentToInvoiceDialog
+          consignmentId={selectedConsignmentForInvoice}
+          onClose={() => setSelectedConsignmentForInvoice(null)}
+          onSuccess={() => {
+            setSelectedConsignmentForInvoice(null);
+            toast({
+              title: "Success",
+              description: "Consignment converted to invoice successfully",
+            });
+          }}
+        />
+      )}
     </div>
   );
 };
