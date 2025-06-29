@@ -91,7 +91,7 @@ export interface Consignment {
   customerId: string;
   customerDetails: Customer;
   items: ConsignmentItem[];
-  status: 'pending' | 'active' | 'returned' | 'sold' | 'inactive';
+  status: 'pending' | 'returned' | 'purchased' | 'inactive';
   dateCreated: string;
   returnDate: string;
   notes?: string;
