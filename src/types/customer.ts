@@ -57,7 +57,7 @@ export interface ConsignmentItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
-  productDetails: {
+  productDetails?: {
     stockId: string;
     carat: number;
     cut: string;
