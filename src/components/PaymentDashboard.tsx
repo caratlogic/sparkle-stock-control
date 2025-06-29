@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,10 +33,23 @@ export const PaymentDashboard = () => {
     }));
   };
 
-  // Auto-refresh when invoice payments change (when payments are added from other dashboards)
-  useEffect(() => {
+  // Use useCallback to memoize the refetch function to prevent unnecessary re-renders
+  const memoizedRefetch = useCallback(() => {
     refetch();
-  }, [invoicePayments, refetch]);
+  }, [refetch]);
+
+  // Auto-refresh when invoice payments change (when payments are added from other dashboards)
+  // Use a ref to track the previous length to avoid infinite loops
+  const [previousPaymentsLength, setPreviousPaymentsLength] = useState(0);
+  
+  useEffect(() => {
+    const currentLength = invoicePayments.length;
+    if (currentLength !== previousPaymentsLength && previousPaymentsLength > 0) {
+      console.log('🔄 PaymentDashboard: Invoice payments changed, refreshing payment data');
+      memoizedRefetch();
+    }
+    setPreviousPaymentsLength(currentLength);
+  }, [invoicePayments.length, memoizedRefetch, previousPaymentsLength]);
 
   const filteredPayments = payments.filter(payment =>
     payment.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,7 +102,7 @@ export const PaymentDashboard = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={refetch}
+                onClick={memoizedRefetch}
                 disabled={loading}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -151,7 +164,7 @@ export const PaymentDashboard = () => {
           <PaymentTransactionsTable
             payments={filteredPayments}
             loading={loading}
-            onRefresh={refetch}
+            onRefresh={memoizedRefetch}
           />
         </CardContent>
       </Card>
@@ -161,7 +174,7 @@ export const PaymentDashboard = () => {
         onClose={() => setShowAddPayment(false)}
         onSuccess={() => {
           setShowAddPayment(false);
-          refetch();
+          memoizedRefetch();
         }}
       />
 
