@@ -145,15 +145,17 @@ export const Dashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto p-1">
-          <TabsTrigger value="analytics" className="text-xs md:text-sm">Analytics</TabsTrigger>
-          <TabsTrigger value="inventory" className="text-xs md:text-sm">Inventory</TabsTrigger>
-          <TabsTrigger value="customers" className="text-xs md:text-sm">Customers</TabsTrigger>
-          <TabsTrigger value="transactions" className="text-xs md:text-sm">Transactions</TabsTrigger>
-          <TabsTrigger value="payments" className="text-xs md:text-sm">Payments</TabsTrigger>
-          <TabsTrigger value="reminders" className="text-xs md:text-sm">Reminders</TabsTrigger>
-          <TabsTrigger value="communications" className="text-xs md:text-sm">Communications</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max">
+            <TabsTrigger value="analytics" className="whitespace-nowrap px-3 py-1.5 text-sm">Analytics</TabsTrigger>
+            <TabsTrigger value="inventory" className="whitespace-nowrap px-3 py-1.5 text-sm">Inventory</TabsTrigger>
+            <TabsTrigger value="customers" className="whitespace-nowrap px-3 py-1.5 text-sm">Customers</TabsTrigger>
+            <TabsTrigger value="transactions" className="whitespace-nowrap px-3 py-1.5 text-sm">Transactions</TabsTrigger>
+            <TabsTrigger value="payments" className="whitespace-nowrap px-3 py-1.5 text-sm">Payments</TabsTrigger>
+            <TabsTrigger value="reminders" className="whitespace-nowrap px-3 py-1.5 text-sm">Reminders</TabsTrigger>
+            <TabsTrigger value="communications" className="whitespace-nowrap px-3 py-1.5 text-sm">Communications</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="analytics" className="space-y-6">
           <Card>
