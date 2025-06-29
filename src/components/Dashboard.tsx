@@ -39,8 +39,8 @@ export const Dashboard = () => {
   const { customers } = useCustomers();
   const { invoices } = useInvoices();
 
-  // Combine database gems with sample gems for diamond view
-  const allDiamonds = [...gems.filter(g => g.gemType === 'Diamond'), ...sampleGems.filter(g => g.gemType === 'Diamond')];
+  // Get only sample diamonds for the diamond view (since they have the proper Diamond type with clarity)
+  const sampleDiamonds = sampleGems.filter(g => g.gemType === 'Diamond' && 'clarity' in g);
 
   const handleEditGem = (gem: any) => {
     // Handle gem editing logic
@@ -141,7 +141,7 @@ export const Dashboard = () => {
         />;
       case 'diamonds':
         return <DiamondTable 
-          diamonds={allDiamonds} 
+          diamonds={sampleDiamonds as any[]} 
           onEdit={handleEditGem} 
           onDelete={handleDeleteGem} 
         />;
