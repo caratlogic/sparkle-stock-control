@@ -51,6 +51,14 @@ export interface InvoiceItem {
   totalPrice: number;
 }
 
+export interface ConsignmentItem {
+  id: string;
+  gemId: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
 export interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -72,7 +80,7 @@ export interface Consignment {
   consignmentNumber: string;
   customerId: string;
   customerDetails: Customer;
-  items: InvoiceItem[];
+  items: ConsignmentItem[];
   status: 'pending' | 'active' | 'returned' | 'sold' | 'inactive';
   dateCreated: string;
   returnDate: string;
