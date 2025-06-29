@@ -23,11 +23,54 @@ import { PaymentDashboard } from './PaymentDashboard';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { ActivityLog } from './ActivityLog';
 import { ReminderDashboard } from './ReminderDashboard';
+import { useGems } from '../hooks/useGems';
+import { useCustomers } from '../hooks/useCustomers';
+import { useInvoices } from '../hooks/useInvoices';
+import { toast } from 'sonner';
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showInvoiceCreation, setShowInvoiceCreation] = useState(false);
   const [showConsignmentCreation, setShowConsignmentCreation] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+
+  // Hooks for data management
+  const { gems, updateGem, deleteGem, refetch: refetchGems } = useGems();
+  const { customers, refetch: refetchCustomers } = useCustomers();
+  const { invoices, refetch: refetchInvoices } = useInvoices();
+
+  // Gem handlers
+  const handleEditGem = (gem) => {
+    // For now, just show a toast - you can implement gem editing later
+    toast.info('Gem editing feature coming soon');
+  };
+
+  const handleDeleteGem = async (id) => {
+    const result = await deleteGem(id);
+    if (result.success) {
+      toast.success('Gem deleted successfully');
+    } else {
+      toast.error('Failed to delete gem');
+    }
+  };
+
+  // Customer handlers
+  const handleEditCustomer = (customer) => {
+    toast.info('Customer editing feature coming soon');
+  };
+
+  const handleDeleteCustomer = (id) => {
+    toast.info('Customer deletion feature coming soon');
+  };
+
+  const handleUpdateDiscount = async (customerId, discount) => {
+    toast.info('Discount update feature coming soon');
+  };
+
+  const handleCommunicateWithCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setActiveTab('communications');
+  };
 
   if (showInvoiceCreation) {
     return (
@@ -214,11 +257,21 @@ export const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="inventory">
-            <GemTable />
+            <GemTable 
+              gems={gems}
+              onEdit={handleEditGem}
+              onDelete={handleDeleteGem}
+            />
           </TabsContent>
 
           <TabsContent value="customers">
-            <CustomerTable />
+            <CustomerTable 
+              customers={customers}
+              onEdit={handleEditCustomer}
+              onDelete={handleDeleteCustomer}
+              onUpdateDiscount={handleUpdateDiscount}
+              onCommunicate={handleCommunicateWithCustomer}
+            />
           </TabsContent>
 
           <TabsContent value="transactions">
@@ -230,11 +283,17 @@ export const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="communications">
-            <CustomerCommunications />
+            <CustomerCommunications 
+              customer={selectedCustomer}
+            />
           </TabsContent>
 
           <TabsContent value="analytics">
-            <AnalyticsDashboard />
+            <AnalyticsDashboard 
+              gems={gems}
+              customers={customers}
+              invoices={invoices}
+            />
           </TabsContent>
 
           <TabsContent value="activity">
