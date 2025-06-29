@@ -146,14 +146,49 @@ export const Dashboard = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="w-full overflow-x-auto">
-          <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max">
-            <TabsTrigger value="analytics" className="whitespace-nowrap px-3 py-1.5 text-sm">Analytics</TabsTrigger>
-            <TabsTrigger value="inventory" className="whitespace-nowrap px-3 py-1.5 text-sm">Inventory</TabsTrigger>
-            <TabsTrigger value="customers" className="whitespace-nowrap px-3 py-1.5 text-sm">Customers</TabsTrigger>
-            <TabsTrigger value="transactions" className="whitespace-nowrap px-3 py-1.5 text-sm">Transactions</TabsTrigger>
-            <TabsTrigger value="payments" className="whitespace-nowrap px-3 py-1.5 text-sm">Payments</TabsTrigger>
-            <TabsTrigger value="reminders" className="whitespace-nowrap px-3 py-1.5 text-sm">Reminders</TabsTrigger>
-            <TabsTrigger value="communications" className="whitespace-nowrap px-3 py-1.5 text-sm">Communications</TabsTrigger>
+          <TabsList className="inline-flex h-12 items-center justify-start rounded-lg bg-slate-100 p-1 text-slate-600 min-w-max">
+            <TabsTrigger 
+              value="analytics" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger 
+              value="inventory" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Inventory
+            </TabsTrigger>
+            <TabsTrigger 
+              value="customers" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Customers
+            </TabsTrigger>
+            <TabsTrigger 
+              value="transactions" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payments" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Payments
+            </TabsTrigger>
+            <TabsTrigger 
+              value="reminders" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Reminders
+            </TabsTrigger>
+            <TabsTrigger 
+              value="communications" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Communications
+            </TabsTrigger>
           </TabsList>
         </div>
 
