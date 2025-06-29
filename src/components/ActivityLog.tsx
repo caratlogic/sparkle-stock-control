@@ -27,6 +27,7 @@ import { useActivityLog } from '../hooks/useActivityLog';
 import { useCustomers } from '../hooks/useCustomers';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { DateRange } from 'react-day-picker';
 
 export const ActivityLog = () => {
   const { activities, reminders, loading, fetchActivities, addReminder } = useActivityLog();
@@ -41,7 +42,7 @@ export const ActivityLog = () => {
   });
   
   const [showFilters, setShowFilters] = useState(false);
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const communicationTypes = [
     { value: 'note', label: 'Note', icon: FileText },
@@ -76,7 +77,7 @@ export const ActivityLog = () => {
   const handleApplyFilters = () => {
     const filterData = {
       ...filters,
-      dateRange: dateRange.from && dateRange.to ? {
+      dateRange: dateRange?.from && dateRange?.to ? {
         start: format(dateRange.from, 'yyyy-MM-dd'),
         end: format(dateRange.to, 'yyyy-MM-dd')
       } : undefined
@@ -93,7 +94,7 @@ export const ActivityLog = () => {
       responseStatus: [],
       customerId: ''
     });
-    setDateRange({});
+    setDateRange(undefined);
     fetchActivities();
   };
 
@@ -190,7 +191,7 @@ export const ActivityLog = () => {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
                       <CalendarIcon className="w-4 h-4 mr-2" />
-                      {dateRange.from && dateRange.to
+                      {dateRange?.from && dateRange?.to
                         ? `${format(dateRange.from, 'MMM dd')} - ${format(dateRange.to, 'MMM dd')}`
                         : 'Select dates'}
                     </Button>
@@ -199,7 +200,7 @@ export const ActivityLog = () => {
                     <Calendar
                       mode="range"
                       selected={dateRange}
-                      onSelect={(range) => setDateRange(range || {})}
+                      onSelect={setDateRange}
                       numberOfMonths={2}
                     />
                   </PopoverContent>
@@ -292,7 +293,7 @@ export const ActivityLog = () => {
                 .map((reminder) => (
                   <div key={reminder.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
                     <div>
-                      <p className="font-medium">{reminder.customerName}</p>
+                      <p className="font-medium">{reminder.customerName || 'Unknown Customer'}</p>
                       <p className="text-sm text-slate-600">{reminder.message}</p>
                       <p className="text-xs text-slate-500">Due: {format(new Date(reminder.reminderDate), 'MMM dd, yyyy')}</p>
                     </div>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +35,8 @@ export const CustomerCommunications = ({ customer }: CustomerCommunicationsProps
         senderType: 'owner',
         senderName: 'Business Owner',
         senderEmail: 'owner@business.com',
-        isRead: true
+        isRead: true,
+        responseStatus: 'pending'
       });
 
       if (result.success) {

@@ -266,7 +266,7 @@ export const ReminderDashboard = () => {
                       <Badge variant="destructive">Overdue</Badge>
                       <Badge variant="outline">{reminder.reminderType.replace('_', ' ')}</Badge>
                     </div>
-                    <p className="font-medium">{reminder.customerName}</p>
+                    <p className="font-medium">{reminder.customerName || 'Unknown Customer'}</p>
                     <p className="text-sm text-slate-600">{reminder.message}</p>
                     <p className="text-xs text-red-600">
                       Due: {format(new Date(reminder.reminderDate), 'PPP')}
@@ -309,7 +309,7 @@ export const ReminderDashboard = () => {
                         {format(new Date(reminder.reminderDate), 'MMM dd, yyyy')}
                       </span>
                     </div>
-                    <p className="font-medium">{reminder.customerName}</p>
+                    <p className="font-medium">{reminder.customerName || 'Unknown Customer'}</p>
                     <p className="text-sm text-slate-600">{reminder.message}</p>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => handleMarkSent(reminder.id)}>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Customer, Consignment, InvoiceItem } from '../types/customer';
 import { useConsignments } from './useConsignments';
@@ -47,6 +46,7 @@ export const useConsignmentActions = () => {
         senderName: 'System',
         senderEmail: 'system@business.com',
         isRead: true,
+        responseStatus: 'pending',
         relatedConsignmentId: consignment.id
       });
 

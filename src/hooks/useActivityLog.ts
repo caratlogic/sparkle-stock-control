@@ -24,10 +24,11 @@ export interface CustomerReminder {
   staffEmail?: string;
   createdAt: string;
   updatedAt: string;
+  customerName?: string; // Add optional customerName
 }
 
 export const useActivityLog = () => {
-  const [activities, setActivities] = useState<CustomerCommunication[]>([]);
+  const [activities, setActivities] = useState<(CustomerCommunication & { customerName?: string; customerEmail?: string })[]>([]);
   const [reminders, setReminders] = useState<CustomerReminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,32 +39,32 @@ export const useActivityLog = () => {
       setError(null);
 
       let whereConditions: string[] = [];
-      let params: any[] = [];
+      let paramValues: any[] = [];
       let paramIndex = 1;
 
       if (filters?.customerId) {
         whereConditions.push(`customer_id = $${paramIndex}`);
-        params.push(filters.customerId);
+        paramValues.push(filters.customerId);
         paramIndex++;
       }
 
       if (filters?.dateRange) {
         whereConditions.push(`created_at >= $${paramIndex} AND created_at <= $${paramIndex + 1}`);
-        params.push(filters.dateRange.start, filters.dateRange.end);
+        paramValues.push(filters.dateRange.start, filters.dateRange.end);
         paramIndex += 2;
       }
 
       if (filters?.communicationType && filters.communicationType.length > 0) {
-        const typeConditions = filters.communicationType.map((_, index) => `$${paramIndex + index}`).join(', ');
+        const typeConditions = filters.communicationType.map((_: any, index: number) => `$${paramIndex + index}`).join(', ');
         whereConditions.push(`communication_type IN (${typeConditions})`);
-        params.push(...filters.communicationType);
+        paramValues.push(...filters.communicationType);
         paramIndex += filters.communicationType.length;
       }
 
       if (filters?.responseStatus && filters.responseStatus.length > 0) {
-        const statusConditions = filters.responseStatus.map((_, index) => `$${paramIndex + index}`).join(', ');
+        const statusConditions = filters.responseStatus.map((_: any, index: number) => `$${paramIndex + index}`).join(', ');
         whereConditions.push(`response_status IN (${statusConditions})`);
-        params.push(...filters.responseStatus);
+        paramValues.push(...filters.responseStatus);
         paramIndex += filters.responseStatus.length;
       }
 
@@ -77,11 +78,38 @@ export const useActivityLog = () => {
         ORDER BY cc.created_at DESC
       `;
 
-      const { data, error } = await supabase.rpc('exec_sql', { query, params });
+      // Use direct table access instead of RPC for now
+      let supabaseQuery = supabase
+        .from('customer_communications' as any)
+        .select(`
+          *,
+          customers!customer_communications_customer_id_fkey(name, email)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (filters?.customerId) {
+        supabaseQuery = supabaseQuery.eq('customer_id', filters.customerId);
+      }
+
+      if (filters?.dateRange) {
+        supabaseQuery = supabaseQuery
+          .gte('created_at', filters.dateRange.start)
+          .lte('created_at', filters.dateRange.end);
+      }
+
+      if (filters?.communicationType && filters.communicationType.length > 0) {
+        supabaseQuery = supabaseQuery.in('communication_type', filters.communicationType);
+      }
+
+      if (filters?.responseStatus && filters.responseStatus.length > 0) {
+        supabaseQuery = supabaseQuery.in('response_status', filters.responseStatus);
+      }
+
+      const { data, error } = await supabaseQuery;
 
       if (error) throw error;
 
-      const transformedActivities: CustomerCommunication[] = (data || []).map((activity: any) => ({
+      const transformedActivities = (data || []).map((activity: any) => ({
         id: activity.id,
         customerId: activity.customer_id,
         communicationType: activity.communication_type,
@@ -96,8 +124,8 @@ export const useActivityLog = () => {
         relatedConsignmentId: activity.related_consignment_id,
         createdAt: activity.created_at,
         updatedAt: activity.updated_at,
-        customerName: activity.customer_name,
-        customerEmail: activity.customer_email
+        customerName: activity.customers?.name,
+        customerEmail: activity.customers?.email
       }));
 
       setActivities(transformedActivities);
@@ -112,14 +140,13 @@ export const useActivityLog = () => {
 
   const fetchReminders = async () => {
     try {
-      const { data, error } = await supabase.rpc('exec_sql', {
-        query: `
-          SELECT cr.*, c.name as customer_name
-          FROM customer_reminders cr
-          LEFT JOIN customers c ON cr.customer_id = c.id
-          ORDER BY cr.reminder_date ASC
-        `
-      });
+      const { data, error } = await supabase
+        .from('customer_reminders' as any)
+        .select(`
+          *,
+          customers!customer_reminders_customer_id_fkey(name)
+        `)
+        .order('reminder_date', { ascending: true });
 
       if (error) throw error;
 
@@ -134,7 +161,7 @@ export const useActivityLog = () => {
         staffEmail: reminder.staff_email,
         createdAt: reminder.created_at,
         updatedAt: reminder.updated_at,
-        customerName: reminder.customer_name
+        customerName: reminder.customers?.name
       }));
 
       setReminders(transformedReminders);
@@ -143,24 +170,20 @@ export const useActivityLog = () => {
     }
   };
 
-  const addReminder = async (reminder: Omit<CustomerReminder, 'id' | 'createdAt' | 'updatedAt' | 'isSent'>) => {
+  const addReminder = async (reminder: Omit<CustomerReminder, 'id' | 'createdAt' | 'updatedAt' | 'isSent' | 'customerName'>) => {
     try {
-      const { data, error } = await supabase.rpc('exec_sql', {
-        query: `
-          INSERT INTO customer_reminders (
-            customer_id, communication_id, reminder_type, reminder_date, message, staff_email
-          ) VALUES ($1, $2, $3, $4, $5, $6)
-          RETURNING *
-        `,
-        params: [
-          reminder.customerId,
-          reminder.communicationId,
-          reminder.reminderType,
-          reminder.reminderDate,
-          reminder.message,
-          reminder.staffEmail
-        ]
-      });
+      const { data, error } = await supabase
+        .from('customer_reminders' as any)
+        .insert([{
+          customer_id: reminder.customerId,
+          communication_id: reminder.communicationId,
+          reminder_type: reminder.reminderType,
+          reminder_date: reminder.reminderDate,
+          message: reminder.message,
+          staff_email: reminder.staffEmail
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -174,10 +197,10 @@ export const useActivityLog = () => {
 
   const markReminderSent = async (reminderId: string) => {
     try {
-      const { error } = await supabase.rpc('exec_sql', {
-        query: 'UPDATE customer_reminders SET is_sent = true WHERE id = $1',
-        params: [reminderId]
-      });
+      const { error } = await supabase
+        .from('customer_reminders' as any)
+        .update({ is_sent: true })
+        .eq('id', reminderId);
 
       if (error) throw error;
 

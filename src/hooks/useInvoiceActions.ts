@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Customer, Invoice, InvoiceItem } from '../types/customer';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
@@ -53,6 +52,7 @@ export const useInvoiceActions = () => {
         senderName: 'System',
         senderEmail: 'system@business.com',
         isRead: true,
+        responseStatus: 'pending',
         relatedInvoiceId: invoice.id
       });
 
