@@ -1,15 +1,15 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Users, UserPlus, DollarSign, Calendar, Search, Edit, Eye } from 'lucide-react';
+import { Users, UserPlus, DollarSign, Calendar, Search, Edit, Eye, MessageCircle } from 'lucide-react';
 import { Customer } from '../types/customer';
 import { useCustomers } from '../hooks/useCustomers';
 import { supabase } from '@/integrations/supabase/client';
 import { CustomerForm } from './CustomerForm';
 import { CustomerTable } from './CustomerTable';
+import { CustomerCommunications } from './CustomerCommunications';
 import { useToast } from '@/hooks/use-toast';
 
 interface CustomerDashboardProps {
@@ -23,6 +23,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCustomerForComms, setSelectedCustomerForComms] = useState<Customer | null>(null);
 
   // Calculate metrics
   const totalCustomers = customers.length;
@@ -183,6 +184,23 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
     );
   }
 
+  if (selectedCustomerForComms) {
+    return (
+      <div className="animate-fade-in">
+        <div className="flex items-center mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => setSelectedCustomerForComms(null)} 
+            className="mr-4"
+          >
+            ← Back to Customers
+          </Button>
+        </div>
+        <CustomerCommunications customer={selectedCustomerForComms} />
+      </div>
+    );
+  }
+
   if (showForm) {
     return (
       <div className="animate-fade-in">
@@ -278,6 +296,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
             onCreateInvoice={onCreateInvoice}
             onCreateConsignment={onCreateConsignment}
             onUpdateDiscount={handleUpdateDiscount}
+            onCommunicate={(customer) => setSelectedCustomerForComms(customer)}
           />
         </CardContent>
       </Card>

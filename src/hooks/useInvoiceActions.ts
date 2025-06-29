@@ -5,12 +5,63 @@ import { generateInvoicePDF } from '../utils/pdfGenerator';
 import { useConsignments } from './useConsignments';
 import { useInvoices } from './useInvoices';
 import { useGems } from './useGems';
+import { useCustomerCommunications } from './useCustomerCommunications';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useInvoiceActions = () => {
   const { updateConsignmentStatus } = useConsignments();
   const { addInvoice } = useInvoices();
   const { gems } = useGems();
+  const { addCommunication } = useCustomerCommunications();
   const [isSaving, setIsSaving] = useState(false);
+
+  const sendInvoiceEmail = async (invoice: Invoice) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-invoice-email', {
+        body: {
+          customerEmail: invoice.customerDetails.email,
+          customerName: invoice.customerDetails.name,
+          invoiceNumber: invoice.invoiceNumber,
+          invoiceDetails: {
+            items: invoice.items.map(item => ({
+              description: `${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} - ${item.productDetails.stockId}`,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              totalPrice: item.totalPrice
+            })),
+            subtotal: invoice.subtotal,
+            taxAmount: invoice.taxAmount,
+            total: invoice.total,
+            dateCreated: invoice.dateCreated,
+            dateDue: invoice.dateDue
+          },
+          ownerEmail: 'owner@business.com' // Replace with actual owner email
+        }
+      });
+
+      if (error) throw error;
+
+      console.log('Invoice email sent:', data);
+      
+      // Add communication record
+      await addCommunication({
+        customerId: invoice.customerId,
+        communicationType: 'email',
+        subject: `Invoice ${invoice.invoiceNumber} - Diamond Inventory`,
+        message: `Invoice email sent automatically for invoice ${invoice.invoiceNumber}. Total amount: $${invoice.total.toLocaleString()}`,
+        senderType: 'owner',
+        senderName: 'System',
+        senderEmail: 'system@business.com',
+        isRead: true,
+        relatedInvoiceId: invoice.id
+      });
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error sending invoice email:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  };
 
   const handleSaveInvoice = async (
     selectedCustomer: Customer | null,
@@ -99,6 +150,13 @@ export const useInvoiceActions = () => {
           dateDue: invoiceData.dateDue,
           notes,
         };
+        
+        // Send email notification
+        const emailResult = await sendInvoiceEmail(invoice);
+        if (!emailResult.success) {
+          console.warn('Failed to send invoice email:', emailResult.error);
+          // Don't fail the entire operation if email fails
+        }
         
         onSave(invoice);
       } else {
