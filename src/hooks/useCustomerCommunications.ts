@@ -5,13 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 export interface CustomerCommunication {
   id: string;
   customerId: string;
-  communicationType: 'note' | 'email' | 'follow_up' | 'reply';
+  communicationType: 'note' | 'email' | 'follow_up' | 'reply' | 'call' | 'document' | 'invoice' | 'consignment' | 'payment' | 'kyc';
   subject?: string;
   message: string;
   senderType: 'owner' | 'customer';
   senderName?: string;
   senderEmail?: string;
   isRead: boolean;
+  responseStatus: 'pending' | 'responded' | 'no_response' | 'completed';
   relatedInvoiceId?: string;
   relatedConsignmentId?: string;
   createdAt: string;
@@ -28,20 +29,60 @@ export const useCustomerCommunications = (customerId?: string) => {
       setLoading(true);
       setError(null);
       
-      let query = supabase
-        .from('customer_communications')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Use raw SQL query for the customer_communications table
+      let query = `
+        SELECT * FROM customer_communications
+        ${customerId ? 'WHERE customer_id = $1' : ''}
+        ORDER BY created_at DESC
+      `;
 
-      if (customerId) {
-        query = query.eq('customer_id', customerId);
+      const { data, error } = customerId 
+        ? await supabase.rpc('exec_sql', { 
+            query: 'SELECT * FROM customer_communications WHERE customer_id = $1 ORDER BY created_at DESC',
+            params: [customerId]
+          })
+        : await supabase.rpc('exec_sql', {
+            query: 'SELECT * FROM customer_communications ORDER BY created_at DESC'
+          });
+
+      if (error) {
+        // Fallback: try direct table access (might work after types are updated)
+        const fallbackQuery = supabase
+          .from('customer_communications' as any)
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (customerId) {
+          fallbackQuery.eq('customer_id', customerId);
+        }
+
+        const fallbackResult = await fallbackQuery;
+        
+        if (fallbackResult.error) throw fallbackResult.error;
+        
+        const transformedCommunications: CustomerCommunication[] = (fallbackResult.data || []).map((comm: any) => ({
+          id: comm.id,
+          customerId: comm.customer_id,
+          communicationType: comm.communication_type,
+          subject: comm.subject,
+          message: comm.message,
+          senderType: comm.sender_type,
+          senderName: comm.sender_name,
+          senderEmail: comm.sender_email,
+          isRead: comm.is_read,
+          responseStatus: comm.response_status || 'pending',
+          relatedInvoiceId: comm.related_invoice_id,
+          relatedConsignmentId: comm.related_consignment_id,
+          createdAt: comm.created_at,
+          updatedAt: comm.updated_at
+        }));
+
+        setCommunications(transformedCommunications);
+        return;
       }
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const transformedCommunications: CustomerCommunication[] = data.map(comm => ({
+      // Transform data from RPC call
+      const transformedCommunications: CustomerCommunication[] = (data || []).map((comm: any) => ({
         id: comm.id,
         customerId: comm.customer_id,
         communicationType: comm.communication_type,
@@ -51,6 +92,7 @@ export const useCustomerCommunications = (customerId?: string) => {
         senderName: comm.sender_name,
         senderEmail: comm.sender_email,
         isRead: comm.is_read,
+        responseStatus: comm.response_status || 'pending',
         relatedInvoiceId: comm.related_invoice_id,
         relatedConsignmentId: comm.related_consignment_id,
         createdAt: comm.created_at,
@@ -61,6 +103,7 @@ export const useCustomerCommunications = (customerId?: string) => {
     } catch (err) {
       console.error('Error fetching communications:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch communications');
+      setCommunications([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -68,22 +111,30 @@ export const useCustomerCommunications = (customerId?: string) => {
 
   const addCommunication = async (communication: Omit<CustomerCommunication, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const { data, error } = await supabase
-        .from('customer_communications')
-        .insert({
-          customer_id: communication.customerId,
-          communication_type: communication.communicationType,
-          subject: communication.subject,
-          message: communication.message,
-          sender_type: communication.senderType,
-          sender_name: communication.senderName,
-          sender_email: communication.senderEmail,
-          is_read: communication.isRead,
-          related_invoice_id: communication.relatedInvoiceId,
-          related_consignment_id: communication.relatedConsignmentId
-        })
-        .select()
-        .single();
+      // Use raw SQL insert
+      const { data, error } = await supabase.rpc('exec_sql', {
+        query: `
+          INSERT INTO customer_communications (
+            customer_id, communication_type, subject, message, sender_type, 
+            sender_name, sender_email, is_read, response_status, 
+            related_invoice_id, related_consignment_id
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          RETURNING *
+        `,
+        params: [
+          communication.customerId,
+          communication.communicationType,
+          communication.subject,
+          communication.message,
+          communication.senderType,
+          communication.senderName,
+          communication.senderEmail,
+          communication.isRead,
+          communication.responseStatus,
+          communication.relatedInvoiceId,
+          communication.relatedConsignmentId
+        ]
+      });
 
       if (error) throw error;
 
@@ -97,10 +148,10 @@ export const useCustomerCommunications = (customerId?: string) => {
 
   const markAsRead = async (communicationId: string) => {
     try {
-      const { error } = await supabase
-        .from('customer_communications')
-        .update({ is_read: true })
-        .eq('id', communicationId);
+      const { error } = await supabase.rpc('exec_sql', {
+        query: 'UPDATE customer_communications SET is_read = true WHERE id = $1',
+        params: [communicationId]
+      });
 
       if (error) throw error;
 

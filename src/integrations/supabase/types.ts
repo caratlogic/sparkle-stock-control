@@ -98,6 +98,133 @@ export type Database = {
           },
         ]
       }
+      customer_communications: {
+        Row: {
+          communication_type: string
+          created_at: string | null
+          customer_id: string
+          id: string
+          is_read: boolean | null
+          message: string
+          related_consignment_id: string | null
+          related_invoice_id: string | null
+          response_status: string | null
+          sender_email: string | null
+          sender_name: string | null
+          sender_type: string
+          subject: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          communication_type: string
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_consignment_id?: string | null
+          related_invoice_id?: string | null
+          response_status?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sender_type: string
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          communication_type?: string
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_consignment_id?: string | null
+          related_invoice_id?: string | null
+          response_status?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sender_type?: string
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_communications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_communications_related_consignment_id_fkey"
+            columns: ["related_consignment_id"]
+            isOneToOne: false
+            referencedRelation: "consignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_communications_related_invoice_id_fkey"
+            columns: ["related_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_reminders: {
+        Row: {
+          communication_id: string | null
+          created_at: string | null
+          customer_id: string
+          id: string
+          is_sent: boolean | null
+          message: string
+          reminder_date: string
+          reminder_type: string
+          staff_email: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          communication_id?: string | null
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          is_sent?: boolean | null
+          message: string
+          reminder_date: string
+          reminder_type: string
+          staff_email?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          communication_id?: string | null
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          is_sent?: boolean | null
+          message?: string
+          reminder_date?: string
+          reminder_type?: string
+          staff_email?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_reminders_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "customer_communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reminders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           city: string
