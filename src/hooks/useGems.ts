@@ -112,6 +112,28 @@ export const useGems = () => {
     }
   };
 
+  const updateGemStatus = async (id: string, status: 'In Stock' | 'Sold' | 'Reserved') => {
+    try {
+      console.log(`Updating gem ${id} status to ${status}`);
+      
+      const { error } = await supabase
+        .from('gems')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Supabase status update error:', error);
+        throw error;
+      }
+      
+      await fetchGems();
+      return { success: true };
+    } catch (err) {
+      console.error('Update gem status error:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem status' };
+    }
+  };
+
   const deleteGem = async (id: string) => {
     try {
       const { error } = await supabase
@@ -137,6 +159,7 @@ export const useGems = () => {
     error,
     addGem,
     updateGem,
+    updateGemStatus,
     deleteGem,
     refetch: fetchGems
   };

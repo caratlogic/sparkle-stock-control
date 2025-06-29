@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Customer, Invoice, InvoiceItem } from '../types/customer';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
@@ -10,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useInvoiceActions = () => {
   const { updateConsignmentStatus } = useConsignments();
   const { addInvoice } = useInvoices();
-  const { gems } = useGems();
+  const { gems, updateGemStatus } = useGems();
   const { addCommunication } = useCustomerCommunications();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -128,6 +129,22 @@ export const useInvoiceActions = () => {
       
       if (result.success) {
         console.log('✅ InvoiceCreation: Successfully saved invoice');
+        
+        // Update gem statuses to 'Sold' for invoiced gems
+        for (const item of items) {
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
+          let gemId = item.productId;
+          
+          if (!isUuid) {
+            const dbGem = gems.find(g => g.stockId === item.productDetails.stockId);
+            if (dbGem) {
+              gemId = dbGem.id;
+            }
+          }
+          
+          await updateGemStatus(gemId, 'Sold');
+          console.log(`✅ InvoiceCreation: Updated gem ${gemId} status to Sold`);
+        }
         
         // If there's a related consignment, mark it as inactive
         if (relatedConsignmentId) {
