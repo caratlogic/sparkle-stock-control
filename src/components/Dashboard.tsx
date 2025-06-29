@@ -13,12 +13,18 @@ import { CustomerCommunications } from './CustomerCommunications';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { useGems } from '../hooks/useGems';
+import { useCustomers } from '../hooks/useCustomers';
+import { useInvoices } from '../hooks/useInvoices';
 import { useToast } from '@/hooks/use-toast';
 import { Gem } from '../types/gem';
 import { Customer } from '../types/customer';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export const Dashboard = () => {
   const { gems, loading, addGem, updateGem, deleteGem } = useGems();
+  const { customers } = useCustomers();
+  const { invoices } = useInvoices();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('analytics');
   const [showGemForm, setShowGemForm] = useState(false);
@@ -95,10 +101,13 @@ export const Dashboard = () => {
   if (selectedCustomerForComms) {
     return (
       <div className="animate-fade-in">
-        <CustomerCommunications 
-          customer={selectedCustomerForComms} 
-          onBack={() => setSelectedCustomerForComms(null)}
-        />
+        <div className="flex items-center mb-6">
+          <Button variant="ghost" onClick={() => setSelectedCustomerForComms(null)} className="mr-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+        <CustomerCommunications customer={selectedCustomerForComms} />
       </div>
     );
   }
@@ -152,7 +161,7 @@ export const Dashboard = () => {
               <CardTitle>Business Analytics</CardTitle>
             </CardHeader>
             <CardContent>
-              <AnalyticsDashboard />
+              <AnalyticsDashboard gems={gems} customers={customers} invoices={invoices} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -210,8 +219,12 @@ export const Dashboard = () => {
 
         <TabsContent value="invoice-creation" className="space-y-6">
           <InvoiceCreation 
-            preSelectedGem={invoiceGem}
-            onComplete={() => {
+            preselectedGem={invoiceGem}
+            onCancel={() => {
+              setInvoiceGem(null);
+              setActiveTab('transactions');
+            }}
+            onSave={() => {
               setInvoiceGem(null);
               setActiveTab('transactions');
             }}
@@ -220,7 +233,7 @@ export const Dashboard = () => {
 
         <TabsContent value="consignment-creation" className="space-y-6">
           <ConsignmentCreation 
-            preSelectedGem={consignmentGem}
+            preselectedGem={consignmentGem}
             onComplete={() => {
               setConsignmentGem(null);
               setActiveTab('transactions');
