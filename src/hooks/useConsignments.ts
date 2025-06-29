@@ -38,6 +38,16 @@ interface ConsignmentItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  productDetails?: {
+    stockId: string;
+    carat: number;
+    cut: string;
+    color: string;
+    description: string;
+    measurements: string;
+    certificateNumber: string;
+    gemType?: string;
+  };
 }
 
 export const useConsignments = () => {
@@ -57,7 +67,10 @@ export const useConsignments = () => {
         .select(`
           *,
           customers (*),
-          consignment_items (*)
+          consignment_items (
+            *,
+            gems (*)
+          )
         `)
         .order('created_at', { ascending: false });
 
@@ -121,7 +134,17 @@ export const useConsignments = () => {
             gemId: item.gem_id,
             quantity: item.quantity,
             unitPrice: parseFloat(item.unit_price?.toString() || '0'),
-            totalPrice: parseFloat(item.total_price?.toString() || '0')
+            totalPrice: parseFloat(item.total_price?.toString() || '0'),
+            productDetails: item.gems ? {
+              stockId: item.gems.stock_id || '',
+              carat: parseFloat(item.gems.carat?.toString() || '0'),
+              cut: item.gems.shape || '',
+              color: item.gems.color || '',
+              description: item.gems.description || '',
+              measurements: item.gems.measurements || '',
+              certificateNumber: item.gems.certificate_number || '',
+              gemType: item.gems.gem_type || undefined
+            } : undefined
           }))
         };
       });
@@ -238,6 +261,21 @@ export const useConsignments = () => {
               .eq('id', item.gemId);
           }
           console.log('✅ useConsignments: Successfully updated gem statuses');
+        }
+      }
+
+      // If consignment is purchased, update gem status to 'Sold'
+      if (status === 'purchased') {
+        const consignment = consignments.find(c => c.id === consignmentId);
+        if (consignment) {
+          console.log(`🔄 useConsignments: Updating ${consignment.items.length} gems to 'Sold' status`);
+          for (const item of consignment.items) {
+            await supabase
+              .from('gems')
+              .update({ status: 'Sold' })
+              .eq('id', item.gemId);
+          }
+          console.log('✅ useConsignments: Successfully updated gem statuses to Sold');
         }
       }
 
