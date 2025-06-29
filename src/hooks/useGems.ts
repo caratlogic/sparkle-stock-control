@@ -114,7 +114,7 @@ export const useGems = () => {
 
   const updateGemStatus = async (id: string, status: 'In Stock' | 'Sold' | 'Reserved') => {
     try {
-      console.log(`Updating gem ${id} status to ${status}`);
+      console.log(`🔄 useGems: Updating gem ${id} status to ${status}`);
       
       const { error } = await supabase
         .from('gems')
@@ -122,14 +122,15 @@ export const useGems = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('Supabase status update error:', error);
+        console.error('❌ useGems: Supabase status update error:', error);
         throw error;
       }
       
+      console.log(`✅ useGems: Successfully updated gem ${id} status to ${status}`);
       await fetchGems();
       return { success: true };
     } catch (err) {
-      console.error('Update gem status error:', err);
+      console.error('❌ useGems: Update gem status error:', err);
       return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem status' };
     }
   };

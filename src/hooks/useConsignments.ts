@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -189,12 +188,18 @@ export const useConsignments = () => {
       // Update gem status to 'On Consignment' for consigned gems
       if (consignmentData.items && consignmentData.items.length > 0) {
         for (const item of consignmentData.items) {
-          await supabase
+          console.log(`🔄 useConsignments: Updating gem ${item.gemId} status to "On Consignment"`);
+          const { error: gemUpdateError } = await supabase
             .from('gems')
             .update({ status: 'On Consignment' })
             .eq('id', item.gemId);
+          
+          if (gemUpdateError) {
+            console.error(`❌ useConsignments: Error updating gem ${item.gemId} status:`, gemUpdateError);
+          } else {
+            console.log(`✅ useConsignments: Successfully updated gem ${item.gemId} status to "On Consignment"`);
+          }
         }
-        console.log('✅ useConsignments: Successfully updated gem statuses to "On Consignment"');
       }
 
       await fetchConsignments();

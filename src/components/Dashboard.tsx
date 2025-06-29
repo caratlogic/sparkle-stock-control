@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -144,14 +145,14 @@ export const Dashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7 lg:w-fit lg:grid-cols-7">
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
-          <TabsTrigger value="customers">Customers</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="reminders">Reminders</TabsTrigger>
-          <TabsTrigger value="communications">Communications</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto p-1">
+          <TabsTrigger value="analytics" className="text-xs md:text-sm">Analytics</TabsTrigger>
+          <TabsTrigger value="inventory" className="text-xs md:text-sm">Inventory</TabsTrigger>
+          <TabsTrigger value="customers" className="text-xs md:text-sm">Customers</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs md:text-sm">Transactions</TabsTrigger>
+          <TabsTrigger value="payments" className="text-xs md:text-sm">Payments</TabsTrigger>
+          <TabsTrigger value="reminders" className="text-xs md:text-sm">Reminders</TabsTrigger>
+          <TabsTrigger value="communications" className="text-xs md:text-sm">Communications</TabsTrigger>
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-6">
