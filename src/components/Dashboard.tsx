@@ -33,6 +33,7 @@ export const Dashboard = () => {
   const [showInvoiceCreation, setShowInvoiceCreation] = useState(false);
   const [showConsignmentCreation, setShowConsignmentCreation] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [preselectedGem, setPreselectedGem] = useState(null);
 
   // Hooks for data management
   const { gems, updateGem, deleteGem, refetch: refetchGems } = useGems();
@@ -41,7 +42,6 @@ export const Dashboard = () => {
 
   // Gem handlers
   const handleEditGem = (gem) => {
-    // For now, just show a toast - you can implement gem editing later
     toast.info('Gem editing feature coming soon');
   };
 
@@ -52,6 +52,16 @@ export const Dashboard = () => {
     } else {
       toast.error('Failed to delete gem');
     }
+  };
+
+  const handleCreateInvoiceFromGem = (gem) => {
+    setPreselectedGem(gem);
+    setShowInvoiceCreation(true);
+  };
+
+  const handleCreateConsignmentFromGem = (gem) => {
+    setPreselectedGem(gem);
+    setShowConsignmentCreation(true);
   };
 
   // Customer handlers
@@ -72,11 +82,31 @@ export const Dashboard = () => {
     setActiveTab('communications');
   };
 
+  const handleCreateInvoiceFromCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setShowInvoiceCreation(true);
+  };
+
+  const handleCreateConsignmentFromCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setShowConsignmentCreation(true);
+  };
+
   if (showInvoiceCreation) {
     return (
       <InvoiceCreation
-        onCancel={() => setShowInvoiceCreation(false)}
-        onSave={() => setShowInvoiceCreation(false)}
+        onCancel={() => {
+          setShowInvoiceCreation(false);
+          setPreselectedGem(null);
+          setSelectedCustomer(null);
+        }}
+        onSave={() => {
+          setShowInvoiceCreation(false);
+          setPreselectedGem(null);
+          setSelectedCustomer(null);
+        }}
+        preselectedGem={preselectedGem}
+        preselectedCustomer={selectedCustomer}
       />
     );
   }
@@ -84,8 +114,18 @@ export const Dashboard = () => {
   if (showConsignmentCreation) {
     return (
       <ConsignmentCreation
-        onCancel={() => setShowConsignmentCreation(false)}
-        onSave={() => setShowConsignmentCreation(false)}
+        onCancel={() => {
+          setShowConsignmentCreation(false);
+          setPreselectedGem(null);
+          setSelectedCustomer(null);
+        }}
+        onSave={() => {
+          setShowConsignmentCreation(false);
+          setPreselectedGem(null);
+          setSelectedCustomer(null);
+        }}
+        preselectedGem={preselectedGem}
+        preselectedCustomer={selectedCustomer}
       />
     );
   }
@@ -103,42 +143,42 @@ export const Dashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 bg-white shadow-sm">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-9 bg-white shadow-sm h-auto">
+            <TabsTrigger value="overview" className="flex items-center gap-2 px-3 py-2 text-sm">
               <BarChart3 className="w-4 h-4" />
-              Overview
+              <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="inventory" className="flex items-center gap-2">
+            <TabsTrigger value="inventory" className="flex items-center gap-2 px-3 py-2 text-sm">
               <Package className="w-4 h-4" />
-              Inventory
+              <span className="hidden sm:inline">Inventory</span>
             </TabsTrigger>
-            <TabsTrigger value="customers" className="flex items-center gap-2">
+            <TabsTrigger value="customers" className="flex items-center gap-2 px-3 py-2 text-sm">
               <Users className="w-4 h-4" />
-              Customers
+              <span className="hidden sm:inline">Customers</span>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="flex items-center gap-2">
+            <TabsTrigger value="transactions" className="flex items-center gap-2 px-3 py-2 text-sm">
               <FileText className="w-4 h-4" />
-              Transactions
+              <span className="hidden sm:inline">Transactions</span>
             </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-2">
+            <TabsTrigger value="payments" className="flex items-center gap-2 px-3 py-2 text-sm">
               <CreditCard className="w-4 h-4" />
-              Payments
+              <span className="hidden sm:inline">Payments</span>
             </TabsTrigger>
-            <TabsTrigger value="communications" className="flex items-center gap-2">
+            <TabsTrigger value="communications" className="flex items-center gap-2 px-3 py-2 text-sm">
               <Handshake className="w-4 h-4" />
-              Communications
+              <span className="hidden sm:inline">Communications</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TabsTrigger value="analytics" className="flex items-center gap-2 px-3 py-2 text-sm">
               <TrendingUp className="w-4 h-4" />
-              Analytics
+              <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
+            <TabsTrigger value="activity" className="flex items-center gap-2 px-3 py-2 text-sm">
               <DollarSign className="w-4 h-4" />
-              Activity
+              <span className="hidden sm:inline">Activity</span>
             </TabsTrigger>
-            <TabsTrigger value="reminders" className="flex items-center gap-2">
+            <TabsTrigger value="reminders" className="flex items-center gap-2 px-3 py-2 text-sm">
               <DollarSign className="w-4 h-4" />
-              Reminders
+              <span className="hidden sm:inline">Reminders</span>
             </TabsTrigger>
           </TabsList>
 
@@ -261,6 +301,8 @@ export const Dashboard = () => {
               gems={gems}
               onEdit={handleEditGem}
               onDelete={handleDeleteGem}
+              onCreateInvoice={handleCreateInvoiceFromGem}
+              onCreateConsignment={handleCreateConsignmentFromGem}
             />
           </TabsContent>
 
@@ -271,6 +313,8 @@ export const Dashboard = () => {
               onDelete={handleDeleteCustomer}
               onUpdateDiscount={handleUpdateDiscount}
               onCommunicate={handleCommunicateWithCustomer}
+              onCreateInvoice={handleCreateInvoiceFromCustomer}
+              onCreateConsignment={handleCreateConsignmentFromCustomer}
             />
           </TabsContent>
 
