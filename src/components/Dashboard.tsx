@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -354,9 +353,34 @@ export const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="communications">
-            <CustomerCommunications 
-              customer={selectedCustomer}
-            />
+            {selectedCustomer ? (
+              <CustomerCommunications 
+                customer={selectedCustomer}
+              />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Customer Communications</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <div className="text-slate-500 mb-4">
+                      No customer selected for communications.
+                    </div>
+                    <p className="text-sm text-slate-400 mb-4">
+                      Please select a customer from the Customers tab to start a conversation.
+                    </p>
+                    <Button 
+                      onClick={() => setActiveTab('customers')}
+                      variant="outline"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Go to Customers
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="analytics">
