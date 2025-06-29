@@ -23,7 +23,7 @@ export const useInvoicePayments = () => {
 
       if (error) throw error;
 
-      const transformedPayments: InvoicePayment[] = data.map(payment => ({
+      const transformedPayments: InvoicePayment[] = (data || []).map(payment => ({
         id: payment.id,
         invoiceId: payment.invoice_id,
         amount: parseFloat(payment.amount.toString()),
