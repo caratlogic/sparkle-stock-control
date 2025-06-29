@@ -8,23 +8,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useInvoices } from '../../hooks/useInvoices';
+import { InvoicePayment } from '../../types/customer';
 
 interface AddPaymentDialogProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onAddPayment: (payment: Omit<InvoicePayment, 'id' | 'createdAt'>) => Promise<any>;
 }
 
-export const AddPaymentDialog = ({ open, onClose, onSuccess }: AddPaymentDialogProps) => {
+export const AddPaymentDialog = ({ open, onClose, onSuccess, onAddPayment }: AddPaymentDialogProps) => {
   const [formData, setFormData] = useState({
-    customerId: '',
     invoiceId: '',
     amount: '',
     paymentMethod: '',
-    paymentStatus: 'paid',
-    dateReceived: new Date().toISOString().split('T')[0],
-    notes: '',
-    referenceNumber: `PAY-${Date.now()}`
+    paymentDate: new Date().toISOString().split('T')[0],
+    notes: ''
   });
 
   const { customers } = useCustomers();
@@ -33,22 +32,31 @@ export const AddPaymentDialog = ({ open, onClose, onSuccess }: AddPaymentDialogP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Here you would normally save the payment
-    console.log('Recording payment:', formData);
+    if (!formData.invoiceId || !formData.amount || !formData.paymentMethod) {
+      return;
+    }
+
+    const paymentData: Omit<InvoicePayment, 'id' | 'createdAt'> = {
+      invoiceId: formData.invoiceId,
+      amount: parseFloat(formData.amount),
+      paymentDate: formData.paymentDate,
+      paymentMethod: formData.paymentMethod as 'cash' | 'credit_card' | 'bank_transfer' | 'check' | 'other',
+      notes: formData.notes
+    };
+
+    const result = await onAddPayment(paymentData);
     
-    // Reset form
-    setFormData({
-      customerId: '',
-      invoiceId: '',
-      amount: '',
-      paymentMethod: '',
-      paymentStatus: 'paid',
-      dateReceived: new Date().toISOString().split('T')[0],
-      notes: '',
-      referenceNumber: `PAY-${Date.now()}`
-    });
-    
-    onSuccess();
+    if (result.success) {
+      // Reset form
+      setFormData({
+        invoiceId: '',
+        amount: '',
+        paymentMethod: '',
+        paymentDate: new Date().toISOString().split('T')[0],
+        notes: ''
+      });
+      onSuccess();
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -58,6 +66,8 @@ export const AddPaymentDialog = ({ open, onClose, onSuccess }: AddPaymentDialogP
     }));
   };
 
+  const selectedInvoice = invoices.find(inv => inv.id === formData.invoiceId);
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -66,48 +76,36 @@ export const AddPaymentDialog = ({ open, onClose, onSuccess }: AddPaymentDialogP
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="customer">Customer *</Label>
-              <Select
-                value={formData.customerId}
-                onValueChange={(value) => handleChange('customerId', value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select customer" />
-                </SelectTrigger>
-                <SelectContent>
-                  {customers.map((customer) => (
-                    <SelectItem key={customer.id} value={customer.id}>
-                      {customer.name}
+          <div>
+            <Label htmlFor="invoice">Invoice *</Label>
+            <Select
+              value={formData.invoiceId}
+              onValueChange={(value) => handleChange('invoiceId', value)}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select invoice" />
+              </SelectTrigger>
+              <SelectContent>
+                {invoices.map((invoice) => {
+                  const customer = customers.find(c => c.id === invoice.customerId);
+                  return (
+                    <SelectItem key={invoice.id} value={invoice.id}>
+                      {invoice.invoiceNumber} - {customer?.name} - ${invoice.total}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="invoice">Invoice (Optional)</Label>
-              <Select
-                value={formData.invoiceId}
-                onValueChange={(value) => handleChange('invoiceId', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select invoice" />
-                </SelectTrigger>
-                <SelectContent>
-                  {invoices
-                    .filter(inv => inv.customerId === formData.customerId)
-                    .map((invoice) => (
-                      <SelectItem key={invoice.id} value={invoice.id}>
-                        {invoice.invoiceNumber} - ${invoice.total}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
+
+          {selectedInvoice && (
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-600">
+                Invoice Total: <span className="font-semibold">${selectedInvoice.total}</span>
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -135,54 +133,23 @@ export const AddPaymentDialog = ({ open, onClose, onSuccess }: AddPaymentDialogP
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="bank">Bank Transfer</SelectItem>
-                  <SelectItem value="upi">UPI</SelectItem>
-                  <SelectItem value="credit">Credit Card</SelectItem>
-                  <SelectItem value="debit">Debit Card</SelectItem>
-                  <SelectItem value="cheque">Cheque</SelectItem>
-                  <SelectItem value="online">Online Payment</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="date">Date Received *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.dateReceived}
-                onChange={(e) => handleChange('dateReceived', e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="status">Status *</Label>
-              <Select
-                value={formData.paymentStatus}
-                onValueChange={(value) => handleChange('paymentStatus', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="partial">Partially Paid</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="credit_card">Credit Card</SelectItem>
+                  <SelectItem value="check">Check</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="reference">Reference Number</Label>
+            <Label htmlFor="date">Payment Date *</Label>
             <Input
-              id="reference"
-              value={formData.referenceNumber}
-              onChange={(e) => handleChange('referenceNumber', e.target.value)}
-              placeholder="Payment reference"
+              id="date"
+              type="date"
+              value={formData.paymentDate}
+              onChange={(e) => handleChange('paymentDate', e.target.value)}
+              required
             />
           </div>
 

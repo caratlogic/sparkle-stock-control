@@ -10,9 +10,11 @@ import { PaymentTransactionsTable } from './payment/PaymentTransactionsTable';
 import { AddPaymentDialog } from './payment/AddPaymentDialog';
 import { ReceivablesTracker } from './payment/ReceivablesTracker';
 import { PaymentExportDialog } from './payment/PaymentExportDialog';
-import { usePayments } from '../hooks/usePayments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
-import { PaymentFilter } from '../types/payment';
+import { useInvoices } from '../hooks/useInvoices';
+import { useCustomers } from '../hooks/useCustomers';
+import { PaymentFilter, Payment, PaymentSummary } from '../types/payment';
+import { InvoicePayment } from '../types/customer';
 
 export const PaymentDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,8 +25,68 @@ export const PaymentDashboard = () => {
     status: 'all'
   });
 
-  const { payments, summary, loading, refetch } = usePayments(filters);
-  const { payments: invoicePayments } = useInvoicePayments();
+  const { payments: invoicePayments, loading: paymentsLoading, fetchPayments, addPayment } = useInvoicePayments();
+  const { invoices } = useInvoices();
+  const { customers } = useCustomers();
+
+  // Transform invoice payments to Payment format
+  const transformedPayments: Payment[] = invoicePayments.map((payment: InvoicePayment) => {
+    const invoice = invoices.find(inv => inv.id === payment.invoiceId);
+    const customer = customers.find(c => c.id === invoice?.customerId);
+    
+    return {
+      id: payment.id,
+      invoiceId: payment.invoiceId,
+      customerId: invoice?.customerId || '',
+      customerName: customer?.name || 'Unknown Customer',
+      referenceNumber: `PAY-${payment.id.slice(-8)}`,
+      amount: payment.amount,
+      paymentMethod: payment.paymentMethod === 'cash' ? 'cash' :
+                   payment.paymentMethod === 'credit_card' ? 'credit' :
+                   payment.paymentMethod === 'bank_transfer' ? 'bank' :
+                   payment.paymentMethod === 'check' ? 'cheque' : 'other',
+      paymentStatus: 'paid' as const,
+      dateReceived: payment.paymentDate,
+      notes: payment.notes,
+      createdAt: payment.createdAt,
+      updatedAt: payment.createdAt
+    };
+  });
+
+  // Calculate summary from transformed payments
+  const calculateSummary = useCallback((): PaymentSummary => {
+    const totalReceived = transformedPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    // Calculate pending payments from invoices that haven't been fully paid
+    const pendingPayments = invoices.reduce((sum, invoice) => {
+      const paidAmount = invoicePayments
+        .filter(p => p.invoiceId === invoice.id)
+        .reduce((total, payment) => total + payment.amount, 0);
+      const remaining = invoice.total - paidAmount;
+      return sum + (remaining > 0 ? remaining : 0);
+    }, 0);
+
+    // Calculate overdue payments (invoices past due date that aren't fully paid)
+    const overduePayments = invoices.reduce((sum, invoice) => {
+      const isOverdue = new Date(invoice.dateDue) < new Date();
+      if (!isOverdue) return sum;
+      
+      const paidAmount = invoicePayments
+        .filter(p => p.invoiceId === invoice.id)
+        .reduce((total, payment) => total + payment.amount, 0);
+      const remaining = invoice.total - paidAmount;
+      return sum + (remaining > 0 ? remaining : 0);
+    }, 0);
+
+    return {
+      totalReceived,
+      pendingPayments,
+      overduePayments,
+      totalRefunds: 0 // Would be calculated from refund records
+    };
+  }, [transformedPayments, invoices, invoicePayments]);
+
+  const summary = calculateSummary();
 
   const handleFilterChange = (key: keyof PaymentFilter, value: any) => {
     setFilters(prev => ({
@@ -33,28 +95,41 @@ export const PaymentDashboard = () => {
     }));
   };
 
-  // Use useCallback to memoize the refetch function to prevent unnecessary re-renders
   const memoizedRefetch = useCallback(() => {
-    refetch();
-  }, [refetch]);
+    fetchPayments();
+  }, [fetchPayments]);
 
-  // Auto-refresh when invoice payments change (when payments are added from other dashboards)
-  // Use a ref to track the previous length to avoid infinite loops
-  const [previousPaymentsLength, setPreviousPaymentsLength] = useState(0);
-  
-  useEffect(() => {
-    const currentLength = invoicePayments.length;
-    if (currentLength !== previousPaymentsLength && previousPaymentsLength > 0) {
-      console.log('🔄 PaymentDashboard: Invoice payments changed, refreshing payment data');
+  // Filter payments based on search and filters
+  const filteredPayments = transformedPayments.filter(payment => {
+    const matchesSearch = 
+      payment.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payment.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filters.status === 'all' || !filters.status) return matchesSearch;
+    return matchesSearch && payment.paymentStatus === filters.status;
+  }).filter(payment => {
+    if (filters.dateRange?.from) {
+      const paymentDate = new Date(payment.dateReceived);
+      const fromDate = new Date(filters.dateRange.from);
+      if (paymentDate < fromDate) return false;
+    }
+    
+    if (filters.dateRange?.to) {
+      const paymentDate = new Date(payment.dateReceived);
+      const toDate = new Date(filters.dateRange.to);
+      if (paymentDate > toDate) return false;
+    }
+    
+    return true;
+  });
+
+  const handleAddPayment = async (paymentData: Omit<InvoicePayment, 'id' | 'createdAt'>) => {
+    const result = await addPayment(paymentData);
+    if (result.success) {
       memoizedRefetch();
     }
-    setPreviousPaymentsLength(currentLength);
-  }, [invoicePayments.length, memoizedRefetch, previousPaymentsLength]);
-
-  const filteredPayments = payments.filter(payment =>
-    payment.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    payment.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    return result;
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -88,7 +163,7 @@ export const PaymentDashboard = () => {
         </div>
       </div>
 
-      <PaymentSummaryCards summary={summary} loading={loading} />
+      <PaymentSummaryCards summary={summary} loading={paymentsLoading} />
 
       {showReceivables && (
         <ReceivablesTracker onClose={() => setShowReceivables(false)} />
@@ -103,9 +178,9 @@ export const PaymentDashboard = () => {
                 variant="outline"
                 size="sm"
                 onClick={memoizedRefetch}
-                disabled={loading}
+                disabled={paymentsLoading}
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 mr-2 ${paymentsLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
             </div>
@@ -163,7 +238,7 @@ export const PaymentDashboard = () => {
 
           <PaymentTransactionsTable
             payments={filteredPayments}
-            loading={loading}
+            loading={paymentsLoading}
             onRefresh={memoizedRefetch}
           />
         </CardContent>
@@ -176,6 +251,7 @@ export const PaymentDashboard = () => {
           setShowAddPayment(false);
           memoizedRefetch();
         }}
+        onAddPayment={handleAddPayment}
       />
 
       <PaymentExportDialog
