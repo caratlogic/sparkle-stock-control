@@ -2,409 +2,249 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
+  DollarSign, 
   Users, 
-  Gem, 
-  FileText, 
-  Receipt, 
+  Package, 
   TrendingUp, 
-  DollarSign,
-  Package,
-  Activity,
-  Bell,
-  BarChart3,
-  Settings,
-  LogOut
+  FileText, 
+  Handshake,
+  CreditCard,
+  BarChart3
 } from 'lucide-react';
-import { CustomerDashboard } from './CustomerDashboard';
-import { CustomerDetailPage } from './CustomerDetailPage';
-import { DiamondTable } from './DiamondTable';
 import { GemTable } from './GemTable';
+import { CustomerTable } from './CustomerTable';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { TransactionDashboard } from './TransactionDashboard';
+import { CustomerCommunications } from './CustomerCommunications';
+import { PaymentDashboard } from './PaymentDashboard';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { ActivityLog } from './ActivityLog';
 import { ReminderDashboard } from './ReminderDashboard';
-import { Customer } from '../types/customer';
-import { Gem as GemType } from '../types/gem';
-import { useAuth } from '../contexts/AuthContext';
-import { useGems } from '../hooks/useGems';
-import { useCustomers } from '../hooks/useCustomers';
-import { useInvoices } from '../hooks/useInvoices';
-import { sampleGems } from '../data/sampleGems';
 
 export const Dashboard = () => {
-  const [activeView, setActiveView] = useState<'overview' | 'customers' | 'customer-detail' | 'diamonds' | 'gems' | 'invoices' | 'consignments' | 'transactions' | 'analytics' | 'activity' | 'reminders'>('overview');
-  const [preselectedCustomer, setPreselectedCustomer] = useState<Customer | null>(null);
-  const [preselectedGem, setPreselectedGem] = useState<GemType | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const { logout } = useAuth();
-  const { gems } = useGems();
-  const { customers } = useCustomers();
-  const { invoices } = useInvoices();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showInvoiceCreation, setShowInvoiceCreation] = useState(false);
+  const [showConsignmentCreation, setShowConsignmentCreation] = useState(false);
 
-  // Get only sample diamonds for the diamond view (since they have the proper Diamond type with clarity)
-  const sampleDiamonds = sampleGems.filter(g => g.gemType === 'Diamond' && 'clarity' in g);
+  if (showInvoiceCreation) {
+    return (
+      <InvoiceCreation
+        onCancel={() => setShowInvoiceCreation(false)}
+        onSave={() => setShowInvoiceCreation(false)}
+      />
+    );
+  }
 
-  const handleEditGem = (gem: any) => {
-    // Handle gem editing logic
-    console.log('Edit gem:', gem);
-  };
-
-  const handleDeleteGem = (id: string) => {
-    // Handle gem deletion logic
-    console.log('Delete gem:', id);
-  };
-
-  const handleCreateInvoiceFromGem = (gem: GemType) => {
-    setPreselectedGem(gem);
-    setPreselectedCustomer(null);
-    setActiveView('invoices');
-  };
-
-  const handleCreateConsignmentFromGem = (gem: GemType) => {
-    setPreselectedGem(gem);
-    setPreselectedCustomer(null);
-    setActiveView('consignments');
-  };
-
-  const handleCreateInvoiceFromCustomer = (customer: Customer) => {
-    setPreselectedCustomer(customer);
-    setPreselectedGem(null);
-    setActiveView('invoices');
-  };
-
-  const handleCreateConsignmentFromCustomer = (customer: Customer) => {
-    setPreselectedCustomer(customer);
-    setPreselectedGem(null);
-    setActiveView('consignments');
-  };
-
-  const handleViewCustomerDetails = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setActiveView('customer-detail');
-  };
-
-  const handleBackToCustomers = () => {
-    setSelectedCustomer(null);
-    setActiveView('customers');
-  };
-
-  const handleCancelInvoice = () => {
-    setPreselectedCustomer(null);
-    setPreselectedGem(null);
-    setActiveView('overview');
-  };
-
-  const handleCancelConsignment = () => {
-    setPreselectedCustomer(null);
-    setPreselectedGem(null);
-    setActiveView('overview');
-  };
-
-  const handleSaveInvoice = (invoice: any) => {
-    console.log('Invoice saved:', invoice);
-    setPreselectedCustomer(null);
-    setPreselectedGem(null);
-    setActiveView('overview');
-  };
-
-  const handleSaveConsignment = (consignment: any) => {
-    console.log('Consignment saved:', consignment);
-    setPreselectedCustomer(null);
-    setPreselectedGem(null);
-    setActiveView('overview');
-  };
-
-  const renderContent = () => {
-    switch (activeView) {
-      case 'overview':
-        return (
-          <div className="space-y-6">
-            <div className="text-2xl font-bold">Dashboard Overview</div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome!</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>This is your dashboard overview. Navigate using the sidebar.</p>
-              </CardContent>
-            </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">Total Customers</CardTitle>
-                  <Users className="h-4 w-4 text-slate-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-slate-800">{customers.length}</div>
-                  <p className="text-xs text-slate-500 mt-1">Registered customers</p>
-                </CardContent>
-              </Card>
-
-              <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-slate-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-slate-800">
-                    ${invoices.reduce((sum, inv) => sum + inv.total, 0).toLocaleString()}
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">From all sales</p>
-                </CardContent>
-              </Card>
-
-              <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">Total Gems</CardTitle>
-                  <Package className="h-4 w-4 text-slate-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-emerald-600">{gems.length}</div>
-                  <p className="text-xs text-slate-500 mt-1">In inventory</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        );
-      case 'customers':
-        return <CustomerDashboard 
-          onCreateInvoice={handleCreateInvoiceFromCustomer}
-          onCreateConsignment={handleCreateConsignmentFromCustomer}
-          onViewCustomer={handleViewCustomerDetails}
-        />;
-      case 'customer-detail':
-        return selectedCustomer ? (
-          <CustomerDetailPage
-            customer={selectedCustomer}
-            onBack={handleBackToCustomers}
-            onCreateInvoice={handleCreateInvoiceFromCustomer}
-            onCreateConsignment={handleCreateConsignmentFromCustomer}
-          />
-        ) : null;
-      case 'diamonds':
-        return <DiamondTable 
-          diamonds={sampleDiamonds as any[]} 
-          onEdit={handleEditGem} 
-          onDelete={handleDeleteGem} 
-        />;
-      case 'gems':
-        return <GemTable 
-          gems={gems} 
-          onEdit={handleEditGem} 
-          onDelete={handleDeleteGem}
-          onCreateInvoice={handleCreateInvoiceFromGem}
-          onCreateConsignment={handleCreateConsignmentFromGem}
-        />;
-      case 'invoices':
-        return <InvoiceCreation 
-          onCancel={handleCancelInvoice}
-          onSave={handleSaveInvoice}
-          preselectedGem={preselectedGem}
-          preselectedCustomer={preselectedCustomer}
-        />;
-      case 'consignments':
-        return <ConsignmentCreation 
-          onCancel={handleCancelConsignment}
-          onSave={handleSaveConsignment}
-          preselectedGem={preselectedGem}
-          preselectedCustomer={preselectedCustomer}
-        />;
-      case 'transactions':
-        return <TransactionDashboard />;
-      case 'analytics':
-        return <AnalyticsDashboard 
-          gems={gems}
-          customers={customers}
-          invoices={invoices}
-        />;
-      case 'activity':
-        return <ActivityLog />;
-      case 'reminders':
-        return <ReminderDashboard />;
-      default:
-        return (
-          <div className="space-y-6">
-            <div className="text-2xl font-bold">Dashboard Overview</div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome!</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>This is your dashboard overview. Navigate using the sidebar.</p>
-              </CardContent>
-            </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">Total Customers</CardTitle>
-                  <Users className="h-4 w-4 text-slate-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-slate-800">124</div>
-                  <p className="text-xs text-slate-500 mt-1">Registered customers</p>
-                </CardContent>
-              </Card>
-
-              <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-slate-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-slate-800">$45,231.89</div>
-                  <p className="text-xs text-slate-500 mt-1">From all sales</p>
-                </CardContent>
-              </Card>
-
-              <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">New Orders</CardTitle>
-                  <Package className="h-4 w-4 text-slate-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-emerald-600">+201</div>
-                  <p className="text-xs text-slate-500 mt-1">Since last month</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        );
-    }
-  };
+  if (showConsignmentCreation) {
+    return (
+      <ConsignmentCreation
+        onCancel={() => setShowConsignmentCreation(false)}
+        onSave={() => setShowConsignmentCreation(false)}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <header className="bg-white shadow-md py-4">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="text-2xl font-bold text-slate-800">Diamond Inventory</div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </Button>
-            <Button variant="outline" onClick={logout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto p-6">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-800 mb-2">
+            Diamond Inventory Management
+          </h1>
+          <p className="text-slate-600">
+            Manage your precious stone inventory with precision and elegance
+          </p>
         </div>
-      </header>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white shadow-lg min-h-screen">
-          <nav className="p-6">
-            <div className="space-y-2">
-              <button
-                onClick={() => setActiveView('overview')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'overview' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <TrendingUp className="w-5 h-5 mr-3" />
-                Overview
-              </button>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-9 bg-white shadow-sm">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Inventory
+            </TabsTrigger>
+            <TabsTrigger value="customers" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Customers
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Payments
+            </TabsTrigger>
+            <TabsTrigger value="communications" className="flex items-center gap-2">
+              <Handshake className="w-4 h-4" />
+              Communications
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Activity
+            </TabsTrigger>
+            <TabsTrigger value="reminders" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Reminders
+            </TabsTrigger>
+          </TabsList>
 
-              <button
-                onClick={() => setActiveView('customers')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'customers' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <Users className="w-5 h-5 mr-3" />
-                Customers
-              </button>
-
-              <button
-                onClick={() => setActiveView('diamonds')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'diamonds' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <Gem className="w-5 h-5 mr-3" />
-                Diamonds
-              </button>
-
-              <button
-                onClick={() => setActiveView('gems')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'gems' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <Gem className="w-5 h-5 mr-3" />
-                Gems
-              </button>
-
-              <button
-                onClick={() => setActiveView('invoices')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'invoices' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <FileText className="w-5 h-5 mr-3" />
-                Invoices
-              </button>
-
-              <button
-                onClick={() => setActiveView('consignments')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'consignments' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <Receipt className="w-5 h-5 mr-3" />
-                Consignments
-              </button>
-
-              <button
-                onClick={() => setActiveView('transactions')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'transactions' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <DollarSign className="w-5 h-5 mr-3" />
-                Transactions
-              </button>
-
-              <button
-                onClick={() => setActiveView('analytics')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'analytics' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <BarChart3 className="w-5 h-5 mr-3" />
-                Analytics
-              </button>
+          <TabsContent value="overview">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Inventory Value</CardTitle>
+                  <DollarSign className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">$2,450,000</div>
+                  <p className="text-xs opacity-80">+12% from last month</p>
+                </CardContent>
+              </Card>
               
-              <button
-                onClick={() => setActiveView('activity')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'activity' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <Activity className="w-5 h-5 mr-3" />
-                Activity Log
-              </button>
+              <Card className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
+                  <Users className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">1,247</div>
+                  <p className="text-xs opacity-80">+8% from last month</p>
+                </CardContent>
+              </Card>
               
-              <button
-                onClick={() => setActiveView('reminders')}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeView === 'reminders' ? 'bg-diamond-gradient text-white' : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <Bell className="w-5 h-5 mr-3" />
-                Reminders
-              </button>
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Items in Stock</CardTitle>
+                  <Package className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">3,456</div>
+                  <p className="text-xs opacity-80">+15% from last month</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                  <TrendingUp className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">$156,400</div>
+                  <p className="text-xs opacity-80">+23% from last month</p>
+                </CardContent>
+              </Card>
             </div>
-          </nav>
-        </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 p-8">
-          {renderContent()}
-        </main>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    onClick={() => setShowInvoiceCreation(true)}
+                    className="w-full justify-start bg-diamond-gradient hover:opacity-90"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Create New Invoice
+                  </Button>
+                  <Button 
+                    onClick={() => setShowConsignmentCreation(true)}
+                    className="w-full justify-start bg-emerald-gradient hover:opacity-90"
+                  >
+                    <Handshake className="w-4 h-4 mr-2" />
+                    Create New Consignment
+                  </Button>
+                  <Button 
+                    onClick={() => setActiveTab('inventory')}
+                    className="w-full justify-start" 
+                    variant="outline"
+                  >
+                    <Package className="w-4 h-4 mr-2" />
+                    Manage Inventory
+                  </Button>
+                  <Button 
+                    onClick={() => setActiveTab('customers')}
+                    className="w-full justify-start" 
+                    variant="outline"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Manage Customers
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span className="text-sm">Invoice #INV-2024-156 paid by John Smith</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <span className="text-sm">New customer Sarah Johnson added</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                      <span className="text-sm">Diamond D001 status updated to Reserved</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                      <span className="text-sm">Consignment CON-2024-045 created</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <GemTable />
+          </TabsContent>
+
+          <TabsContent value="customers">
+            <CustomerTable />
+          </TabsContent>
+
+          <TabsContent value="transactions">
+            <TransactionDashboard />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentDashboard />
+          </TabsContent>
+
+          <TabsContent value="communications">
+            <CustomerCommunications />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityLog />
+          </TabsContent>
+
+          <TabsContent value="reminders">
+            <ReminderDashboard />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
