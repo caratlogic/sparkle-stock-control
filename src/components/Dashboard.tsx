@@ -143,40 +143,67 @@ export const Dashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 bg-white shadow-sm h-auto">
-            <TabsTrigger value="overview" className="flex items-center gap-2 px-3 py-2 text-sm">
+          <TabsList className="grid w-full grid-cols-9 bg-white shadow-sm h-auto p-1 rounded-lg border">
+            <TabsTrigger 
+              value="overview" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="inventory" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="inventory" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <Package className="w-4 h-4" />
               <span className="hidden sm:inline">Inventory</span>
             </TabsTrigger>
-            <TabsTrigger value="customers" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="customers" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Customers</span>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="transactions" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Transactions</span>
             </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="payments" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <CreditCard className="w-4 h-4" />
               <span className="hidden sm:inline">Payments</span>
             </TabsTrigger>
-            <TabsTrigger value="communications" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="communications" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <Handshake className="w-4 h-4" />
               <span className="hidden sm:inline">Communications</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="analytics" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <TrendingUp className="w-4 h-4" />
               <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="activity" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <DollarSign className="w-4 h-4" />
               <span className="hidden sm:inline">Activity</span>
             </TabsTrigger>
-            <TabsTrigger value="reminders" className="flex items-center gap-2 px-3 py-2 text-sm">
+            <TabsTrigger 
+              value="reminders" 
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 data-[state=inactive]:text-slate-600 data-[state=inactive]:hover:text-slate-900 transition-colors"
+            >
               <DollarSign className="w-4 h-4" />
               <span className="hidden sm:inline">Reminders</span>
             </TabsTrigger>
