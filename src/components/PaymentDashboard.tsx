@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,6 +33,18 @@ export const PaymentDashboard = () => {
     const invoice = invoices.find(inv => inv.id === payment.invoiceId);
     const customer = customers.find(c => c.id === invoice?.customerId);
     
+    // Map payment methods to valid Payment type values
+    const mapPaymentMethod = (method: string): Payment['paymentMethod'] => {
+      switch (method) {
+        case 'cash': return 'cash';
+        case 'credit_card': return 'credit';
+        case 'bank_transfer': return 'bank';
+        case 'check': return 'cheque';
+        case 'other': 
+        default: return 'online'; // Map 'other' and any unknown methods to 'online'
+      }
+    };
+    
     return {
       id: payment.id,
       invoiceId: payment.invoiceId,
@@ -41,13 +52,10 @@ export const PaymentDashboard = () => {
       customerName: customer?.name || 'Unknown Customer',
       referenceNumber: `PAY-${payment.id.slice(-8)}`,
       amount: payment.amount,
-      paymentMethod: payment.paymentMethod === 'cash' ? 'cash' :
-                   payment.paymentMethod === 'credit_card' ? 'credit' :
-                   payment.paymentMethod === 'bank_transfer' ? 'bank' :
-                   payment.paymentMethod === 'check' ? 'cheque' : 'other',
+      paymentMethod: mapPaymentMethod(payment.paymentMethod),
       paymentStatus: 'paid' as const,
       dateReceived: payment.paymentDate,
-      notes: payment.notes,
+      notes: payment.notes || '',
       createdAt: payment.createdAt,
       updatedAt: payment.createdAt
     };
