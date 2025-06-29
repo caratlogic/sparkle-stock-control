@@ -28,7 +28,7 @@ export const useInvoicePayments = () => {
         invoiceId: payment.invoice_id,
         amount: parseFloat(payment.amount.toString()),
         paymentDate: payment.payment_date,
-        paymentMethod: payment.payment_method,
+        paymentMethod: payment.payment_method as 'cash' | 'credit_card' | 'bank_transfer' | 'check' | 'other',
         notes: payment.notes,
         createdAt: payment.created_at
       }));

@@ -306,7 +306,7 @@ export const TransactionDashboard = () => {
                           {new Date(consignment.returnDate).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={consignment.status === 'completed' ? 'default' : 'secondary'}>
+                          <Badge variant={consignment.status === 'purchased' ? 'default' : 'secondary'}>
                             {consignment.status.charAt(0).toUpperCase() + consignment.status.slice(1)}
                           </Badge>
                         </TableCell>
