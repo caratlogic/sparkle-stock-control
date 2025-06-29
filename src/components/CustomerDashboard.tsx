@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CustomerForm } from './CustomerForm';
 import { CustomerTable } from './CustomerTable';
 import { CustomerCommunications } from './CustomerCommunications';
+import { CustomerDetailPage } from './CustomerDetailPage';
 import { useToast } from '@/hooks/use-toast';
 
 interface CustomerDashboardProps {
@@ -25,6 +27,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomerForComms, setSelectedCustomerForComms] = useState<Customer | null>(null);
+  const [selectedCustomerForDetail, setSelectedCustomerForDetail] = useState<Customer | null>(null);
 
   const handleAddCustomer = async (customer: Omit<Customer, 'id' | 'customerId' | 'dateAdded' | 'totalPurchases'>) => {
     try {
@@ -185,6 +188,24 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
     );
   }
 
+  // Show customer detail page
+  if (selectedCustomerForDetail) {
+    return (
+      <CustomerDetailPage
+        customer={selectedCustomerForDetail}
+        onBack={() => setSelectedCustomerForDetail(null)}
+        onCreateInvoice={(customer) => {
+          setSelectedCustomerForDetail(null);
+          if (onCreateInvoice) onCreateInvoice(customer);
+        }}
+        onCreateConsignment={(customer) => {
+          setSelectedCustomerForDetail(null);
+          if (onCreateConsignment) onCreateConsignment(customer);
+        }}
+      />
+    );
+  }
+
   if (selectedCustomerForComms) {
     return (
       <div className="animate-fade-in">
@@ -298,7 +319,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
             onCreateConsignment={onCreateConsignment}
             onUpdateDiscount={handleUpdateDiscount}
             onCommunicate={(customer) => setSelectedCustomerForComms(customer)}
-            onView={onViewCustomer}
+            onView={(customer) => setSelectedCustomerForDetail(customer)}
           />
         </CardContent>
       </Card>

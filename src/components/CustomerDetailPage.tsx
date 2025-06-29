@@ -17,12 +17,15 @@ import {
   Mail,
   Phone,
   Building,
-  MapPin
+  MapPin,
+  CreditCard
 } from 'lucide-react';
 import { Customer, Invoice, Consignment, CustomerCommunication } from '../types/customer';
+import { Payment } from '../types/payment';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useCustomerCommunications } from '../hooks/useCustomerCommunications';
+import { usePayments } from '../hooks/usePayments';
 import { CustomerCommunications } from './CustomerCommunications';
 
 interface CustomerDetailPageProps {
@@ -41,17 +44,26 @@ export const CustomerDetailPage = ({
   const { invoices } = useInvoices();
   const { consignments } = useConsignments();
   const { communications } = useCustomerCommunications(customer.id);
+  const { payments } = usePayments();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Filter data for this customer
   const customerInvoices = invoices.filter(inv => inv.customerId === customer.id);
   const customerConsignments = consignments.filter(cons => cons.customerId === customer.id);
   const customerCommunications = communications.filter(comm => comm.customerId === customer.id);
+  const customerPayments = payments.filter(payment => 
+    payment.customerId === customer.id || 
+    payment.customerName.toLowerCase() === customer.name.toLowerCase()
+  );
 
   // Calculate summary metrics
   const totalInvoices = customerInvoices.length;
   const totalConsignments = customerConsignments.length;
+  const totalPayments = customerPayments.length;
   const totalRevenue = customerInvoices.reduce((sum, inv) => sum + inv.total, 0);
+  const totalPaymentsAmount = customerPayments
+    .filter(payment => payment.paymentStatus === 'paid')
+    .reduce((sum, payment) => sum + payment.amount, 0);
   const pendingPayments = customerInvoices
     .filter(inv => inv.status === 'sent' || inv.status === 'overdue')
     .reduce((sum, inv) => sum + inv.total, 0);
@@ -66,7 +78,8 @@ export const CustomerDetailPage = ({
       case 'active': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'returned': return 'bg-gray-100 text-gray-800';
-      case 'sold': return 'bg-blue-100 text-blue-800';
+      case 'purchased': return 'bg-blue-100 text-blue-800';
+      case 'partial': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -75,11 +88,13 @@ export const CustomerDetailPage = ({
     return new Date(dateString).toLocaleDateString();
   };
 
-  const getActivityDate = (activity: Invoice | Consignment | CustomerCommunication): string => {
+  const getActivityDate = (activity: Invoice | Consignment | CustomerCommunication | Payment): string => {
     if ('dateCreated' in activity) {
       return activity.dateCreated;
     } else if ('createdAt' in activity) {
       return activity.createdAt;
+    } else if ('dateReceived' in activity) {
+      return activity.dateReceived;
     }
     return '';
   };
@@ -187,7 +202,7 @@ export const CustomerDetailPage = ({
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -225,6 +240,17 @@ export const CustomerDetailPage = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
+                <p className="text-sm text-slate-600">Total Payments</p>
+                <p className="text-xl font-bold text-slate-800">${totalPaymentsAmount.toLocaleString()}</p>
+              </div>
+              <CreditCard className="w-8 h-8 text-indigo-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-sm text-slate-600">Pending Payments</p>
                 <p className="text-xl font-bold text-slate-800">${pendingPayments.toLocaleString()}</p>
               </div>
@@ -236,10 +262,11 @@ export const CustomerDetailPage = ({
 
       {/* Detailed Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="invoices">Invoices ({totalInvoices})</TabsTrigger>
           <TabsTrigger value="consignments">Consignments ({totalConsignments})</TabsTrigger>
+          <TabsTrigger value="payments">Payments ({totalPayments})</TabsTrigger>
           <TabsTrigger value="communications">Communications</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
@@ -276,32 +303,29 @@ export const CustomerDetailPage = ({
               </CardContent>
             </Card>
 
-            {/* Recent Communications */}
+            {/* Recent Payments */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Recent Communications</span>
-                  <MessageCircle className="w-5 h-5" />
+                  <span>Recent Payments</span>
+                  <CreditCard className="w-5 h-5" />
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {recentCommunications.length === 0 ? (
-                  <p className="text-slate-500 text-center py-4">No communications yet</p>
+                {customerPayments.length === 0 ? (
+                  <p className="text-slate-500 text-center py-4">No payments yet</p>
                 ) : (
                   <div className="space-y-3">
-                    {recentCommunications.map((comm) => (
-                      <div key={comm.id} className="p-3 bg-slate-50 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {comm.communicationType.replace('_', ' ').toUpperCase()}
-                          </Badge>
-                          <span className="text-xs text-slate-500">
-                            {formatDate(comm.createdAt)}
-                          </span>
+                    {customerPayments.slice(0, 3).map((payment) => (
+                      <div key={payment.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div>
+                          <p className="font-medium">{payment.referenceNumber}</p>
+                          <p className="text-sm text-slate-600">{formatDate(payment.dateReceived)}</p>
                         </div>
-                        <p className="text-sm text-slate-700 line-clamp-2">
-                          {comm.subject || comm.message}
-                        </p>
+                        <div className="text-right">
+                          <p className="font-medium">${payment.amount.toLocaleString()}</p>
+                          <Badge className={getStatusColor(payment.paymentStatus)}>{payment.paymentStatus}</Badge>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -386,6 +410,51 @@ export const CustomerDetailPage = ({
           </Card>
         </TabsContent>
 
+        <TabsContent value="payments">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Payments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {customerPayments.length === 0 ? (
+                <div className="text-center py-8">
+                  <CreditCard className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500">No payments found for this customer</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customerPayments.map((payment) => (
+                    <div key={payment.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h4 className="font-medium">{payment.referenceNumber}</h4>
+                          <p className="text-sm text-slate-600">
+                            Date: {formatDate(payment.dateReceived)} | Method: {payment.paymentMethod}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold">${payment.amount.toLocaleString()}</p>
+                          <Badge className={getStatusColor(payment.paymentStatus)}>{payment.paymentStatus}</Badge>
+                        </div>
+                      </div>
+                      {payment.notes && (
+                        <div className="text-sm text-slate-600">
+                          <p>Notes: {payment.notes}</p>
+                        </div>
+                      )}
+                      {payment.invoiceId && (
+                        <div className="text-xs text-slate-500 mt-2">
+                          <Badge variant="outline">Invoice Related</Badge>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="communications">
           <CustomerCommunications customer={customer} />
         </TabsContent>
@@ -398,9 +467,9 @@ export const CustomerDetailPage = ({
             <CardContent>
               <div className="space-y-4">
                 {/* Combined activity timeline */}
-                {[...customerInvoices, ...customerConsignments, ...customerCommunications]
+                {[...customerInvoices, ...customerConsignments, ...customerCommunications, ...customerPayments]
                   .sort((a, b) => new Date(getActivityDate(b)).getTime() - new Date(getActivityDate(a)).getTime())
-                  .slice(0, 10)
+                  .slice(0, 15)
                   .map((activity, index) => (
                     <div key={index} className="flex items-start gap-4 p-4 bg-slate-50 rounded-lg">
                       <div className="flex-shrink-0">
@@ -408,6 +477,8 @@ export const CustomerDetailPage = ({
                           <FileText className="w-5 h-5 text-blue-500" />
                         ) : 'consignmentNumber' in activity ? (
                           <Receipt className="w-5 h-5 text-purple-500" />
+                        ) : 'referenceNumber' in activity ? (
+                          <CreditCard className="w-5 h-5 text-indigo-500" />
                         ) : (
                           <MessageCircle className="w-5 h-5 text-green-500" />
                         )}
@@ -417,6 +488,7 @@ export const CustomerDetailPage = ({
                           <p className="font-medium">
                             {'invoiceNumber' in activity ? `Invoice ${activity.invoiceNumber}` :
                              'consignmentNumber' in activity ? `Consignment ${activity.consignmentNumber}` :
+                             'referenceNumber' in activity ? `Payment ${activity.referenceNumber}` :
                              `${activity.communicationType} Communication`}
                           </p>
                           <span className="text-xs text-slate-500">
@@ -425,6 +497,7 @@ export const CustomerDetailPage = ({
                         </div>
                         <p className="text-sm text-slate-600">
                           {'total' in activity ? `Total: $${activity.total.toLocaleString()}` :
+                           'amount' in activity ? `Amount: $${activity.amount.toLocaleString()}` :
                            'message' in activity ? activity.message.substring(0, 100) + '...' :
                            'Activity updated'}
                         </p>
