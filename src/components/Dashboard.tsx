@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -234,7 +233,11 @@ export const Dashboard = () => {
         <TabsContent value="consignment-creation" className="space-y-6">
           <ConsignmentCreation 
             preselectedGem={consignmentGem}
-            onComplete={() => {
+            onCancel={() => {
+              setConsignmentGem(null);
+              setActiveTab('transactions');
+            }}
+            onSave={() => {
               setConsignmentGem(null);
               setActiveTab('transactions');
             }}
