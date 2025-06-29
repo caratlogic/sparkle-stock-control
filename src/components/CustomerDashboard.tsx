@@ -15,29 +15,16 @@ import { useToast } from '@/hooks/use-toast';
 interface CustomerDashboardProps {
   onCreateInvoice?: (customer: Customer) => void;
   onCreateConsignment?: (customer: Customer) => void;
+  onViewCustomer?: (customer: Customer) => void;
 }
 
-export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: CustomerDashboardProps) => {
+export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onViewCustomer }: CustomerDashboardProps) => {
   const { customers, loading, refetch } = useCustomers();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomerForComms, setSelectedCustomerForComms] = useState<Customer | null>(null);
-
-  // Calculate metrics
-  const totalCustomers = customers.length;
-  const totalRevenue = customers.reduce((sum, customer) => sum + customer.totalPurchases, 0);
-  const activeCustomers = customers.filter(c => c.lastPurchaseDate && 
-    new Date(c.lastPurchaseDate) > new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-  ).length;
-
-  const filteredCustomers = customers.filter(customer =>
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.customerId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (customer.company && customer.company.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
 
   const handleAddCustomer = async (customer: Omit<Customer, 'id' | 'customerId' | 'dateAdded' | 'totalPurchases'>) => {
     try {
@@ -176,6 +163,20 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
     }
   };
 
+  // Calculate metrics
+  const totalCustomers = customers.length;
+  const totalRevenue = customers.reduce((sum, customer) => sum + customer.totalPurchases, 0);
+  const activeCustomers = customers.filter(c => c.lastPurchaseDate && 
+    new Date(c.lastPurchaseDate) > new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+  ).length;
+
+  const filteredCustomers = customers.filter(customer =>
+    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.customerId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (customer.company && customer.company.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -297,6 +298,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment }: Cust
             onCreateConsignment={onCreateConsignment}
             onUpdateDiscount={handleUpdateDiscount}
             onCommunicate={(customer) => setSelectedCustomerForComms(customer)}
+            onView={onViewCustomer}
           />
         </CardContent>
       </Card>

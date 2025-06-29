@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { CustomerDashboard } from './CustomerDashboard';
+import { CustomerDetailPage } from './CustomerDetailPage';
 import { DiamondTable } from './DiamondTable';
 import { GemTable } from './GemTable';
 import { InvoiceCreation } from './InvoiceCreation';
@@ -33,9 +35,10 @@ import { useInvoices } from '../hooks/useInvoices';
 import { sampleGems } from '../data/sampleGems';
 
 export const Dashboard = () => {
-  const [activeView, setActiveView] = useState<'overview' | 'customers' | 'diamonds' | 'gems' | 'invoices' | 'consignments' | 'transactions' | 'analytics' | 'activity' | 'reminders'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'customers' | 'customer-detail' | 'diamonds' | 'gems' | 'invoices' | 'consignments' | 'transactions' | 'analytics' | 'activity' | 'reminders'>('overview');
   const [preselectedCustomer, setPreselectedCustomer] = useState<Customer | null>(null);
   const [preselectedGem, setPreselectedGem] = useState<GemType | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { logout } = useAuth();
   const { gems } = useGems();
   const { customers } = useCustomers();
@@ -76,6 +79,16 @@ export const Dashboard = () => {
     setPreselectedCustomer(customer);
     setPreselectedGem(null);
     setActiveView('consignments');
+  };
+
+  const handleViewCustomerDetails = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setActiveView('customer-detail');
+  };
+
+  const handleBackToCustomers = () => {
+    setSelectedCustomer(null);
+    setActiveView('customers');
   };
 
   const handleCancelInvoice = () => {
@@ -160,7 +173,17 @@ export const Dashboard = () => {
         return <CustomerDashboard 
           onCreateInvoice={handleCreateInvoiceFromCustomer}
           onCreateConsignment={handleCreateConsignmentFromCustomer}
+          onViewCustomer={handleViewCustomerDetails}
         />;
+      case 'customer-detail':
+        return selectedCustomer ? (
+          <CustomerDetailPage
+            customer={selectedCustomer}
+            onBack={handleBackToCustomers}
+            onCreateInvoice={handleCreateInvoiceFromCustomer}
+            onCreateConsignment={handleCreateConsignmentFromCustomer}
+          />
+        ) : null;
       case 'diamonds':
         return <DiamondTable 
           diamonds={sampleDiamonds as any[]} 
