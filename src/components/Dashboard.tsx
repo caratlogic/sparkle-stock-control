@@ -27,10 +27,56 @@ import { ActivityLog } from './ActivityLog';
 import { ReminderDashboard } from './ReminderDashboard';
 import { Customer } from '../types/customer';
 import { useAuth } from '../contexts/AuthContext';
+import { useGems } from '../hooks/useGems';
+import { useCustomers } from '../hooks/useCustomers';
+import { useInvoices } from '../hooks/useInvoices';
+import { sampleGems } from '../data/sampleGems';
 
 export const Dashboard = () => {
   const [activeView, setActiveView] = useState<'overview' | 'customers' | 'diamonds' | 'gems' | 'invoices' | 'consignments' | 'transactions' | 'analytics' | 'activity' | 'reminders'>('overview');
   const { logout } = useAuth();
+  const { gems } = useGems();
+  const { customers } = useCustomers();
+  const { invoices } = useInvoices();
+
+  // Combine database gems with sample gems for diamond view
+  const allDiamonds = [...gems.filter(g => g.gemType === 'Diamond'), ...sampleGems.filter(g => g.gemType === 'Diamond')];
+
+  const handleEditGem = (gem: any) => {
+    // Handle gem editing logic
+    console.log('Edit gem:', gem);
+  };
+
+  const handleDeleteGem = (id: string) => {
+    // Handle gem deletion logic
+    console.log('Delete gem:', id);
+  };
+
+  const handleCreateInvoice = (gem: any) => {
+    setActiveView('invoices');
+  };
+
+  const handleCreateConsignment = (gem: any) => {
+    setActiveView('consignments');
+  };
+
+  const handleCancelInvoice = () => {
+    setActiveView('overview');
+  };
+
+  const handleCancelConsignment = () => {
+    setActiveView('overview');
+  };
+
+  const handleSaveInvoice = (invoice: any) => {
+    console.log('Invoice saved:', invoice);
+    setActiveView('overview');
+  };
+
+  const handleSaveConsignment = (consignment: any) => {
+    console.log('Consignment saved:', consignment);
+    setActiveView('overview');
+  };
 
   const renderContent = () => {
     switch (activeView) {
@@ -53,7 +99,7 @@ export const Dashboard = () => {
                   <Users className="h-4 w-4 text-slate-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-slate-800">124</div>
+                  <div className="text-2xl font-bold text-slate-800">{customers.length}</div>
                   <p className="text-xs text-slate-500 mt-1">Registered customers</p>
                 </CardContent>
               </Card>
@@ -64,19 +110,21 @@ export const Dashboard = () => {
                   <DollarSign className="h-4 w-4 text-slate-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-slate-800">$45,231.89</div>
+                  <div className="text-2xl font-bold text-slate-800">
+                    ${invoices.reduce((sum, inv) => sum + inv.total, 0).toLocaleString()}
+                  </div>
                   <p className="text-xs text-slate-500 mt-1">From all sales</p>
                 </CardContent>
               </Card>
 
               <Card className="diamond-sparkle hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">New Orders</CardTitle>
+                  <CardTitle className="text-sm font-medium text-slate-600">Total Gems</CardTitle>
                   <Package className="h-4 w-4 text-slate-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-emerald-600">+201</div>
-                  <p className="text-xs text-slate-500 mt-1">Since last month</p>
+                  <div className="text-2xl font-bold text-emerald-600">{gems.length}</div>
+                  <p className="text-xs text-slate-500 mt-1">In inventory</p>
                 </CardContent>
               </Card>
             </div>
@@ -92,17 +140,37 @@ export const Dashboard = () => {
           }}
         />;
       case 'diamonds':
-        return <DiamondTable />;
+        return <DiamondTable 
+          diamonds={allDiamonds} 
+          onEdit={handleEditGem} 
+          onDelete={handleDeleteGem} 
+        />;
       case 'gems':
-        return <GemTable />;
+        return <GemTable 
+          gems={gems} 
+          onEdit={handleEditGem} 
+          onDelete={handleDeleteGem}
+          onCreateInvoice={handleCreateInvoice}
+          onCreateConsignment={handleCreateConsignment}
+        />;
       case 'invoices':
-        return <InvoiceCreation />;
+        return <InvoiceCreation 
+          onCancel={handleCancelInvoice}
+          onSave={handleSaveInvoice}
+        />;
       case 'consignments':
-        return <ConsignmentCreation />;
+        return <ConsignmentCreation 
+          onCancel={handleCancelConsignment}
+          onSave={handleSaveConsignment}
+        />;
       case 'transactions':
         return <TransactionDashboard />;
       case 'analytics':
-        return <AnalyticsDashboard />;
+        return <AnalyticsDashboard 
+          gems={gems}
+          customers={customers}
+          invoices={invoices}
+        />;
       case 'activity':
         return <ActivityLog />;
       case 'reminders':
