@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -89,14 +88,14 @@ export const CustomerDetailPage = ({
   };
 
   const getActivityDate = (activity: Invoice | Consignment | CustomerCommunication | Payment): string => {
-    if ('dateCreated' in activity) {
+    if ('dateCreated' in activity && activity.dateCreated) {
       return activity.dateCreated;
-    } else if ('createdAt' in activity) {
+    } else if ('createdAt' in activity && activity.createdAt) {
       return activity.createdAt;
-    } else if ('dateReceived' in activity) {
+    } else if ('dateReceived' in activity && activity.dateReceived) {
       return activity.dateReceived;
     }
-    return '';
+    return new Date().toISOString();
   };
 
   return (
