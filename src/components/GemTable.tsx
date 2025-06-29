@@ -12,7 +12,8 @@ import {
   ArrowUpDown, 
   Download,
   FileText,
-  Handshake
+  Handshake,
+  Plus
 } from 'lucide-react';
 import { Gem } from '../types/gem';
 
@@ -20,6 +21,7 @@ interface GemTableProps {
   gems: Gem[];
   onEdit: (gem: Gem) => void;
   onDelete: (id: string) => void;
+  onAdd?: () => void;
   onCreateInvoice?: (gem: Gem) => void;
   onCreateConsignment?: (gem: Gem) => void;
 }
@@ -27,10 +29,13 @@ interface GemTableProps {
 export const GemTable = ({ 
   gems, 
   onEdit, 
-  onDelete, 
+  onDelete,
+  onAdd,
   onCreateInvoice, 
   onCreateConsignment 
 }: GemTableProps) => {
+  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
@@ -113,6 +118,13 @@ export const GemTable = ({
           </CardTitle>
           
           <div className="flex flex-col sm:flex-row gap-3">
+            {onAdd && (
+              <Button onClick={onAdd} className="bg-diamond-gradient hover:opacity-90">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Gem
+              </Button>
+            )}
+            
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
               <Input
@@ -247,6 +259,7 @@ export const GemTable = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => onEdit(gem)}
+                        title="Edit Gem"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -254,6 +267,7 @@ export const GemTable = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => onDelete(gem.id)}
+                        title="Delete Gem"
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>

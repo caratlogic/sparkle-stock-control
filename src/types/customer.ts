@@ -69,6 +69,16 @@ export interface ConsignmentItem {
   };
 }
 
+export interface InvoicePayment {
+  id: string;
+  invoiceId: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: 'cash' | 'credit_card' | 'bank_transfer' | 'check' | 'other';
+  notes?: string;
+  createdAt: string;
+}
+
 export interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -83,6 +93,9 @@ export interface Invoice {
   dateCreated: string;
   dateDue: string;
   notes?: string;
+  payments?: InvoicePayment[];
+  paidAmount?: number;
+  remainingAmount?: number;
 }
 
 export interface Consignment {
