@@ -19,7 +19,7 @@ import {
   Building,
   MapPin
 } from 'lucide-react';
-import { Customer } from '../types/customer';
+import { Customer, Invoice, Consignment, CustomerCommunication } from '../types/customer';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useCustomerCommunications } from '../hooks/useCustomerCommunications';
@@ -73,6 +73,15 @@ export const CustomerDetailPage = ({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const getActivityDate = (activity: Invoice | Consignment | CustomerCommunication): string => {
+    if ('dateCreated' in activity) {
+      return activity.dateCreated;
+    } else if ('createdAt' in activity) {
+      return activity.createdAt;
+    }
+    return '';
   };
 
   return (
@@ -390,7 +399,7 @@ export const CustomerDetailPage = ({
               <div className="space-y-4">
                 {/* Combined activity timeline */}
                 {[...customerInvoices, ...customerConsignments, ...customerCommunications]
-                  .sort((a, b) => new Date(b.dateCreated || b.createdAt).getTime() - new Date(a.dateCreated || a.createdAt).getTime())
+                  .sort((a, b) => new Date(getActivityDate(b)).getTime() - new Date(getActivityDate(a)).getTime())
                   .slice(0, 10)
                   .map((activity, index) => (
                     <div key={index} className="flex items-start gap-4 p-4 bg-slate-50 rounded-lg">
@@ -411,7 +420,7 @@ export const CustomerDetailPage = ({
                              `${activity.communicationType} Communication`}
                           </p>
                           <span className="text-xs text-slate-500">
-                            {formatDate(activity.dateCreated || activity.createdAt)}
+                            {formatDate(getActivityDate(activity))}
                           </span>
                         </div>
                         <p className="text-sm text-slate-600">

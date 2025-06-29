@@ -21,6 +21,18 @@ export interface Customer {
   notes?: string;
 }
 
+export interface CustomerCommunication {
+  id: string;
+  customerId: string;
+  communicationType: string;
+  subject?: string;
+  message: string;
+  createdAt: string;
+  senderName?: string;
+  senderEmail?: string;
+  responseStatus?: string;
+}
+
 export interface InvoiceItem {
   productId: string;
   productType: 'diamond' | 'emerald' | 'ruby' | 'sapphire' | 'amethyst' | 'aquamarine' | 'garnet' | 'opal' | 'topaz' | 'tourmaline';

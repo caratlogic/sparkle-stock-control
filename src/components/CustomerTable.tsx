@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2, FileText, Receipt, MessageCircle, Percent } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, FileText, Receipt, MessageCircle, Percent, Eye } from 'lucide-react';
 import { Customer } from '../types/customer';
 
 interface CustomerTableProps {
@@ -31,6 +31,7 @@ interface CustomerTableProps {
   onCreateConsignment?: (customer: Customer) => void;
   onUpdateDiscount: (customerId: string, discount: number) => void;
   onCommunicate?: (customer: Customer) => void;
+  onView?: (customer: Customer) => void;
 }
 
 export const CustomerTable = ({ 
@@ -40,7 +41,8 @@ export const CustomerTable = ({
   onCreateInvoice, 
   onCreateConsignment, 
   onUpdateDiscount,
-  onCommunicate 
+  onCommunicate,
+  onView
 }: CustomerTableProps) => {
   const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<string | null>(null);
@@ -185,6 +187,16 @@ export const CustomerTable = ({
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-end gap-2">
+                      {onView && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onView(customer)}
+                          className="h-8 px-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      )}
                       {onCommunicate && (
                         <Button
                           size="sm"
