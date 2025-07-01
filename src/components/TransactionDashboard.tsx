@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,8 @@ import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useCustomers } from '../hooks/useCustomers';
 import { InvoicePaymentDialog } from './InvoicePaymentDialog';
 import { ConsignmentToInvoiceDialog } from './ConsignmentToInvoiceDialog';
+import { InvoiceDetailView } from './InvoiceDetailView';
+import { ConsignmentDetailView } from './ConsignmentDetailView';
 import { Invoice } from '../types/customer';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +28,28 @@ export const TransactionDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedConsignmentForInvoice, setSelectedConsignmentForInvoice] = useState<string | null>(null);
+  const [selectedInvoiceForView, setSelectedInvoiceForView] = useState<Invoice | null>(null);
+  const [selectedConsignmentForView, setSelectedConsignmentForView] = useState<any | null>(null);
+
+  // If viewing invoice details, show the detail view
+  if (selectedInvoiceForView) {
+    return (
+      <InvoiceDetailView 
+        invoice={selectedInvoiceForView} 
+        onBack={() => setSelectedInvoiceForView(null)} 
+      />
+    );
+  }
+
+  // If viewing consignment details, show the detail view
+  if (selectedConsignmentForView) {
+    return (
+      <ConsignmentDetailView 
+        consignment={selectedConsignmentForView} 
+        onBack={() => setSelectedConsignmentForView(null)} 
+      />
+    );
+  }
 
   useEffect(() => {
     fetchPayments();
@@ -47,7 +70,7 @@ export const TransactionDashboard = () => {
   const handleAddPayment = async (payment: any) => {
     const result = await addPayment(payment);
     if (result.success) {
-      await fetchPayments(); // Refresh payments after adding
+      await fetchPayments();
       toast({
         title: "Success",
         description: "Payment recorded successfully",
@@ -295,7 +318,12 @@ export const TransactionDashboard = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => setSelectedInvoiceForView(invoice)}
+                                title="View Invoice Details"
+                              >
                                 <Eye className="w-4 h-4" />
                               </Button>
                               <Button variant="ghost" size="sm">
@@ -371,7 +399,12 @@ export const TransactionDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setSelectedConsignmentForView(consignment)}
+                              title="View Consignment Details"
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
                             <Button variant="ghost" size="sm">
