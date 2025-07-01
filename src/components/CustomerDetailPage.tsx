@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useCustomerCommunications } from '../hooks/useCustomerCommunications';
 import { usePayments } from '../hooks/usePayments';
+import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { CustomerCommunications } from './CustomerCommunications';
 
 interface CustomerDetailPageProps {
@@ -44,29 +46,70 @@ export const CustomerDetailPage = ({
   const { consignments } = useConsignments();
   const { communications } = useCustomerCommunications(customer.id);
   const { payments } = usePayments();
+  const { payments: invoicePayments } = useInvoicePayments();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Filter data for this customer
   const customerInvoices = invoices.filter(inv => inv.customerId === customer.id);
   const customerConsignments = consignments.filter(cons => cons.customerId === customer.id);
   const customerCommunications = communications.filter(comm => comm.customerId === customer.id);
-  const customerPayments = payments.filter(payment => 
+  
+  // Get customer invoice IDs for payment filtering
+  const customerInvoiceIds = customerInvoices.map(inv => inv.id);
+  
+  // Filter payments from both sources - direct payments and invoice payments
+  const customerDirectPayments = payments.filter(payment => 
     payment.customerId === customer.id || 
     payment.customerName.toLowerCase() === customer.name.toLowerCase()
+  );
+  
+  // Filter invoice payments for this customer's invoices
+  const customerInvoicePayments = invoicePayments.filter(payment =>
+    customerInvoiceIds.includes(payment.invoiceId)
   );
 
   // Calculate summary metrics
   const totalInvoices = customerInvoices.length;
   const totalConsignments = customerConsignments.length;
-  const totalPayments = customerPayments.length;
+  const totalPayments = customerDirectPayments.length + customerInvoicePayments.length;
   const totalRevenue = customerInvoices.reduce((sum, inv) => sum + inv.total, 0);
-  const totalPaymentsAmount = customerPayments
+  
+  // Calculate total payments amount from both sources
+  const totalDirectPaymentsAmount = customerDirectPayments
     .filter(payment => payment.paymentStatus === 'paid')
     .reduce((sum, payment) => sum + payment.amount, 0);
+    
+  const totalInvoicePaymentsAmount = customerInvoicePayments
+    .reduce((sum, payment) => sum + payment.amount, 0);
+    
+  const totalPaymentsAmount = totalDirectPaymentsAmount + totalInvoicePaymentsAmount;
+  
   const pendingPayments = customerInvoices
     .filter(inv => inv.status === 'sent' || inv.status === 'overdue')
     .reduce((sum, inv) => sum + inv.total, 0);
   const recentCommunications = customerCommunications.slice(0, 5);
+
+  // Combine all payments for display
+  const allCustomerPayments = [
+    ...customerDirectPayments.map(payment => ({
+      ...payment,
+      source: 'direct' as const,
+      referenceNumber: payment.referenceNumber,
+      dateReceived: payment.dateReceived,
+      paymentStatus: payment.paymentStatus
+    })),
+    ...customerInvoicePayments.map(payment => ({
+      id: payment.id,
+      amount: payment.amount,
+      paymentMethod: payment.paymentMethod,
+      dateReceived: payment.paymentDate,
+      paymentStatus: 'paid' as const,
+      referenceNumber: `Invoice Payment - ${payment.invoiceId.slice(0, 8)}`,
+      notes: payment.notes,
+      source: 'invoice' as const,
+      invoiceId: payment.invoiceId
+    }))
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -87,7 +130,7 @@ export const CustomerDetailPage = ({
     return new Date(dateString).toLocaleDateString();
   };
 
-  const getActivityDate = (activity: Invoice | Consignment | CustomerCommunication | Payment): string => {
+  const getActivityDate = (activity: Invoice | Consignment | CustomerCommunication | any): string => {
     if ('dateCreated' in activity && activity.dateCreated) {
       return activity.dateCreated;
     } else if ('createdAt' in activity && activity.createdAt) {
@@ -343,11 +386,11 @@ export const CustomerDetailPage = ({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {customerPayments.length === 0 ? (
+                {allCustomerPayments.length === 0 ? (
                   <p className="text-slate-500 text-center py-4">No payments yet</p>
                 ) : (
                   <div className="space-y-3">
-                    {customerPayments.slice(0, 3).map((payment) => (
+                    {allCustomerPayments.slice(0, 3).map((payment) => (
                       <div key={payment.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                         <div>
                           <p className="font-medium">{payment.referenceNumber}</p>
@@ -366,7 +409,6 @@ export const CustomerDetailPage = ({
           </div>
         </TabsContent>
 
-        
         <TabsContent value="invoices">
           <Card>
             <CardHeader>
@@ -448,20 +490,23 @@ export const CustomerDetailPage = ({
               <CardTitle>All Payments</CardTitle>
             </CardHeader>
             <CardContent>
-              {customerPayments.length === 0 ? (
+              {allCustomerPayments.length === 0 ? (
                 <div className="text-center py-8">
                   <CreditCard className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                   <p className="text-slate-500">No payments found for this customer</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {customerPayments.map((payment) => (
+                  {allCustomerPayments.map((payment) => (
                     <div key={payment.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <h4 className="font-medium">{payment.referenceNumber}</h4>
                           <p className="text-sm text-slate-600">
                             Date: {formatDate(payment.dateReceived)} | Method: {payment.paymentMethod}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Source: {payment.source === 'direct' ? 'Direct Payment' : 'Invoice Payment'}
                           </p>
                         </div>
                         <div className="text-right">
@@ -474,7 +519,7 @@ export const CustomerDetailPage = ({
                           <p>Notes: {payment.notes}</p>
                         </div>
                       )}
-                      {payment.invoiceId && (
+                      {payment.source === 'invoice' && payment.invoiceId && (
                         <div className="text-xs text-slate-500 mt-2">
                           <Badge variant="outline">Invoice Related</Badge>
                         </div>
