@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -260,7 +261,8 @@ export const GemTable = ({
                     <Badge 
                       variant={
                         gem.status === 'In Stock' ? 'secondary' : 
-                        gem.status === 'Sold' ? 'destructive' : 'default'
+                        gem.status === 'Sold' ? 'destructive' : 
+                        gem.status === 'Reserved' ? 'default' : 'secondary'
                       }
                     >
                       {gem.status}

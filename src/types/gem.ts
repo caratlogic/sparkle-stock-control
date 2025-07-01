@@ -13,7 +13,7 @@ export interface Gem {
   price: number;
   costPrice: number;
   certificateNumber: string;
-  status: 'In Stock' | 'Sold' | 'Reserved' | 'On Consignment';
+  status: 'In Stock' | 'Sold' | 'Reserved';
   dateAdded: string;
   notes?: string;
   imageUrl?: string;
@@ -39,7 +39,7 @@ export const CUT_OPTIONS = [
 ] as const;
 
 export const STATUS_OPTIONS = [
-  'In Stock', 'Sold', 'Reserved', 'On Consignment'
+  'In Stock', 'Sold', 'Reserved'
 ] as const;
 
 // Color options by gem type

@@ -137,15 +137,55 @@ export const useGems = () => {
 
   const deleteGem = async (id: string) => {
     try {
+      console.log(`🔄 useGems: Attempting to delete gem ${id}`);
+      
+      // First, check if gem is referenced in any invoices or consignments
+      const { data: invoiceItems, error: invoiceError } = await supabase
+        .from('invoice_items')
+        .select('id')
+        .eq('gem_id', id)
+        .limit(1);
+
+      if (invoiceError) {
+        console.error('❌ useGems: Error checking invoice items:', invoiceError);
+        throw invoiceError;
+      }
+
+      if (invoiceItems && invoiceItems.length > 0) {
+        throw new Error('Cannot delete gem: It is referenced in one or more invoices');
+      }
+
+      const { data: consignmentItems, error: consignmentError } = await supabase
+        .from('consignment_items')
+        .select('id')
+        .eq('gem_id', id)
+        .limit(1);
+
+      if (consignmentError) {
+        console.error('❌ useGems: Error checking consignment items:', consignmentError);
+        throw consignmentError;
+      }
+
+      if (consignmentItems && consignmentItems.length > 0) {
+        throw new Error('Cannot delete gem: It is referenced in one or more consignments');
+      }
+
+      // If no references found, proceed with deletion
       const { error } = await supabase
         .from('gems')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useGems: Supabase delete error:', error);
+        throw error;
+      }
+      
+      console.log(`✅ useGems: Successfully deleted gem ${id}`);
       await fetchGems();
       return { success: true };
     } catch (err) {
+      console.error('❌ useGems: Delete gem error:', err);
       return { success: false, error: err instanceof Error ? err.message : 'Failed to delete gem' };
     }
   };

@@ -19,12 +19,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Gem } from '../types/gem';
 import { Customer } from '../types/customer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 
 export const Dashboard = () => {
-  const { gems, loading, addGem, updateGem, deleteGem } = useGems();
-  const { customers } = useCustomers();
-  const { invoices } = useInvoices();
+  const { gems, loading, addGem, updateGem, deleteGem, refetch: refetchGems } = useGems();
+  const { customers, refetch: refetchCustomers } = useCustomers();
+  const { invoices, refetch: refetchInvoices } = useInvoices();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('analytics');
   const [showGemForm, setShowGemForm] = useState(false);
@@ -32,6 +32,30 @@ export const Dashboard = () => {
   const [selectedCustomerForComms, setSelectedCustomerForComms] = useState<Customer | null>(null);
   const [invoiceGem, setInvoiceGem] = useState<Gem | null>(null);
   const [consignmentGem, setConsignmentGem] = useState<Gem | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshAll = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchGems(),
+        refetchCustomers(),
+        refetchInvoices()
+      ]);
+      toast({
+        title: "Success",
+        description: "All data refreshed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleAddGem = async (gemData: any) => {
     const result = await addGem(gemData);
@@ -142,6 +166,14 @@ export const Dashboard = () => {
           <h1 className="text-3xl font-bold text-slate-800">Diamond Business Dashboard</h1>
           <p className="text-slate-600 mt-1">Manage your diamond inventory and business operations</p>
         </div>
+        <Button 
+          onClick={handleRefreshAll} 
+          disabled={isRefreshing}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh All'}
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
