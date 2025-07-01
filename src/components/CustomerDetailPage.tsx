@@ -261,14 +261,46 @@ export const CustomerDetailPage = ({
 
       {/* Detailed Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices ({totalInvoices})</TabsTrigger>
-          <TabsTrigger value="consignments">Consignments ({totalConsignments})</TabsTrigger>
-          <TabsTrigger value="payments">Payments ({totalPayments})</TabsTrigger>
-          <TabsTrigger value="communications">Communications</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="inline-flex h-12 items-center justify-start rounded-lg bg-slate-100 p-1 text-slate-600 min-w-max">
+            <TabsTrigger 
+              value="overview" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="invoices" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Invoices ({totalInvoices})
+            </TabsTrigger>
+            <TabsTrigger 
+              value="consignments" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Consignments ({totalConsignments})
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payments" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Payments ({totalPayments})
+            </TabsTrigger>
+            <TabsTrigger 
+              value="communications" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Communications
+            </TabsTrigger>
+            <TabsTrigger 
+              value="activity" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Activity
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -334,6 +366,7 @@ export const CustomerDetailPage = ({
           </div>
         </TabsContent>
 
+        
         <TabsContent value="invoices">
           <Card>
             <CardHeader>
