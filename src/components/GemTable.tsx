@@ -13,9 +13,11 @@ import {
   Download,
   FileText,
   Handshake,
-  Plus
+  Plus,
+  Eye
 } from 'lucide-react';
 import { Gem } from '../types/gem';
+import { GemDetailView } from './GemDetailView';
 
 interface GemTableProps {
   gems: Gem[];
@@ -34,12 +36,21 @@ export const GemTable = ({
   onCreateInvoice, 
   onCreateConsignment 
 }: GemTableProps) => {
-  
-
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [selectedGem, setSelectedGem] = useState<Gem | null>(null);
+
+  // If a gem is selected, show the detail view
+  if (selectedGem) {
+    return (
+      <GemDetailView 
+        gem={selectedGem} 
+        onBack={() => setSelectedGem(null)} 
+      />
+    );
+  }
 
   // Filter and sort gems
   const filteredGems = gems
@@ -217,7 +228,12 @@ export const GemTable = ({
               {filteredGems.map((gem) => (
                 <tr key={gem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                   <td className="py-4 px-4">
-                    <div className="font-medium text-slate-800">{gem.stockId}</div>
+                    <button
+                      onClick={() => setSelectedGem(gem)}
+                      className="font-medium text-slate-800 hover:text-blue-600 hover:underline transition-colors cursor-pointer"
+                    >
+                      {gem.stockId}
+                    </button>
                   </td>
                   <td className="py-4 px-4">
                     <div className="font-medium text-slate-800">{gem.gemType}</div>
@@ -255,6 +271,14 @@ export const GemTable = ({
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedGem(gem)}
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
