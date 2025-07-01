@@ -544,7 +544,7 @@ export const CustomerDetailPage = ({
             <CardContent>
               <div className="space-y-4">
                 {/* Combined activity timeline */}
-                {[...customerInvoices, ...customerConsignments, ...customerCommunications, ...customerPayments]
+                {[...customerInvoices, ...customerConsignments, ...customerCommunications, ...allCustomerPayments]
                   .sort((a, b) => new Date(getActivityDate(b)).getTime() - new Date(getActivityDate(a)).getTime())
                   .slice(0, 15)
                   .map((activity, index) => (
