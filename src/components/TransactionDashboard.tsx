@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,26 +31,6 @@ export const TransactionDashboard = () => {
   const [selectedConsignmentForInvoice, setSelectedConsignmentForInvoice] = useState<string | null>(null);
   const [selectedInvoiceForView, setSelectedInvoiceForView] = useState<Invoice | null>(null);
   const [selectedConsignmentForView, setSelectedConsignmentForView] = useState<any | null>(null);
-
-  // If viewing invoice details, show the detail view
-  if (selectedInvoiceForView) {
-    return (
-      <InvoiceDetailView 
-        invoice={selectedInvoiceForView} 
-        onBack={() => setSelectedInvoiceForView(null)} 
-      />
-    );
-  }
-
-  // If viewing consignment details, show the detail view
-  if (selectedConsignmentForView) {
-    return (
-      <ConsignmentDetailView 
-        consignment={selectedConsignmentForView} 
-        onBack={() => setSelectedConsignmentForView(null)} 
-      />
-    );
-  }
 
   useEffect(() => {
     fetchPayments();
@@ -143,6 +124,26 @@ export const TransactionDashboard = () => {
   const totalInvoiceValue = invoices.reduce((sum, inv) => sum + inv.total, 0);
   const totalPaidValue = invoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
   const totalOutstanding = totalInvoiceValue - totalPaidValue;
+
+  // If viewing invoice details, show the detail view
+  if (selectedInvoiceForView) {
+    return (
+      <InvoiceDetailView 
+        invoice={selectedInvoiceForView} 
+        onBack={() => setSelectedInvoiceForView(null)} 
+      />
+    );
+  }
+
+  // If viewing consignment details, show the detail view
+  if (selectedConsignmentForView) {
+    return (
+      <ConsignmentDetailView 
+        consignment={selectedConsignmentForView} 
+        onBack={() => setSelectedConsignmentForView(null)} 
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
