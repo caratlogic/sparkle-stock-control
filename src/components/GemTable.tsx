@@ -59,10 +59,10 @@ export const GemTable = ({
     );
   }
 
-  // Get unique values for filter options
-  const uniqueGemTypes = [...new Set(gems.map(gem => gem.gemType))].sort();
-  const uniqueCuts = [...new Set(gems.map(gem => gem.cut))].sort();
-  const uniqueColors = [...new Set(gems.map(gem => gem.color))].sort();
+  // Get unique values for filter options and filter out empty strings
+  const uniqueGemTypes = [...new Set(gems.map(gem => gem.gemType))].filter(type => type && type.trim() !== '').sort();
+  const uniqueCuts = [...new Set(gems.map(gem => gem.cut))].filter(cut => cut && cut.trim() !== '').sort();
+  const uniqueColors = [...new Set(gems.map(gem => gem.color))].filter(color => color && color.trim() !== '').sort();
 
   // Clear all filters
   const clearAllFilters = () => {
