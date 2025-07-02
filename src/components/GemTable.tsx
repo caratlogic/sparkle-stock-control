@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { GemDetailView } from './GemDetailView';
+import { useAuth } from '../contexts/AuthContext';
 
 interface GemTableProps {
   gems: Gem[];
@@ -38,6 +39,7 @@ export const GemTable = ({
   onCreateInvoice, 
   onCreateConsignment 
 }: GemTableProps) => {
+  const { isOwner } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGemType, setFilterGemType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -127,7 +129,7 @@ export const GemTable = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Price', 'Cost Price', 'Certificate', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -137,7 +139,7 @@ export const GemTable = ({
         gem.cut,
         gem.color,
         gem.price,
-        gem.costPrice,
+        ...(isOwner ? [gem.costPrice] : []),
         gem.certificateNumber,
         gem.status,
         gem.dateAdded
@@ -332,15 +334,17 @@ export const GemTable = ({
                     <ArrowUpDown className="w-4 h-4" />
                   </div>
                 </th>
-                <th 
-                  className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
-                  onClick={() => handleSort('costPrice')}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>Cost Price</span>
-                    <ArrowUpDown className="w-4 h-4" />
-                  </div>
-                </th>
+                {isOwner && (
+                  <th 
+                    className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
+                    onClick={() => handleSort('costPrice')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Cost Price</span>
+                      <ArrowUpDown className="w-4 h-4" />
+                    </div>
+                  </th>
+                )}
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Certificate</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
                 <th 
@@ -381,9 +385,11 @@ export const GemTable = ({
                   <td className="py-4 px-4">
                     <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
-                  </td>
+                  {isOwner && (
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
+                    </td>
+                  )}
                   <td className="py-4 px-4">
                     <div className="text-sm text-slate-600 font-mono">{gem.certificateNumber}</div>
                   </td>
