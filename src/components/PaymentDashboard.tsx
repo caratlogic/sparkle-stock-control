@@ -20,6 +20,7 @@ export const PaymentDashboard = () => {
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [showReceivables, setShowReceivables] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [customerFilter, setCustomerFilter] = useState('all');
   const [filters, setFilters] = useState<PaymentFilter>({
     status: 'all'
   });
@@ -101,6 +102,10 @@ export const PaymentDashboard = () => {
       ...prev,
       [key]: value
     }));
+  };
+
+  const handleCustomerFilterChange = (value: string) => {
+    setCustomerFilter(value);
   };
 
   const memoizedRefetch = useCallback(() => {
@@ -246,8 +251,11 @@ export const PaymentDashboard = () => {
 
           <PaymentTransactionsTable
             payments={filteredPayments}
+            customers={customers}
             loading={paymentsLoading}
             onRefresh={memoizedRefetch}
+            customerFilter={customerFilter}
+            onCustomerFilterChange={handleCustomerFilterChange}
           />
         </CardContent>
       </Card>
