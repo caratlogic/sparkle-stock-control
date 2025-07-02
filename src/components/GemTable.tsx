@@ -305,6 +305,7 @@ export const GemTable = ({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200">
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Image</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
                   onClick={() => handleSort('stockId')}
@@ -362,6 +363,24 @@ export const GemTable = ({
             <tbody>
               {filteredGems.map((gem) => (
                 <tr key={gem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <td className="py-4 px-4">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center">
+                      {gem.imageUrl ? (
+                        <img 
+                          src={gem.imageUrl} 
+                          alt={gem.gemType}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400 text-xs">No Image</div>';
+                          }}
+                        />
+                      ) : (
+                        <div className="text-slate-400 text-xs">No Image</div>
+                      )}
+                    </div>
+                  </td>
                   <td className="py-4 px-4">
                     <button
                       onClick={() => setSelectedGem(gem)}
