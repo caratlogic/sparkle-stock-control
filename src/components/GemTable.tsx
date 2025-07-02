@@ -15,7 +15,8 @@ import {
   FileText,
   Handshake,
   Plus,
-  Eye
+  Eye,
+  X
 } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { GemDetailView } from './GemDetailView';
@@ -38,7 +39,12 @@ export const GemTable = ({
   onCreateConsignment 
 }: GemTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterGemType, setFilterGemType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterCut, setFilterCut] = useState('all');
+  const [filterColor, setFilterColor] = useState('all');
+  const [caratRange, setCaratRange] = useState({ min: '', max: '' });
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedGem, setSelectedGem] = useState<Gem | null>(null);
@@ -53,6 +59,22 @@ export const GemTable = ({
     );
   }
 
+  // Get unique values for filter options
+  const uniqueGemTypes = [...new Set(gems.map(gem => gem.gemType))].sort();
+  const uniqueCuts = [...new Set(gems.map(gem => gem.cut))].sort();
+  const uniqueColors = [...new Set(gems.map(gem => gem.color))].sort();
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setFilterGemType('all');
+    setFilterStatus('all');
+    setFilterCut('all');
+    setFilterColor('all');
+    setCaratRange({ min: '', max: '' });
+    setPriceRange({ min: '', max: '' });
+  };
+
   // Filter and sort gems
   const filteredGems = gems
     .filter((gem) => {
@@ -64,9 +86,19 @@ export const GemTable = ({
         gem.cut.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (gem.description && gem.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
-      const matchesFilter = filterStatus === 'all' || gem.status === filterStatus;
+      const matchesGemType = filterGemType === 'all' || gem.gemType === filterGemType;
+      const matchesStatus = filterStatus === 'all' || gem.status === filterStatus;
+      const matchesCut = filterCut === 'all' || gem.cut === filterCut;
+      const matchesColor = filterColor === 'all' || gem.color === filterColor;
       
-      return matchesSearch && matchesFilter;
+      const matchesCaratRange = (!caratRange.min || gem.carat >= parseFloat(caratRange.min)) &&
+                               (!caratRange.max || gem.carat <= parseFloat(caratRange.max));
+      
+      const matchesPriceRange = (!priceRange.min || gem.price >= parseFloat(priceRange.min)) &&
+                               (!priceRange.max || gem.price <= parseFloat(priceRange.max));
+      
+      return matchesSearch && matchesGemType && matchesStatus && matchesCut && 
+             matchesColor && matchesCaratRange && matchesPriceRange;
     })
     .sort((a, b) => {
       const aValue = a[sortField];
@@ -121,6 +153,10 @@ export const GemTable = ({
     window.URL.revokeObjectURL(url);
   };
 
+  const hasActiveFilters = filterGemType !== 'all' || filterStatus !== 'all' || filterCut !== 'all' || 
+                          filterColor !== 'all' || caratRange.min || caratRange.max || 
+                          priceRange.min || priceRange.max || searchTerm;
+
   return (
     <Card>
       <CardHeader>
@@ -137,20 +173,76 @@ export const GemTable = ({
               </Button>
             )}
             
-            <div className="relative">
+            <Button variant="outline" onClick={exportToCSV}>
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
+        </div>
+
+        {/* Search and Filters Section */}
+        <div className="space-y-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
               <Input
                 placeholder="Search gems..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full sm:w-64 bg-slate-50 border-slate-200"
+                className="pl-10 bg-slate-50 border-slate-200"
               />
             </div>
             
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full sm:w-40 bg-slate-50 border-slate-200">
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearAllFilters} className="flex items-center gap-2">
+                <X className="w-4 h-4" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
+
+          {/* Filter Row 1 */}
+          <div className="flex flex-wrap gap-3">
+            <Select value={filterGemType} onValueChange={setFilterGemType}>
+              <SelectTrigger className="w-[140px] bg-slate-50 border-slate-200">
                 <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Filter status" />
+                <SelectValue placeholder="Gem Type" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-slate-200">
+                <SelectItem value="all">All Types</SelectItem>
+                {uniqueGemTypes.map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterCut} onValueChange={setFilterCut}>
+              <SelectTrigger className="w-[130px] bg-slate-50 border-slate-200">
+                <SelectValue placeholder="Cut/Shape" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-slate-200">
+                <SelectItem value="all">All Cuts</SelectItem>
+                {uniqueCuts.map(cut => (
+                  <SelectItem key={cut} value={cut}>{cut}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterColor} onValueChange={setFilterColor}>
+              <SelectTrigger className="w-[120px] bg-slate-50 border-slate-200">
+                <SelectValue placeholder="Color" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-slate-200">
+                <SelectItem value="all">All Colors</SelectItem>
+                {uniqueColors.map(color => (
+                  <SelectItem key={color} value={color}>{color}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[120px] bg-slate-50 border-slate-200">
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="bg-white border-slate-200">
                 <SelectItem value="all">All Status</SelectItem>
@@ -159,11 +251,49 @@ export const GemTable = ({
                 <SelectItem value="Reserved">Reserved</SelectItem>
               </SelectContent>
             </Select>
-            
-            <Button variant="outline" onClick={exportToCSV}>
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
+          </div>
+
+          {/* Filter Row 2 - Range Filters */}
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-600 whitespace-nowrap">Carat:</span>
+              <Input
+                type="number"
+                placeholder="Min"
+                value={caratRange.min}
+                onChange={(e) => setCaratRange(prev => ({ ...prev, min: e.target.value }))}
+                className="w-20 bg-slate-50 border-slate-200"
+                step="0.01"
+              />
+              <span className="text-slate-400">-</span>
+              <Input
+                type="number"
+                placeholder="Max"
+                value={caratRange.max}
+                onChange={(e) => setCaratRange(prev => ({ ...prev, max: e.target.value }))}
+                className="w-20 bg-slate-50 border-slate-200"
+                step="0.01"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-600 whitespace-nowrap">Price ($):</span>
+              <Input
+                type="number"
+                placeholder="Min"
+                value={priceRange.min}
+                onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                className="w-24 bg-slate-50 border-slate-200"
+              />
+              <span className="text-slate-400">-</span>
+              <Input
+                type="number"
+                placeholder="Max"
+                value={priceRange.max}
+                onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                className="w-24 bg-slate-50 border-slate-200"
+              />
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -240,7 +370,7 @@ export const GemTable = ({
                     <div className="font-medium text-slate-800">{gem.gemType}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="font-medium text-slate-800">{gem.carat}ct</div>
+                    <div className="font-medium text-slate-800">{gem.carat}</div>
                   </td>
                   <td className="py-4 px-4">
                     <div className="text-sm text-slate-600">
