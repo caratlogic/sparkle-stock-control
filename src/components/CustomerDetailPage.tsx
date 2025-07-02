@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,13 +56,13 @@ export const CustomerDetailPage = ({
   // Get customer invoice IDs for payment filtering
   const customerInvoiceIds = customerInvoices.map(inv => inv.id);
   
-  // Filter payments from both sources - direct payments and invoice payments
+  // Filter ONLY legitimate payments from the database
+  // Only include direct payments that explicitly match this customer's ID
   const customerDirectPayments = payments.filter(payment => 
-    payment.customerId === customer.id || 
-    payment.customerName.toLowerCase() === customer.name.toLowerCase()
+    payment.customerId === customer.id
   );
   
-  // Filter invoice payments for this customer's invoices
+  // Filter invoice payments ONLY for this customer's invoices
   const customerInvoicePayments = invoicePayments.filter(payment =>
     customerInvoiceIds.includes(payment.invoiceId)
   );
@@ -74,7 +73,7 @@ export const CustomerDetailPage = ({
   const totalPayments = customerDirectPayments.length + customerInvoicePayments.length;
   const totalRevenue = customerInvoices.reduce((sum, inv) => sum + inv.total, 0);
   
-  // Calculate total payments amount from both sources
+  // Calculate total payments amount from both legitimate sources only
   const totalDirectPaymentsAmount = customerDirectPayments
     .filter(payment => payment.paymentStatus === 'paid')
     .reduce((sum, payment) => sum + payment.amount, 0);
@@ -89,7 +88,7 @@ export const CustomerDetailPage = ({
     .reduce((sum, inv) => sum + inv.total, 0);
   const recentCommunications = customerCommunications.slice(0, 5);
 
-  // Combine all payments for display
+  // Combine ONLY legitimate payments for display
   const allCustomerPayments = [
     ...customerDirectPayments.map(payment => ({
       ...payment,

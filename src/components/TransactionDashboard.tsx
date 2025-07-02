@@ -15,6 +15,7 @@ import { InvoicePaymentDialog } from './InvoicePaymentDialog';
 import { ConsignmentToInvoiceDialog } from './ConsignmentToInvoiceDialog';
 import { InvoiceDetailView } from './InvoiceDetailView';
 import { ConsignmentDetailView } from './ConsignmentDetailView';
+import { CustomerFilter } from './ui/customer-filter';
 import { Invoice } from '../types/customer';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +29,7 @@ export const TransactionDashboard = () => {
   const [activeTab, setActiveTab] = useState<'invoices' | 'consignments'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [customerFilter, setCustomerFilter] = useState<string>('all');
   const [selectedConsignmentForInvoice, setSelectedConsignmentForInvoice] = useState<string | null>(null);
   const [selectedInvoiceForView, setSelectedInvoiceForView] = useState<Invoice | null>(null);
   const [selectedConsignmentForView, setSelectedConsignmentForView] = useState<any | null>(null);
@@ -107,16 +109,26 @@ export const TransactionDashboard = () => {
       invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getCustomerName(invoice.customerId).toLowerCase().includes(searchTerm.toLowerCase());
     
-    if (statusFilter === 'all') return matchesSearch;
+    const matchesCustomer = customerFilter === 'all' || invoice.customerId === customerFilter;
     
-    const paymentStatus = getInvoicePaymentStatus(invoice);
-    return matchesSearch && paymentStatus.status.toLowerCase() === statusFilter.toLowerCase();
+    let matchesStatus = true;
+    if (statusFilter !== 'all') {
+      const paymentStatus = getInvoicePaymentStatus(invoice);
+      matchesStatus = paymentStatus.status.toLowerCase() === statusFilter.toLowerCase();
+    }
+    
+    return matchesSearch && matchesCustomer && matchesStatus;
   });
 
-  const filteredConsignments = consignments.filter(consignment =>
-    consignment.consignmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    getCustomerName(consignment.customerId).toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredConsignments = consignments.filter(consignment => {
+    const matchesSearch = 
+      consignment.consignmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getCustomerName(consignment.customerId).toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCustomer = customerFilter === 'all' || consignment.customerId === customerFilter;
+    
+    return matchesSearch && matchesCustomer;
+  });
 
   // Summary calculations
   const totalInvoices = invoices.length;
@@ -230,6 +242,13 @@ export const TransactionDashboard = () => {
             />
           </div>
         </div>
+        
+        <CustomerFilter
+          customers={customers}
+          value={customerFilter}
+          onValueChange={setCustomerFilter}
+          placeholder="Filter by Customer"
+        />
         
         {activeTab === 'invoices' && (
           <Select value={statusFilter} onValueChange={setStatusFilter}>

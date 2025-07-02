@@ -4,14 +4,25 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Edit, Eye, MoreHorizontal } from 'lucide-react';
 import { Payment } from '../../types/payment';
+import { Customer } from '../../types/customer';
+import { CustomerFilter } from '../ui/customer-filter';
 
 interface PaymentTransactionsTableProps {
   payments: Payment[];
+  customers: Customer[];
   loading: boolean;
   onRefresh: () => void;
+  customerFilter: string;
+  onCustomerFilterChange: (value: string) => void;
 }
 
-export const PaymentTransactionsTable = ({ payments, loading }: PaymentTransactionsTableProps) => {
+export const PaymentTransactionsTable = ({ 
+  payments, 
+  customers, 
+  loading, 
+  customerFilter, 
+  onCustomerFilterChange 
+}: PaymentTransactionsTableProps) => {
   const getStatusBadge = (status: string) => {
     const variants = {
       paid: 'bg-green-100 text-green-800',
@@ -35,9 +46,23 @@ export const PaymentTransactionsTable = ({ payments, loading }: PaymentTransacti
     return colors[method as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
+  // Filter payments by customer
+  const filteredPayments = customerFilter === 'all' 
+    ? payments 
+    : payments.filter(payment => payment.customerId === customerFilter);
+
   if (loading) {
     return (
       <div className="space-y-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Payment Transactions</h3>
+          <CustomerFilter
+            customers={customers}
+            value={customerFilter}
+            onValueChange={onCustomerFilterChange}
+            placeholder="Filter by Customer"
+          />
+        </div>
         {[...Array(5)].map((_, i) => (
           <div key={i} className="animate-pulse bg-slate-100 h-16 rounded"></div>
         ))}
@@ -46,80 +71,92 @@ export const PaymentTransactionsTable = ({ payments, loading }: PaymentTransacti
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Reference No</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Linked To</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {payments.length === 0 ? (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Payment Transactions</h3>
+        <CustomerFilter
+          customers={customers}
+          value={customerFilter}
+          onValueChange={onCustomerFilterChange}
+          placeholder="Filter by Customer"
+        />
+      </div>
+      
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-8 text-slate-500">
-                No payments found
-              </TableCell>
+              <TableHead>Reference No</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Linked To</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ) : (
-            payments.map((payment) => (
-              <TableRow key={payment.id}>
-                <TableCell className="font-medium">
-                  {payment.referenceNumber}
-                </TableCell>
-                <TableCell>{payment.customerName}</TableCell>
-                <TableCell>
-                  {new Date(payment.dateReceived).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="font-semibold">
-                  ${payment.amount.toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <Badge className={getPaymentMethodBadge(payment.paymentMethod)}>
-                    {payment.paymentMethod.toUpperCase()}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusBadge(payment.paymentStatus)}>
-                    {payment.paymentStatus.charAt(0).toUpperCase() + payment.paymentStatus.slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {payment.invoiceId && (
-                    <span className="text-sm text-blue-600">
-                      Invoice #{payment.invoiceId.slice(-6)}
-                    </span>
-                  )}
-                  {payment.consignmentId && (
-                    <span className="text-sm text-purple-600">
-                      Consignment #{payment.consignmentId.slice(-6)}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-1">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </div>
+          </TableHeader>
+          <TableBody>
+            {filteredPayments.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-8 text-slate-500">
+                  No payments found
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              filteredPayments.map((payment) => (
+                <TableRow key={payment.id}>
+                  <TableCell className="font-medium">
+                    {payment.referenceNumber}
+                  </TableCell>
+                  <TableCell>{payment.customerName}</TableCell>
+                  <TableCell>
+                    {new Date(payment.dateReceived).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="font-semibold">
+                    ${payment.amount.toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getPaymentMethodBadge(payment.paymentMethod)}>
+                      {payment.paymentMethod.toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusBadge(payment.paymentStatus)}>
+                      {payment.paymentStatus.charAt(0).toUpperCase() + payment.paymentStatus.slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {payment.invoiceId && (
+                      <span className="text-sm text-blue-600">
+                        Invoice #{payment.invoiceId.slice(-6)}
+                      </span>
+                    )}
+                    {payment.consignmentId && (
+                      <span className="text-sm text-purple-600">
+                        Consignment #{payment.consignmentId.slice(-6)}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-1">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
