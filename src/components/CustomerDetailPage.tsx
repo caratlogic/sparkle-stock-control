@@ -84,8 +84,12 @@ export const CustomerDetailPage = ({
   const totalPaymentsAmount = totalDirectPaymentsAmount + totalInvoicePaymentsAmount;
   
   // Calculate pending payments by subtracting payments from unpaid invoices
+  // Debug: Log invoice data
+  console.log('Customer invoices:', customerInvoices.map(inv => ({ id: inv.id, status: inv.status, total: inv.total })));
+  console.log('Customer invoice payments:', customerInvoicePayments);
+  
   const pendingPayments = customerInvoices
-    .filter(inv => inv.status === 'sent' || inv.status === 'overdue')
+    .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled') // Include all unpaid statuses
     .reduce((sum, inv) => {
       // Get total payments made for this invoice
       const invoicePayments = customerInvoicePayments
@@ -94,8 +98,11 @@ export const CustomerDetailPage = ({
       
       // Add the remaining unpaid amount to pending payments
       const remainingAmount = inv.total - invoicePayments;
+      console.log(`Invoice ${inv.id}: total=${inv.total}, payments=${invoicePayments}, remaining=${remainingAmount}`);
       return sum + Math.max(0, remainingAmount); // Ensure we don't add negative amounts
     }, 0);
+  
+  console.log('Final pending payments:', pendingPayments);
   const recentCommunications = customerCommunications.slice(0, 5);
 
   // Combine ONLY legitimate payments for display
