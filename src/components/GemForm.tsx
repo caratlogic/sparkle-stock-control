@@ -32,9 +32,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     status: 'In Stock',
     notes: '',
     imageUrl: '',
-    treatment: '',
-    colorComment: '',
-    certificateType: '',
+    treatment: 'none',
+    colorComment: 'none',
+    certificateType: 'none',
     supplier: '',
     purchaseDate: '',
     origin: ''
@@ -55,9 +55,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         status: gem.status,
         notes: gem.notes || '',
         imageUrl: gem.imageUrl || '',
-        treatment: gem.treatment || '',
-        colorComment: gem.colorComment || '',
-        certificateType: gem.certificateType || '',
+        treatment: gem.treatment || 'none',
+        colorComment: gem.colorComment || 'none',
+        certificateType: gem.certificateType || 'none',
         supplier: gem.supplier || '',
         purchaseDate: gem.purchaseDate || '',
         origin: gem.origin || ''
@@ -249,7 +249,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         <SelectValue placeholder="Select treatment" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {TREATMENT_OPTIONS.map((treatment) => (
                           <SelectItem key={treatment} value={treatment}>
                             {treatment} - {treatment === 'H' ? 'Heated' : treatment === 'NH' ? 'No Heat' : treatment === 'NO' ? 'No Oil' : 'Minor'}
@@ -266,7 +266,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         <SelectValue placeholder="Select color comment" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {COLOR_COMMENT_OPTIONS.map((comment) => (
                           <SelectItem key={comment} value={comment}>
                             {comment} - {comment === 'RB' ? 'Royal' : comment === 'I' ? 'Intense' : comment === 'CF' ? 'Cornflower' : comment === 'VD' ? 'Vivid' : 'Pigeon Blood'}
@@ -283,7 +283,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         <SelectValue placeholder="Select certificate type" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {CERTIFICATE_TYPE_OPTIONS.map((type) => (
                           <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}

@@ -420,13 +420,13 @@ export const GemTable = ({
                     </td>
                   )}
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.treatment || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.treatment && gem.treatment !== 'none' ? gem.treatment : 'N/A'}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.colorComment || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.colorComment && gem.colorComment !== 'none' ? gem.colorComment : 'N/A'}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.certificateType || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.certificateType && gem.certificateType !== 'none' ? gem.certificateType : 'N/A'}</div>
                   </td>
                   <td className="py-4 px-4">
                     <div className="text-sm text-slate-600">{gem.supplier || 'N/A'}</div>
