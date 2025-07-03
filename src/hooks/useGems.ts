@@ -44,6 +44,68 @@ export const useGems = () => {
     }
   };
 
+  const updateGemStatusesBasedOnRelationships = async () => {
+    try {
+      console.log('🔄 useGems: Updating gem statuses based on relationships...');
+      
+      // Get all gems
+      const { data: allGems, error: gemsError } = await supabase
+        .from('gems')
+        .select('id, stock_id');
+
+      if (gemsError) throw gemsError;
+
+      // Get all invoice items
+      const { data: invoiceItems, error: invoiceError } = await supabase
+        .from('invoice_items')
+        .select('gem_id');
+
+      if (invoiceError) throw invoiceError;
+
+      // Get all consignment items
+      const { data: consignmentItems, error: consignmentError } = await supabase
+        .from('consignment_items')
+        .select('gem_id');
+
+      if (consignmentError) throw consignmentError;
+
+      const invoicedGemIds = new Set(invoiceItems?.map(item => item.gem_id) || []);
+      const consignedGemIds = new Set(consignmentItems?.map(item => item.gem_id) || []);
+
+      // Update status for each gem
+      for (const gem of allGems || []) {
+        let newStatus: 'In Stock' | 'Sold' | 'Reserved';
+        
+        if (invoicedGemIds.has(gem.id)) {
+          newStatus = 'Sold';
+        } else if (consignedGemIds.has(gem.id)) {
+          newStatus = 'Reserved';
+        } else {
+          newStatus = 'In Stock';
+        }
+
+        // Update gem status in database
+        const { error: updateError } = await supabase
+          .from('gems')
+          .update({ status: newStatus })
+          .eq('id', gem.id);
+
+        if (updateError) {
+          console.error(`❌ useGems: Error updating status for gem ${gem.stock_id}:`, updateError);
+        } else {
+          console.log(`✅ useGems: Updated gem ${gem.stock_id} status to ${newStatus}`);
+        }
+      }
+
+      console.log('✅ useGems: Finished updating gem statuses');
+      await fetchGems();
+      return { success: true };
+    } catch (err) {
+      console.error('❌ useGems: Error updating gem statuses:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem statuses' };
+    }
+  };
+
   const addGem = async (gemData: Omit<Gem, 'id' | 'stockId' | 'dateAdded'>) => {
     try {
       const { data, error } = await supabase

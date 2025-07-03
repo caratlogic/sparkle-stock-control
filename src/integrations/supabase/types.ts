@@ -296,7 +296,9 @@ export type Database = {
           box_number: string | null
           carat: number
           certificate_number: string
+          certificate_type: string | null
           color: string
+          color_comment: string | null
           cost_price: number
           created_at: string | null
           date_added: string
@@ -304,26 +306,33 @@ export type Database = {
           gem_type: string
           id: string
           image_url: string | null
+          in_stock: number
           measurements: string | null
           measurements_mm: string | null
           notes: string | null
           old_code: string | null
+          origin: string | null
           price: number
           price_in_letters: string | null
           purchase_date: string | null
+          reserved: number
           shape: string | null
           shape_detail: string | null
-          status: string
+          sold: number
           stock_id: string
           stone_description: string | null
+          supplier: string | null
           total_in_letters: string | null
+          treatment: string | null
           updated_at: string | null
         }
         Insert: {
           box_number?: string | null
           carat: number
           certificate_number: string
+          certificate_type?: string | null
           color: string
+          color_comment?: string | null
           cost_price: number
           created_at?: string | null
           date_added?: string
@@ -331,26 +340,33 @@ export type Database = {
           gem_type: string
           id?: string
           image_url?: string | null
+          in_stock?: number
           measurements?: string | null
           measurements_mm?: string | null
           notes?: string | null
           old_code?: string | null
+          origin?: string | null
           price: number
           price_in_letters?: string | null
           purchase_date?: string | null
+          reserved?: number
           shape?: string | null
           shape_detail?: string | null
-          status?: string
+          sold?: number
           stock_id: string
           stone_description?: string | null
+          supplier?: string | null
           total_in_letters?: string | null
+          treatment?: string | null
           updated_at?: string | null
         }
         Update: {
           box_number?: string | null
           carat?: number
           certificate_number?: string
+          certificate_type?: string | null
           color?: string
+          color_comment?: string | null
           cost_price?: number
           created_at?: string | null
           date_added?: string
@@ -358,19 +374,24 @@ export type Database = {
           gem_type?: string
           id?: string
           image_url?: string | null
+          in_stock?: number
           measurements?: string | null
           measurements_mm?: string | null
           notes?: string | null
           old_code?: string | null
+          origin?: string | null
           price?: number
           price_in_letters?: string | null
           purchase_date?: string | null
+          reserved?: number
           shape?: string | null
           shape_detail?: string | null
-          status?: string
+          sold?: number
           stock_id?: string
           stone_description?: string | null
+          supplier?: string | null
           total_in_letters?: string | null
+          treatment?: string | null
           updated_at?: string | null
         }
         Relationships: []
