@@ -319,6 +319,7 @@ export type Database = {
           shape: string | null
           shape_detail: string | null
           sold: number
+          status: string
           stock_id: string
           stone_description: string | null
           supplier: string | null
@@ -353,6 +354,7 @@ export type Database = {
           shape?: string | null
           shape_detail?: string | null
           sold?: number
+          status?: string
           stock_id: string
           stone_description?: string | null
           supplier?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           shape?: string | null
           shape_detail?: string | null
           sold?: number
+          status?: string
           stock_id?: string
           stone_description?: string | null
           supplier?: string | null
