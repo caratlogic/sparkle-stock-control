@@ -6,7 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS } from '../types/gem';
+import type { Gem } from '../types/gem';
+import { 
+  GEM_TYPES, 
+  CUT_OPTIONS, 
+  GEM_COLORS, 
+  TREATMENT_OPTIONS, 
+  COLOR_COMMENT_OPTIONS, 
+  CERTIFICATE_TYPE_OPTIONS 
+} from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
