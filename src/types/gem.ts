@@ -17,6 +17,12 @@ export interface Gem {
   dateAdded: string;
   notes?: string;
   imageUrl?: string;
+  treatment?: string;
+  colorComment?: string;
+  certificateType?: string;
+  supplier?: string;
+  purchaseDate?: string;
+  origin?: string;
   consignmentInfo?: {
     id: string;
     consignmentNumber: string;
@@ -40,6 +46,18 @@ export const CUT_OPTIONS = [
 
 export const STATUS_OPTIONS = [
   'In Stock', 'Sold', 'Reserved'
+] as const;
+
+export const TREATMENT_OPTIONS = [
+  'H', 'NH', 'NO', 'MI'
+] as const;
+
+export const COLOR_COMMENT_OPTIONS = [
+  'RB', 'I', 'CF', 'VD', 'PB'
+] as const;
+
+export const CERTIFICATE_TYPE_OPTIONS = [
+  'GRA', 'GRS', 'SSEF', 'GUB', 'GIA', 'AGL', 'CGL', 'CD', 'IGI', 'HRD'
 ] as const;
 
 // Color options by gem type

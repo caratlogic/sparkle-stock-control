@@ -129,7 +129,7 @@ export const GemTable = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Purchase Date', 'Origin', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -140,7 +140,12 @@ export const GemTable = ({
         gem.color,
         gem.price,
         ...(isOwner ? [gem.costPrice] : []),
-        gem.certificateNumber,
+        gem.treatment || '',
+        gem.colorComment || '',
+        gem.certificateType || '',
+        gem.supplier || '',
+        gem.purchaseDate || '',
+        gem.origin || '',
         gem.status,
         gem.dateAdded
       ].join(','))
@@ -346,7 +351,12 @@ export const GemTable = ({
                     </div>
                   </th>
                 )}
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Certificate</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Treatment</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Color Comment</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Certificate Type</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Supplier</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Purchase Date</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Origin</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
@@ -410,7 +420,22 @@ export const GemTable = ({
                     </td>
                   )}
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600 font-mono">{gem.certificateNumber}</div>
+                    <div className="text-sm text-slate-600">{gem.treatment || 'N/A'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.colorComment || 'N/A'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.certificateType || 'N/A'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.supplier || 'N/A'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.purchaseDate || 'N/A'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.origin || 'N/A'}</div>
                   </td>
                   <td className="py-4 px-4">
                     <Badge 

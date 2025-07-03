@@ -16,7 +16,13 @@ export const sampleGems: Gem[] = [
     certificateNumber: 'GIA-1234567890',
     status: 'In Stock',
     dateAdded: '2024-06-20',
-    notes: 'Excellent quality diamond with perfect cut'
+    notes: 'Excellent quality diamond with perfect cut',
+    treatment: 'NH',
+    colorComment: 'VD',
+    certificateType: 'GIA',
+    supplier: 'Bangkok Diamond House',
+    purchaseDate: '2024-06-15',
+    origin: 'Botswana'
   },
   {
     id: '2',
@@ -32,7 +38,13 @@ export const sampleGems: Gem[] = [
     certificateNumber: 'GRS-2345678901',
     status: 'Reserved',
     dateAdded: '2024-06-18',
-    notes: 'Large emerald with excellent color'
+    notes: 'Large emerald with excellent color',
+    treatment: 'NO',
+    colorComment: 'I',
+    certificateType: 'GRS',
+    supplier: 'Colombian Emerald Co.',
+    purchaseDate: '2024-06-10',
+    origin: 'Colombia'
   },
   {
     id: '3',
@@ -47,7 +59,13 @@ export const sampleGems: Gem[] = [
     costPrice: 6100,
     certificateNumber: 'SSEF-3456789012',
     status: 'In Stock',
-    dateAdded: '2024-06-15'
+    dateAdded: '2024-06-15',
+    treatment: 'H',
+    colorComment: 'PB',
+    certificateType: 'SSEF',
+    supplier: 'Myanmar Ruby Trading',
+    purchaseDate: '2024-06-08',
+    origin: 'Burma'
   },
   {
     id: '4',
@@ -63,7 +81,13 @@ export const sampleGems: Gem[] = [
     certificateNumber: 'AIGS-4567890123',
     status: 'Sold',
     dateAdded: '2024-06-10',
-    notes: 'Sold to Johnson Jewelry'
+    notes: 'Sold to Johnson Jewelry',
+    treatment: 'NH',
+    colorComment: 'CF',
+    certificateType: 'AGL',
+    supplier: 'Ceylon Sapphire Traders',
+    purchaseDate: '2024-06-02',
+    origin: 'Ceylon'
   },
   {
     id: '5',
@@ -79,7 +103,13 @@ export const sampleGems: Gem[] = [
     certificateNumber: 'GIT-5678901234',
     status: 'In Stock',
     dateAdded: '2024-06-25',
-    notes: 'Large amethyst with excellent clarity'
+    notes: 'Large amethyst with excellent clarity',
+    treatment: 'NH',
+    colorComment: 'RB',
+    certificateType: 'GUB',
+    supplier: 'Brazilian Gem Exports',
+    purchaseDate: '2024-06-18',
+    origin: 'Brazil'
   },
   {
     id: '6',
@@ -95,6 +125,12 @@ export const sampleGems: Gem[] = [
     certificateNumber: 'GUILD-6789012345',
     status: 'In Stock',
     dateAdded: '2024-06-22',
-    notes: 'Beautiful aquamarine with excellent blue color'
+    notes: 'Beautiful aquamarine with excellent blue color',
+    treatment: 'MI',
+    colorComment: 'I',
+    certificateType: 'IGI',
+    supplier: 'Madagascar Aqua Ltd.',
+    purchaseDate: '2024-06-14',
+    origin: 'Madagascar'
   }
 ];
