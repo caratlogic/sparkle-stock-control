@@ -77,6 +77,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       carat: parseFloat(formData.carat),
       price: parseFloat(formData.price),
       costPrice: parseFloat(formData.costPrice) || 0,
+      inStock: parseInt(formData.inStock.toString()) || 1,
+      reserved: parseInt(formData.reserved.toString()) || 0,
+      sold: parseInt(formData.sold.toString()) || 0,
       ...(gem && { id: gem.id, stockId: gem.stockId, dateAdded: gem.dateAdded })
     };
 
