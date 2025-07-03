@@ -194,6 +194,29 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
         </Card>
       </div>
 
+      {/* Detailed Quantity Dashboard */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <GemIcon className="w-5 h-5 text-slate-600" />
+            <span>Quantity Distribution by Gem Type</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={typeChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip formatter={(value, name) => [value.toLocaleString(), name]} />
+              <Bar dataKey="inStock" fill="#10B981" name="In Stock" />
+              <Bar dataKey="reserved" fill="#F59E0B" name="Reserved" />
+              <Bar dataKey="sold" fill="#EF4444" name="Sold" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="gem-sparkle hover:shadow-lg transition-shadow">

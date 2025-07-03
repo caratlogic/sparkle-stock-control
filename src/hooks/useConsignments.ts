@@ -363,18 +363,31 @@ export const useConsignments = () => {
           // Get current gem data
           const { data: currentGem, error: fetchError } = await supabase
             .from('gems')
-            .select('in_stock, reserved')
+            .select('in_stock, reserved, sold')
             .eq('id', item.gemId)
             .single();
 
           if (fetchError) throw fetchError;
 
+          const newInStock = (currentGem.in_stock || 0) + item.quantity;
+          const newReserved = Math.max(0, (currentGem.reserved || 0) - item.quantity);
+          
+          // Determine status based on quantities
+          let newStatus: 'In Stock' | 'Sold' | 'Reserved';
+          if (newInStock > 0) {
+            newStatus = 'In Stock';
+          } else if (newReserved > 0) {
+            newStatus = 'Reserved';
+          } else {
+            newStatus = 'Sold';
+          }
+
           await supabase
             .from('gems')
             .update({ 
-              status: 'In Stock',
-              in_stock: (currentGem.in_stock || 0) + item.quantity,
-              reserved: Math.max(0, (currentGem.reserved || 0) - item.quantity)
+              status: newStatus,
+              in_stock: newInStock,
+              reserved: newReserved
             })
             .eq('id', item.gemId);
         }

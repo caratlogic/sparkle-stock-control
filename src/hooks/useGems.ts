@@ -229,11 +229,26 @@ export const useGems = () => {
 
       if (fetchError) throw fetchError;
 
+      // Ensure in_stock never goes below 0
+      const newInStock = Math.max(0, (currentGem.in_stock || 0) - quantity);
+      const newReserved = (currentGem.reserved || 0) + quantity;
+      
+      // Determine status based on quantities
+      let newStatus: 'In Stock' | 'Sold' | 'Reserved';
+      if (newInStock > 0) {
+        newStatus = 'In Stock';
+      } else if (newReserved > 0) {
+        newStatus = 'Reserved';
+      } else {
+        newStatus = 'Sold';
+      }
+
       const { error } = await supabase
         .from('gems')
         .update({ 
-          in_stock: Math.max(0, (currentGem.in_stock || 0) - quantity),
-          reserved: (currentGem.reserved || 0) + quantity
+          in_stock: newInStock,
+          reserved: newReserved,
+          status: newStatus
         })
         .eq('id', gemId);
 
@@ -265,24 +280,36 @@ export const useGems = () => {
 
       if (fetchError) throw fetchError;
 
-      let updateData;
+      let newInStock = currentGem.in_stock || 0;
+      let newReserved = currentGem.reserved || 0;
+      let newSold = (currentGem.sold || 0) + quantity;
+
       if (fromConsignment) {
         // Moving from consignment to sold
-        updateData = {
-          reserved: Math.max(0, (currentGem.reserved || 0) - quantity),
-          sold: (currentGem.sold || 0) + quantity
-        };
+        newReserved = Math.max(0, newReserved - quantity);
       } else {
         // Moving directly from stock to sold
-        updateData = {
-          in_stock: Math.max(0, (currentGem.in_stock || 0) - quantity),
-          sold: (currentGem.sold || 0) + quantity
-        };
+        newInStock = Math.max(0, newInStock - quantity);
+      }
+
+      // Determine status based on quantities
+      let newStatus: 'In Stock' | 'Sold' | 'Reserved';
+      if (newInStock > 0) {
+        newStatus = 'In Stock';
+      } else if (newReserved > 0) {
+        newStatus = 'Reserved';
+      } else {
+        newStatus = 'Sold';
       }
 
       const { error } = await supabase
         .from('gems')
-        .update(updateData)
+        .update({
+          in_stock: newInStock,
+          reserved: newReserved,
+          sold: newSold,
+          status: newStatus
+        })
         .eq('id', gemId);
 
       if (error) {
