@@ -15,6 +15,12 @@ export interface Gem {
   certificateNumber: string;
   status: 'In Stock' | 'Sold' | 'Reserved';
   dateAdded: string;
+  purchaseDate?: string;
+  treatment?: 'H' | 'NH' | 'NO' | 'MI';
+  colorComment?: string;
+  certificateType?: 'GRA' | 'GRS' | 'SSEF' | 'GUB' | 'GIA' | 'AGL' | 'CGL' | 'CD' | 'IGI' | 'HRD';
+  supplier?: string;
+  origin?: string;
   notes?: string;
   imageUrl?: string;
   consignmentInfo?: {
@@ -43,6 +49,21 @@ export const STATUS_OPTIONS = [
 ] as const;
 
 // Color options by gem type
+// Treatment options
+export const TREATMENT_OPTIONS = [
+  'H', 'NH', 'NO', 'MI'
+] as const;
+
+// Color comment options
+export const COLOR_COMMENT_OPTIONS = [
+  'RB', 'I', 'CF', 'VD', 'PB'
+] as const;
+
+// Certificate type options
+export const CERTIFICATE_TYPE_OPTIONS = [
+  'GRA', 'GRS', 'SSEF', 'GUB', 'GIA', 'AGL', 'CGL', 'CD', 'IGI', 'HRD'
+] as const;
+
 export const GEM_COLORS = {
   Diamond: ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'],
   Emerald: ['Vivid Green', 'Green', 'Slightly Bluish Green', 'Yellowish Green', 'Light Green'],

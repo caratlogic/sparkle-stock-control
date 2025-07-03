@@ -32,6 +32,12 @@ export const useGems = () => {
         certificateNumber: gem.certificate_number,
         status: gem.status as any,
         dateAdded: gem.date_added,
+        purchaseDate: gem.purchase_date || undefined,
+        treatment: gem.treatment as any || undefined,
+        colorComment: gem.color_comment || undefined,
+        certificateType: gem.certificate_type as any || undefined,
+        supplier: gem.supplier || undefined,
+        origin: gem.origin || undefined,
         notes: gem.notes || undefined,
         imageUrl: gem.image_url || undefined
       }));
@@ -60,6 +66,12 @@ export const useGems = () => {
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
+          purchase_date: gemData.purchaseDate,
+          treatment: gemData.treatment,
+          color_comment: gemData.colorComment,
+          certificate_type: gemData.certificateType,
+          supplier: gemData.supplier,
+          origin: gemData.origin,
           notes: gemData.notes,
           image_url: gemData.imageUrl
         }])
@@ -89,6 +101,12 @@ export const useGems = () => {
       if (gemData.costPrice !== undefined) updateData.cost_price = gemData.costPrice;
       if (gemData.certificateNumber !== undefined) updateData.certificate_number = gemData.certificateNumber;
       if (gemData.status !== undefined) updateData.status = gemData.status;
+      if (gemData.purchaseDate !== undefined) updateData.purchase_date = gemData.purchaseDate;
+      if (gemData.treatment !== undefined) updateData.treatment = gemData.treatment;
+      if (gemData.colorComment !== undefined) updateData.color_comment = gemData.colorComment;
+      if (gemData.certificateType !== undefined) updateData.certificate_type = gemData.certificateType;
+      if (gemData.supplier !== undefined) updateData.supplier = gemData.supplier;
+      if (gemData.origin !== undefined) updateData.origin = gemData.origin;
       if (gemData.notes !== undefined) updateData.notes = gemData.notes;
       if (gemData.imageUrl !== undefined) updateData.image_url = gemData.imageUrl;
 

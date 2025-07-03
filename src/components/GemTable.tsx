@@ -129,7 +129,7 @@ export const GemTable = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Certificate', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Origin', 'Purchase Date', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -138,9 +138,14 @@ export const GemTable = ({
         gem.carat,
         gem.cut,
         gem.color,
+        gem.treatment || '',
+        gem.colorComment || '',
+        gem.certificateType || '',
+        gem.supplier || '',
+        gem.origin || '',
+        gem.purchaseDate || '',
         gem.price,
         ...(isOwner ? [gem.costPrice] : []),
-        gem.certificateNumber,
         gem.status,
         gem.dateAdded
       ].join(','))
@@ -326,6 +331,12 @@ export const GemTable = ({
                   </div>
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Specifications</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Treatment</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Color Comment</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Certificate Type</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Supplier</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Origin</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Purchase Date</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
                   onClick={() => handleSort('price')}
@@ -346,7 +357,6 @@ export const GemTable = ({
                     </div>
                   </th>
                 )}
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Certificate</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
@@ -402,6 +412,24 @@ export const GemTable = ({
                     </div>
                   </td>
                   <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.treatment || '-'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.colorComment || '-'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.certificateType || '-'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.supplier || '-'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.origin || '-'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">{gem.purchaseDate || '-'}</div>
+                  </td>
+                  <td className="py-4 px-4">
                     <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
                   </td>
                   {isOwner && (
@@ -409,9 +437,6 @@ export const GemTable = ({
                       <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
                     </td>
                   )}
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600 font-mono">{gem.certificateNumber}</div>
-                  </td>
                   <td className="py-4 px-4">
                     <Badge 
                       variant={
