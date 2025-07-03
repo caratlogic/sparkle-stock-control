@@ -30,9 +30,7 @@ export const useGems = () => {
         price: parseFloat(gem.price.toString()),
         costPrice: parseFloat(gem.cost_price.toString()),
         certificateNumber: gem.certificate_number,
-        inStock: parseInt(gem.in_stock?.toString() || '0'),
-        reserved: parseInt(gem.reserved?.toString() || '0'),
-        sold: parseInt(gem.sold?.toString() || '0'),
+        status: gem.status as any,
         dateAdded: gem.date_added,
         purchaseDate: gem.purchase_date || undefined,
         treatment: gem.treatment as any || undefined,
@@ -67,9 +65,7 @@ export const useGems = () => {
           price: gemData.price,
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
-          in_stock: gemData.inStock,
-          reserved: gemData.reserved,
-          sold: gemData.sold,
+          status: gemData.status,
           purchase_date: gemData.purchaseDate,
           treatment: gemData.treatment,
           color_comment: gemData.colorComment,
@@ -104,9 +100,7 @@ export const useGems = () => {
       if (gemData.price !== undefined) updateData.price = gemData.price;
       if (gemData.costPrice !== undefined) updateData.cost_price = gemData.costPrice;
       if (gemData.certificateNumber !== undefined) updateData.certificate_number = gemData.certificateNumber;
-      if (gemData.inStock !== undefined) updateData.in_stock = gemData.inStock;
-      if (gemData.reserved !== undefined) updateData.reserved = gemData.reserved;
-      if (gemData.sold !== undefined) updateData.sold = gemData.sold;
+      if (gemData.status !== undefined) updateData.status = gemData.status;
       if (gemData.purchaseDate !== undefined) updateData.purchase_date = gemData.purchaseDate;
       if (gemData.treatment !== undefined) updateData.treatment = gemData.treatment;
       if (gemData.colorComment !== undefined) updateData.color_comment = gemData.colorComment;
@@ -136,63 +130,27 @@ export const useGems = () => {
     }
   };
 
-  const updateGemQuantities = async (id: string, inStock: number, reserved: number, sold: number) => {
+  const updateGemStatus = async (id: string, status: 'In Stock' | 'Sold' | 'Reserved') => {
     try {
-      console.log(`🔄 useGems: Updating gem ${id} quantities - In Stock: ${inStock}, Reserved: ${reserved}, Sold: ${sold}`);
+      console.log(`🔄 useGems: Updating gem ${id} status to ${status}`);
       
       const { error } = await supabase
         .from('gems')
-        .update({ 
-          in_stock: inStock,
-          reserved: reserved,
-          sold: sold
-        })
+        .update({ status })
         .eq('id', id);
 
       if (error) {
-        console.error('❌ useGems: Supabase quantity update error:', error);
+        console.error('❌ useGems: Supabase status update error:', error);
         throw error;
       }
       
-      console.log(`✅ useGems: Successfully updated gem ${id} quantities`);
+      console.log(`✅ useGems: Successfully updated gem ${id} status to ${status}`);
       await fetchGems();
       return { success: true };
     } catch (err) {
-      console.error('❌ useGems: Update gem quantities error:', err);
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem quantities' };
+      console.error('❌ useGems: Update gem status error:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem status' };
     }
-  };
-
-  const moveToConsignment = async (id: string) => {
-    const gem = gems.find(g => g.id === id);
-    if (!gem || gem.inStock === 0) {
-      return { success: false, error: 'No stock available to move to consignment' };
-    }
-    return updateGemQuantities(id, gem.inStock - 1, gem.reserved + 1, gem.sold);
-  };
-
-  const moveFromConsignmentToSold = async (id: string) => {
-    const gem = gems.find(g => g.id === id);
-    if (!gem || gem.reserved === 0) {
-      return { success: false, error: 'No reserved stock available to sell' };
-    }
-    return updateGemQuantities(id, gem.inStock, gem.reserved - 1, gem.sold + 1);
-  };
-
-  const moveFromStockToSold = async (id: string) => {
-    const gem = gems.find(g => g.id === id);
-    if (!gem || gem.inStock === 0) {
-      return { success: false, error: 'No stock available to sell' };
-    }
-    return updateGemQuantities(id, gem.inStock - 1, gem.reserved, gem.sold + 1);
-  };
-
-  const returnFromConsignment = async (id: string) => {
-    const gem = gems.find(g => g.id === id);
-    if (!gem || gem.reserved === 0) {
-      return { success: false, error: 'No reserved stock to return' };
-    }
-    return updateGemQuantities(id, gem.inStock + 1, gem.reserved - 1, gem.sold);
   };
 
   const deleteGem = async (id: string) => {
@@ -260,11 +218,7 @@ export const useGems = () => {
     error,
     addGem,
     updateGem,
-    updateGemQuantities,
-    moveToConsignment,
-    moveFromConsignmentToSold,
-    moveFromStockToSold,
-    returnFromConsignment,
+    updateGemStatus,
     deleteGem,
     refetch: fetchGems
   };

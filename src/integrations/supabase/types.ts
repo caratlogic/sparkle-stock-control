@@ -306,7 +306,6 @@ export type Database = {
           gem_type: string
           id: string
           image_url: string | null
-          in_stock: number
           measurements: string | null
           measurements_mm: string | null
           notes: string | null
@@ -315,10 +314,9 @@ export type Database = {
           price: number
           price_in_letters: string | null
           purchase_date: string | null
-          reserved: number
           shape: string | null
           shape_detail: string | null
-          sold: number
+          status: string
           stock_id: string
           stone_description: string | null
           supplier: string | null
@@ -340,7 +338,6 @@ export type Database = {
           gem_type: string
           id?: string
           image_url?: string | null
-          in_stock?: number
           measurements?: string | null
           measurements_mm?: string | null
           notes?: string | null
@@ -349,10 +346,9 @@ export type Database = {
           price: number
           price_in_letters?: string | null
           purchase_date?: string | null
-          reserved?: number
           shape?: string | null
           shape_detail?: string | null
-          sold?: number
+          status?: string
           stock_id: string
           stone_description?: string | null
           supplier?: string | null
@@ -374,7 +370,6 @@ export type Database = {
           gem_type?: string
           id?: string
           image_url?: string | null
-          in_stock?: number
           measurements?: string | null
           measurements_mm?: string | null
           notes?: string | null
@@ -383,10 +378,9 @@ export type Database = {
           price?: number
           price_in_letters?: string | null
           purchase_date?: string | null
-          reserved?: number
           shape?: string | null
           shape_detail?: string | null
-          sold?: number
+          status?: string
           stock_id?: string
           stone_description?: string | null
           supplier?: string | null

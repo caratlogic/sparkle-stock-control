@@ -13,9 +13,7 @@ export interface Gem {
   price: number;
   costPrice: number;
   certificateNumber: string;
-  inStock: number;
-  reserved: number;
-  sold: number;
+  status: 'In Stock' | 'Sold' | 'Reserved';
   dateAdded: string;
   purchaseDate?: string;
   treatment?: 'H' | 'NH' | 'NO' | 'MI';
@@ -46,7 +44,9 @@ export const CUT_OPTIONS = [
   'Oval', 'Radiant', 'Pear', 'Heart', 'Cushion', 'Cabochon', 'Faceted', 'Raw'
 ] as const;
 
-// Removed STATUS_OPTIONS as we now use quantity-based tracking
+export const STATUS_OPTIONS = [
+  'In Stock', 'Sold', 'Reserved'
+] as const;
 
 // Color options by gem type
 // Treatment options

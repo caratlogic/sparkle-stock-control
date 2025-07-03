@@ -89,7 +89,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
 
   // Product search results - use both database gems and sample gems, but prioritize database gems
   const databaseGems = gems.filter(gem =>
-    gem.inStock > 0 &&
+    gem.status === 'In Stock' &&
     (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
@@ -97,7 +97,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
   );
 
   const sampleGemsFiltered = sampleGems.filter(gem =>
-    gem.inStock > 0 &&
+    gem.status === 'In Stock' &&
     (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
