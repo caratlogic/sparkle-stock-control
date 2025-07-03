@@ -316,6 +316,53 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
         </Card>
       </div>
 
+      {/* Consignment and Invoice Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Consignment Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Active Consignments</span>
+                <Badge variant="secondary">{gems.filter(g => g.reserved > 0).length}</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Total Reserved Quantity</span>
+                <span className="font-semibold">{totalReservedQuantity}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Reserved Value</span>
+                <span className="font-semibold">${gems.reduce((sum, gem) => sum + (gem.price * (gem.reserved || 0)), 0).toLocaleString()}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Sales Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Total Invoices</span>
+                <Badge variant="secondary">{invoices.length}</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Total Sold Quantity</span>
+                <span className="font-semibold">{totalSoldQuantity}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Average Order Value</span>
+                <span className="font-semibold">${invoices.length ? Math.round(totalRevenueFromInvoices / invoices.length).toLocaleString() : '0'}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Color and Shape Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

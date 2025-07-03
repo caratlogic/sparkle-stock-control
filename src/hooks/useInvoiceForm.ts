@@ -17,6 +17,7 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [taxRate, setTaxRate] = useState(8.5);
+  const [currency, setCurrency] = useState<'USD' | 'EUR'>('USD');
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
@@ -107,6 +108,8 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setQuantity,
     taxRate,
     setTaxRate,
+    currency,
+    setCurrency,
     discount,
     setDiscount,
     notes,

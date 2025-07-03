@@ -372,7 +372,7 @@ export const useConsignments = () => {
           const newInStock = (currentGem.in_stock || 0) + item.quantity;
           const newReserved = Math.max(0, (currentGem.reserved || 0) - item.quantity);
           
-          // Determine status based on quantities
+          // Determine status based on quantities - if in_stock > 0, always "In Stock"
           let newStatus: 'In Stock' | 'Sold' | 'Reserved';
           if (newInStock > 0) {
             newStatus = 'In Stock';

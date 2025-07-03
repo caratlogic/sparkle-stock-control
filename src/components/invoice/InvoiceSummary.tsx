@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Customer } from '../../types/customer';
 
 interface InvoiceSummaryProps {
@@ -11,6 +12,8 @@ interface InvoiceSummaryProps {
   taxRate: number;
   setTaxRate: (value: number) => void;
   selectedCustomer: Customer | null;
+  currency: 'USD' | 'EUR';
+  setCurrency: (value: 'USD' | 'EUR') => void;
 }
 
 export const InvoiceSummary = ({
@@ -20,11 +23,16 @@ export const InvoiceSummary = ({
   taxRate,
   setTaxRate,
   selectedCustomer,
+  currency,
+  setCurrency,
 }: InvoiceSummaryProps) => {
+  const currencySymbol = currency === 'USD' ? '$' : '€';
+  const exchangeRate = currency === 'EUR' ? 0.85 : 1; // Example exchange rate
+  
   const discountAmount = (subtotal * discount) / 100;
   const afterDiscount = subtotal - discountAmount;
   const taxAmount = (afterDiscount * taxRate) / 100;
-  const total = afterDiscount + taxAmount;
+  const total = (afterDiscount + taxAmount) * exchangeRate;
 
   return (
     <Card>
@@ -35,24 +43,37 @@ export const InvoiceSummary = ({
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Subtotal:</span>
-            <span>${subtotal.toLocaleString()}</span>
+            <span>{currencySymbol}{(subtotal * exchangeRate).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Discount ({discount}%):</span>
-            <span>-${discountAmount.toLocaleString()}</span>
+            <span>-{currencySymbol}{(discountAmount * exchangeRate).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>After Discount:</span>
-            <span>${afterDiscount.toLocaleString()}</span>
+            <span>{currencySymbol}{((afterDiscount) * exchangeRate).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Tax ({taxRate}%):</span>
-            <span>${taxAmount.toLocaleString()}</span>
+            <span>{currencySymbol}{(taxAmount * exchangeRate).toLocaleString()}</span>
           </div>
           <div className="flex justify-between font-semibold pt-2 border-t">
             <span>Total:</span>
-            <span>${total.toLocaleString()}</span>
+            <span>{currencySymbol}{total.toLocaleString()}</span>
           </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="currency">Currency</Label>
+          <Select value={currency} onValueChange={(value: 'USD' | 'EUR') => setCurrency(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select currency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="USD">USD ($)</SelectItem>
+              <SelectItem value="EUR">EUR (€)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         <div>

@@ -42,6 +42,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
     setQuantity,
     taxRate,
     setTaxRate,
+    currency,
+    setCurrency,
     discount,
     setDiscount,
     notes,
@@ -172,14 +174,16 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           onCustomerSelect={handleCustomerSelect}
         />
 
-        <InvoiceSummary
-          subtotal={subtotal}
-          discount={discount}
-          setDiscount={setDiscount}
-          taxRate={taxRate}
-          setTaxRate={setTaxRate}
-          selectedCustomer={selectedCustomer}
-        />
+            <InvoiceSummary
+              subtotal={subtotal}
+              discount={discount}
+              setDiscount={setDiscount}
+              taxRate={taxRate}
+              setTaxRate={setTaxRate}
+              selectedCustomer={selectedCustomer}
+              currency={currency}
+              setCurrency={setCurrency}
+            />
 
         <ProductSelection
           productSearch={productSearch}

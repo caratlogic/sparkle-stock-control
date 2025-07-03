@@ -233,7 +233,7 @@ export const useGems = () => {
       const newInStock = Math.max(0, (currentGem.in_stock || 0) - quantity);
       const newReserved = (currentGem.reserved || 0) + quantity;
       
-      // Determine status based on quantities
+      // Determine status based on quantities - if in_stock > 0, always "In Stock"
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
       if (newInStock > 0) {
         newStatus = 'In Stock';
@@ -292,7 +292,7 @@ export const useGems = () => {
         newInStock = Math.max(0, newInStock - quantity);
       }
 
-      // Determine status based on quantities
+      // Determine status based on quantities - if in_stock > 0, always "In Stock"
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
       if (newInStock > 0) {
         newStatus = 'In Stock';
