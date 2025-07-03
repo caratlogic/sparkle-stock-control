@@ -249,33 +249,59 @@ export const useConsignments = () => {
 
       console.log('✅ useConsignments: Successfully updated consignment status');
 
-      // If consignment is returned, update gem status to 'In Stock'
+      // If consignment is returned, adjust quantities (move from reserved to in stock)
       if (status === 'returned') {
         const consignment = consignments.find(c => c.id === consignmentId);
         if (consignment) {
-          console.log(`🔄 useConsignments: Updating ${consignment.items.length} gems to 'In Stock' status`);
+          console.log(`🔄 useConsignments: Adjusting quantities for ${consignment.items.length} gems back to 'In Stock'`);
           for (const item of consignment.items) {
+            // Get current gem data
+            const { data: currentGem, error: fetchError } = await supabase
+              .from('gems')
+              .select('in_stock, reserved')
+              .eq('id', item.gemId)
+              .single();
+
+            if (fetchError) throw fetchError;
+
             await supabase
               .from('gems')
-              .update({ status: 'In Stock' })
+              .update({ 
+                status: 'In Stock',
+                in_stock: (currentGem.in_stock || 0) + item.quantity,
+                reserved: Math.max(0, (currentGem.reserved || 0) - item.quantity)
+              })
               .eq('id', item.gemId);
           }
-          console.log('✅ useConsignments: Successfully updated gem statuses');
+          console.log('✅ useConsignments: Successfully adjusted quantities for returned consignment');
         }
       }
 
-      // If consignment is purchased, update gem status to 'Sold'
+      // If consignment is purchased, adjust quantities (move from reserved to sold)
       if (status === 'purchased') {
         const consignment = consignments.find(c => c.id === consignmentId);
         if (consignment) {
-          console.log(`🔄 useConsignments: Updating ${consignment.items.length} gems to 'Sold' status`);
+          console.log(`🔄 useConsignments: Adjusting quantities for ${consignment.items.length} gems to 'Sold'`);
           for (const item of consignment.items) {
+            // Get current gem data
+            const { data: currentGem, error: fetchError } = await supabase
+              .from('gems')
+              .select('reserved, sold')
+              .eq('id', item.gemId)
+              .single();
+
+            if (fetchError) throw fetchError;
+
             await supabase
               .from('gems')
-              .update({ status: 'Sold' })
+              .update({ 
+                status: 'Sold',
+                reserved: Math.max(0, (currentGem.reserved || 0) - item.quantity),
+                sold: (currentGem.sold || 0) + item.quantity
+              })
               .eq('id', item.gemId);
           }
-          console.log('✅ useConsignments: Successfully updated gem statuses to Sold');
+          console.log('✅ useConsignments: Successfully adjusted quantities for purchased consignment');
         }
       }
 
@@ -328,6 +354,32 @@ export const useConsignments = () => {
   const deleteConsignment = async (consignmentId: string) => {
     try {
       console.log(`🗑️ useConsignments: Deleting consignment: ${consignmentId}`);
+      
+      // First, get the consignment to adjust quantities
+      const consignment = consignments.find(c => c.id === consignmentId);
+      if (consignment) {
+        console.log(`🔄 useConsignments: Adjusting quantities for ${consignment.items.length} gems back to 'In Stock'`);
+        for (const item of consignment.items) {
+          // Get current gem data
+          const { data: currentGem, error: fetchError } = await supabase
+            .from('gems')
+            .select('in_stock, reserved')
+            .eq('id', item.gemId)
+            .single();
+
+          if (fetchError) throw fetchError;
+
+          await supabase
+            .from('gems')
+            .update({ 
+              status: 'In Stock',
+              in_stock: (currentGem.in_stock || 0) + item.quantity,
+              reserved: Math.max(0, (currentGem.reserved || 0) - item.quantity)
+            })
+            .eq('id', item.gemId);
+        }
+        console.log('✅ useConsignments: Successfully adjusted quantities before deletion');
+      }
       
       const { error } = await supabase
         .from('consignments')

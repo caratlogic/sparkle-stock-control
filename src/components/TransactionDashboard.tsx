@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart } from 'lucide-react';
+import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2 } from 'lucide-react';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const TransactionDashboard = () => {
   const { invoices, loading: invoicesLoading } = useInvoices();
-  const { consignments, loading: consignmentsLoading, updateConsignmentStatus } = useConsignments();
+  const { consignments, loading: consignmentsLoading, updateConsignmentStatus, deleteConsignment } = useConsignments();
   const { addPayment, getTotalPaidAmount, fetchPayments } = useInvoicePayments();
   const { customers } = useCustomers();
   const { toast } = useToast();
@@ -102,6 +102,24 @@ export const TransactionDashboard = () => {
 
   const handleConsignmentToInvoice = async (consignmentId: string) => {
     setSelectedConsignmentForInvoice(consignmentId);
+  };
+
+  const handleDeleteConsignment = async (consignmentId: string) => {
+    if (window.confirm('Are you sure you want to delete this consignment? This will adjust the gem quantities back to In Stock.')) {
+      const result = await deleteConsignment(consignmentId);
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Consignment deleted successfully",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to delete consignment",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const filteredInvoices = invoices.filter(invoice => {
@@ -448,6 +466,15 @@ export const TransactionDashboard = () => {
                                 <ShoppingCart className="w-4 h-4" />
                               </Button>
                             )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteConsignment(consignment.id)}
+                              title="Delete Consignment"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>

@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useConsignmentActions = () => {
   const { addConsignment } = useConsignments();
-  const { gems, updateGemStatus } = useGems();
+  const { gems, updateGemStatus, updateGemQuantityForConsignment } = useGems();
   const { addCommunication } = useCustomerCommunications();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -116,7 +116,7 @@ export const useConsignmentActions = () => {
       if (result.success) {
         console.log('✅ ConsignmentCreation: Successfully saved consignment');
         
-        // Update gem statuses to 'Reserved' for consigned gems
+        // Update gem quantities for consigned gems
         for (const item of items) {
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
           let gemId = item.productId;
@@ -128,8 +128,10 @@ export const useConsignmentActions = () => {
             }
           }
           
+          // Use the updateGemQuantityForConsignment function that handles quantities
+          await updateGemQuantityForConsignment(gemId, item.quantity);
           await updateGemStatus(gemId, 'Reserved');
-          console.log(`✅ ConsignmentCreation: Updated gem ${gemId} status to Reserved`);
+          console.log(`✅ ConsignmentCreation: Updated gem ${gemId} quantities and status for consignment`);
         }
         
         // Create the consignment object for the callback with proper ConsignmentItem structure

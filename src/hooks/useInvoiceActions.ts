@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useInvoiceActions = () => {
   const { updateConsignmentStatus } = useConsignments();
   const { addInvoice } = useInvoices();
-  const { gems, updateGemStatus } = useGems();
+  const { gems, updateGemStatus, updateGemQuantityForInvoice } = useGems();
   const { addCommunication } = useCustomerCommunications();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -130,7 +130,7 @@ export const useInvoiceActions = () => {
       if (result.success) {
         console.log('✅ InvoiceCreation: Successfully saved invoice');
         
-        // Update gem statuses to 'Sold' for invoiced gems
+        // Update gem quantities for invoiced gems
         for (const item of items) {
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
           let gemId = item.productId;
@@ -142,8 +142,11 @@ export const useInvoiceActions = () => {
             }
           }
           
+          // Use the updateGemQuantityForInvoice function that handles quantities
+          const fromConsignment = relatedConsignmentId !== null;
+          await updateGemQuantityForInvoice(gemId, item.quantity, fromConsignment);
           await updateGemStatus(gemId, 'Sold');
-          console.log(`✅ InvoiceCreation: Updated gem ${gemId} status to Sold`);
+          console.log(`✅ InvoiceCreation: Updated gem ${gemId} quantities and status for invoice`);
         }
         
         // If there's a related consignment, mark it as inactive
