@@ -357,6 +357,9 @@ export const GemTable = ({
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Supplier</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Purchase Date</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Origin</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">In Stock</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Reserved</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Sold</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
@@ -436,6 +439,15 @@ export const GemTable = ({
                   </td>
                   <td className="py-4 px-4">
                     <div className="text-sm text-slate-600">{gem.origin || 'N/A'}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm font-medium text-emerald-600">{gem.inStock || 0}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm font-medium text-orange-600">{gem.reserved || 0}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm font-medium text-red-600">{gem.sold || 0}</div>
                   </td>
                   <td className="py-4 px-4">
                     <Badge 

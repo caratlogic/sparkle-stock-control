@@ -22,7 +22,10 @@ export const sampleGems: Gem[] = [
     certificateType: 'GIA',
     supplier: 'Bangkok Diamond House',
     purchaseDate: '2024-06-15',
-    origin: 'Botswana'
+    origin: 'Botswana',
+    inStock: 20,
+    reserved: 0,
+    sold: 0
   },
   {
     id: '2',
@@ -44,7 +47,10 @@ export const sampleGems: Gem[] = [
     certificateType: 'GRS',
     supplier: 'Colombian Emerald Co.',
     purchaseDate: '2024-06-10',
-    origin: 'Colombia'
+    origin: 'Colombia',
+    inStock: 18,
+    reserved: 2,
+    sold: 0
   },
   {
     id: '3',
@@ -65,7 +71,10 @@ export const sampleGems: Gem[] = [
     certificateType: 'SSEF',
     supplier: 'Myanmar Ruby Trading',
     purchaseDate: '2024-06-08',
-    origin: 'Burma'
+    origin: 'Burma',
+    inStock: 20,
+    reserved: 0,
+    sold: 0
   },
   {
     id: '4',
@@ -87,7 +96,10 @@ export const sampleGems: Gem[] = [
     certificateType: 'AGL',
     supplier: 'Ceylon Sapphire Traders',
     purchaseDate: '2024-06-02',
-    origin: 'Ceylon'
+    origin: 'Ceylon',
+    inStock: 17,
+    reserved: 0,
+    sold: 3
   },
   {
     id: '5',
@@ -109,7 +121,10 @@ export const sampleGems: Gem[] = [
     certificateType: 'GUB',
     supplier: 'Brazilian Gem Exports',
     purchaseDate: '2024-06-18',
-    origin: 'Brazil'
+    origin: 'Brazil',
+    inStock: 20,
+    reserved: 0,
+    sold: 0
   },
   {
     id: '6',
@@ -131,6 +146,9 @@ export const sampleGems: Gem[] = [
     certificateType: 'IGI',
     supplier: 'Madagascar Aqua Ltd.',
     purchaseDate: '2024-06-14',
-    origin: 'Madagascar'
+    origin: 'Madagascar',
+    inStock: 20,
+    reserved: 0,
+    sold: 0
   }
 ];

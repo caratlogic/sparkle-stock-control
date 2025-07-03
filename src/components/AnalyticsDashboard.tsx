@@ -29,20 +29,18 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
         soldCount: 0, 
         soldValue: 0,
         inStock: 0,
-        reserved: 0
+        reserved: 0,
+        totalQuantity: 0
       };
     }
+    const totalQuantity = (gem.inStock || 0) + (gem.reserved || 0) + (gem.sold || 0);
     acc[gem.gemType].count++;
-    acc[gem.gemType].totalValue += gem.price;
-    
-    if (gem.status === 'Sold') {
-      acc[gem.gemType].soldCount++;
-      acc[gem.gemType].soldValue += gem.price;
-    } else if (gem.status === 'In Stock') {
-      acc[gem.gemType].inStock++;
-    } else if (gem.status === 'Reserved') {
-      acc[gem.gemType].reserved++;
-    }
+    acc[gem.gemType].totalValue += gem.price * totalQuantity;
+    acc[gem.gemType].soldCount += (gem.sold || 0);
+    acc[gem.gemType].soldValue += gem.price * (gem.sold || 0);
+    acc[gem.gemType].inStock += (gem.inStock || 0);
+    acc[gem.gemType].reserved += (gem.reserved || 0);
+    acc[gem.gemType].totalQuantity += totalQuantity;
     
     return acc;
   }, {} as Record<string, any>);
@@ -129,9 +127,15 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
   }).sort((a, b) => b.totalSalesAmount - a.totalSalesAmount);
 
   // Overall Stats
-  const totalInventoryValue = gems.reduce((sum, gem) => sum + gem.price, 0);
-  const totalSoldValue = gems.filter(g => g.status === 'Sold').reduce((sum, gem) => sum + gem.price, 0);
+  const totalInventoryValue = gems.reduce((sum, gem) => {
+    const totalQuantity = (gem.inStock || 0) + (gem.reserved || 0) + (gem.sold || 0);
+    return sum + (gem.price * totalQuantity);
+  }, 0);
+  const totalSoldValue = gems.reduce((sum, gem) => sum + (gem.price * (gem.sold || 0)), 0);
   const totalRevenueFromInvoices = invoices.reduce((sum, inv) => sum + inv.total, 0);
+  const totalInStockQuantity = gems.reduce((sum, gem) => sum + (gem.inStock || 0), 0);
+  const totalReservedQuantity = gems.reduce((sum, gem) => sum + (gem.reserved || 0), 0);
+  const totalSoldQuantity = gems.reduce((sum, gem) => sum + (gem.sold || 0), 0);
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -152,6 +156,42 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
             <SelectItem value="year">This Year</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Quantity Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card className="gem-sparkle hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">In Stock Quantity</CardTitle>
+            <Package className="h-4 w-4 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-700">{totalInStockQuantity.toLocaleString()}</div>
+            <p className="text-xs text-slate-500 mt-1">Available pieces</p>
+          </CardContent>
+        </Card>
+
+        <Card className="gem-sparkle hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Reserved Quantity</CardTitle>
+            <Package className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-700">{totalReservedQuantity.toLocaleString()}</div>
+            <p className="text-xs text-slate-500 mt-1">On consignment</p>
+          </CardContent>
+        </Card>
+
+        <Card className="gem-sparkle hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Sold Quantity</CardTitle>
+            <Package className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-700">{totalSoldQuantity.toLocaleString()}</div>
+            <p className="text-xs text-slate-500 mt-1">Sold pieces</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Overview Stats */}

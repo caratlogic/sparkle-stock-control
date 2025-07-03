@@ -33,7 +33,16 @@ export const useGems = () => {
         status: gem.status as any,
         dateAdded: gem.date_added,
         notes: gem.notes || undefined,
-        imageUrl: gem.image_url || undefined
+        imageUrl: gem.image_url || undefined,
+        treatment: gem.treatment || undefined,
+        colorComment: gem.color_comment || undefined,
+        certificateType: gem.certificate_type || undefined,
+        supplier: gem.supplier || undefined,
+        purchaseDate: gem.purchase_date || undefined,
+        origin: gem.origin || undefined,
+        inStock: gem.in_stock || 0,
+        reserved: gem.reserved || 0,
+        sold: gem.sold || 0
       }));
 
       setGems(transformedGems);
@@ -123,7 +132,16 @@ export const useGems = () => {
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
           notes: gemData.notes,
-          image_url: gemData.imageUrl
+          image_url: gemData.imageUrl,
+          treatment: gemData.treatment,
+          color_comment: gemData.colorComment,
+          certificate_type: gemData.certificateType,
+          supplier: gemData.supplier,
+          purchase_date: gemData.purchaseDate,
+          origin: gemData.origin,
+          in_stock: 20, // Default 20 in stock
+          reserved: 0,
+          sold: 0
         }])
         .select()
         .single();
@@ -197,6 +215,90 @@ export const useGems = () => {
     }
   };
 
+  // New function to update gem quantities when creating consignments
+  const updateGemQuantityForConsignment = async (gemId: string, quantity: number = 1) => {
+    try {
+      console.log(`🔄 useGems: Updating gem ${gemId} quantity for consignment (quantity: ${quantity})`);
+      
+      // First get the current gem data
+      const { data: currentGem, error: fetchError } = await supabase
+        .from('gems')
+        .select('in_stock, reserved')
+        .eq('id', gemId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const { error } = await supabase
+        .from('gems')
+        .update({ 
+          in_stock: Math.max(0, (currentGem.in_stock || 0) - quantity),
+          reserved: (currentGem.reserved || 0) + quantity
+        })
+        .eq('id', gemId);
+
+      if (error) {
+        console.error('❌ useGems: Error updating gem quantity for consignment:', error);
+        throw error;
+      }
+      
+      console.log(`✅ useGems: Successfully updated gem ${gemId} quantity for consignment`);
+      await fetchGems();
+      return { success: true };
+    } catch (err) {
+      console.error('❌ useGems: Update gem quantity for consignment error:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem quantity for consignment' };
+    }
+  };
+
+  // New function to update gem quantities when creating invoices
+  const updateGemQuantityForInvoice = async (gemId: string, quantity: number = 1, fromConsignment: boolean = false) => {
+    try {
+      console.log(`🔄 useGems: Updating gem ${gemId} quantity for invoice (quantity: ${quantity}, fromConsignment: ${fromConsignment})`);
+      
+      // First get the current gem data
+      const { data: currentGem, error: fetchError } = await supabase
+        .from('gems')
+        .select('in_stock, reserved, sold')
+        .eq('id', gemId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      let updateData;
+      if (fromConsignment) {
+        // Moving from consignment to sold
+        updateData = {
+          reserved: Math.max(0, (currentGem.reserved || 0) - quantity),
+          sold: (currentGem.sold || 0) + quantity
+        };
+      } else {
+        // Moving directly from stock to sold
+        updateData = {
+          in_stock: Math.max(0, (currentGem.in_stock || 0) - quantity),
+          sold: (currentGem.sold || 0) + quantity
+        };
+      }
+
+      const { error } = await supabase
+        .from('gems')
+        .update(updateData)
+        .eq('id', gemId);
+
+      if (error) {
+        console.error('❌ useGems: Error updating gem quantity for invoice:', error);
+        throw error;
+      }
+      
+      console.log(`✅ useGems: Successfully updated gem ${gemId} quantity for invoice`);
+      await fetchGems();
+      return { success: true };
+    } catch (err) {
+      console.error('❌ useGems: Update gem quantity for invoice error:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem quantity for invoice' };
+    }
+  };
+
   const deleteGem = async (id: string) => {
     try {
       console.log(`🔄 useGems: Attempting to delete gem ${id}`);
@@ -264,6 +366,8 @@ export const useGems = () => {
     updateGem,
     updateGemStatus,
     deleteGem,
+    updateGemQuantityForConsignment,
+    updateGemQuantityForInvoice,
     refetch: fetchGems
   };
 };

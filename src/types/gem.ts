@@ -23,6 +23,9 @@ export interface Gem {
   supplier?: string;
   purchaseDate?: string;
   origin?: string;
+  inStock?: number;
+  reserved?: number;
+  sold?: number;
   consignmentInfo?: {
     id: string;
     consignmentNumber: string;
