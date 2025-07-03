@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS } from '../types/gem';
+import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS } from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
@@ -30,12 +30,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     costPrice: '',
     certificateNumber: '',
     status: 'In Stock',
-    purchaseDate: '',
-    treatment: '',
-    colorComment: '',
-    certificateType: '',
-    supplier: '',
-    origin: '',
     notes: '',
     imageUrl: ''
   });
@@ -53,12 +47,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         costPrice: gem.costPrice.toString(),
         certificateNumber: gem.certificateNumber,
         status: gem.status,
-        purchaseDate: gem.purchaseDate || '',
-        treatment: gem.treatment || '',
-        colorComment: gem.colorComment || '',
-        certificateType: gem.certificateType || '',
-        supplier: gem.supplier || '',
-        origin: gem.origin || '',
         notes: gem.notes || '',
         imageUrl: gem.imageUrl || ''
       });
@@ -176,40 +164,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="treatment">Treatment</Label>
-                    <Select value={formData.treatment} onValueChange={(value) => handleChange('treatment', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select treatment" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="">None</SelectItem>
-                        {TREATMENT_OPTIONS.map((treatment) => (
-                          <SelectItem key={treatment} value={treatment}>
-                            {treatment} - {treatment === 'H' ? 'Heated' : treatment === 'NH' ? 'No Heat' : treatment === 'NO' ? 'No Oil' : 'Minor'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="colorComment">Color Comment</Label>
-                    <Select value={formData.colorComment} onValueChange={(value) => handleChange('colorComment', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select color comment" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="">None</SelectItem>
-                        {COLOR_COMMENT_OPTIONS.map((comment) => (
-                          <SelectItem key={comment} value={comment}>
-                            {comment} - {comment === 'RB' ? 'Royal' : comment === 'I' ? 'Intense' : comment === 'CF' ? 'Cornflower' : comment === 'VD' ? 'Vivid' : 'Pigeonsblood'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea
@@ -274,53 +228,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="certificateType">Certificate Type</Label>
-                    <Select value={formData.certificateType} onValueChange={(value) => handleChange('certificateType', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select certificate type" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="">None</SelectItem>
-                        {CERTIFICATE_TYPE_OPTIONS.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="supplier">Supplier</Label>
-                    <Input
-                      id="supplier"
-                      placeholder="e.g., Bangkok Gem Trader"
-                      value={formData.supplier}
-                      onChange={(e) => handleChange('supplier', e.target.value)}
-                      className="bg-slate-50 border-slate-200"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="origin">Origin</Label>
-                    <Input
-                      id="origin"
-                      placeholder="e.g., Burma, Ceylon, Madagascar"
-                      value={formData.origin}
-                      onChange={(e) => handleChange('origin', e.target.value)}
-                      className="bg-slate-50 border-slate-200"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="purchaseDate">Purchase Date</Label>
-                    <Input
-                      id="purchaseDate"
-                      type="date"
-                      value={formData.purchaseDate}
-                      onChange={(e) => handleChange('purchaseDate', e.target.value)}
-                      className="bg-slate-50 border-slate-200"
-                    />
                   </div>
                 </div>
 
