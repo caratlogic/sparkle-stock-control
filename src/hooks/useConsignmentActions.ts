@@ -127,11 +127,10 @@ export const useConsignmentActions = () => {
               gemId = dbGem.id;
             }
           }
-          
-          // Use the updateGemQuantityForConsignment function that handles quantities
-          await updateGemQuantityForConsignment(gemId, item.quantity);
-          await updateGemStatus(gemId, 'Reserved');
-          console.log(`✅ ConsignmentCreation: Updated gem ${gemId} quantities and status for consignment`);
+           
+           // Use the updateGemQuantityForConsignment function that handles quantities and status
+           await updateGemQuantityForConsignment(gemId, item.quantity);
+           console.log(`✅ ConsignmentCreation: Updated gem ${gemId} quantities and status for consignment`);
         }
         
         // Create the consignment object for the callback with proper ConsignmentItem structure
