@@ -208,19 +208,43 @@ export const useConsignments = () => {
         console.log('✅ useConsignments: Successfully created consignment items');
       }
 
-      // Update gem status to 'On Consignment' for consigned gems
+      // Move gems from stock to reserved for consigned gems
       if (consignmentData.items && consignmentData.items.length > 0) {
         for (const item of consignmentData.items) {
-          console.log(`🔄 useConsignments: Updating gem ${item.gemId} status to "On Consignment"`);
+          console.log(`🔄 useConsignments: Moving ${item.quantity} of gem ${item.gemId} from stock to reserved`);
+          
+          // Get current gem quantities
+          const { data: gemData, error: gemFetchError } = await supabase
+            .from('gems')
+            .select('in_stock, reserved, sold')
+            .eq('id', item.gemId)
+            .single();
+          
+          if (gemFetchError) {
+            console.error(`❌ useConsignments: Error fetching gem ${item.gemId}:`, gemFetchError);
+            continue;
+          }
+          
+          const newInStock = gemData.in_stock - item.quantity;
+          const newReserved = gemData.reserved + item.quantity;
+          
+          if (newInStock < 0) {
+            console.error(`❌ useConsignments: Not enough stock for gem ${item.gemId}. Available: ${gemData.in_stock}, Requested: ${item.quantity}`);
+            continue;
+          }
+          
           const { error: gemUpdateError } = await supabase
             .from('gems')
-            .update({ status: 'On Consignment' })
+            .update({ 
+              in_stock: newInStock,
+              reserved: newReserved
+            })
             .eq('id', item.gemId);
           
           if (gemUpdateError) {
-            console.error(`❌ useConsignments: Error updating gem ${item.gemId} status:`, gemUpdateError);
+            console.error(`❌ useConsignments: Error updating gem ${item.gemId} quantities:`, gemUpdateError);
           } else {
-            console.log(`✅ useConsignments: Successfully updated gem ${item.gemId} status to "On Consignment"`);
+            console.log(`✅ useConsignments: Successfully moved ${item.quantity} of gem ${item.gemId} to reserved`);
           }
         }
       }
@@ -249,33 +273,63 @@ export const useConsignments = () => {
 
       console.log('✅ useConsignments: Successfully updated consignment status');
 
-      // If consignment is returned, update gem status to 'In Stock'
+      // If consignment is returned, move gems from reserved back to stock
       if (status === 'returned') {
         const consignment = consignments.find(c => c.id === consignmentId);
         if (consignment) {
-          console.log(`🔄 useConsignments: Updating ${consignment.items.length} gems to 'In Stock' status`);
+          console.log(`🔄 useConsignments: Moving ${consignment.items.length} gem quantities from reserved back to stock`);
           for (const item of consignment.items) {
+            // Get current gem quantities
+            const { data: gemData, error: gemFetchError } = await supabase
+              .from('gems')
+              .select('in_stock, reserved, sold')
+              .eq('id', item.gemId)
+              .single();
+            
+            if (gemFetchError) {
+              console.error(`❌ useConsignments: Error fetching gem ${item.gemId}:`, gemFetchError);
+              continue;
+            }
+            
             await supabase
               .from('gems')
-              .update({ status: 'In Stock' })
+              .update({ 
+                in_stock: gemData.in_stock + item.quantity,
+                reserved: gemData.reserved - item.quantity
+              })
               .eq('id', item.gemId);
           }
-          console.log('✅ useConsignments: Successfully updated gem statuses');
+          console.log('✅ useConsignments: Successfully moved gems from reserved back to stock');
         }
       }
 
-      // If consignment is purchased, update gem status to 'Sold'
+      // If consignment is purchased, move gems from reserved to sold
       if (status === 'purchased') {
         const consignment = consignments.find(c => c.id === consignmentId);
         if (consignment) {
-          console.log(`🔄 useConsignments: Updating ${consignment.items.length} gems to 'Sold' status`);
+          console.log(`🔄 useConsignments: Moving ${consignment.items.length} gem quantities from reserved to sold`);
           for (const item of consignment.items) {
+            // Get current gem quantities
+            const { data: gemData, error: gemFetchError } = await supabase
+              .from('gems')
+              .select('in_stock, reserved, sold')
+              .eq('id', item.gemId)
+              .single();
+            
+            if (gemFetchError) {
+              console.error(`❌ useConsignments: Error fetching gem ${item.gemId}:`, gemFetchError);
+              continue;
+            }
+            
             await supabase
               .from('gems')
-              .update({ status: 'Sold' })
+              .update({ 
+                reserved: gemData.reserved - item.quantity,
+                sold: gemData.sold + item.quantity
+              })
               .eq('id', item.gemId);
           }
-          console.log('✅ useConsignments: Successfully updated gem statuses to Sold');
+          console.log('✅ useConsignments: Successfully moved gems from reserved to sold');
         }
       }
 

@@ -140,15 +140,49 @@ export const useInvoices = () => {
         console.log('✅ useInvoices: Successfully created invoice items');
       }
 
-      // Update gem status to 'Sold' for invoiced gems
+      // Update gem quantities for invoiced gems (move from stock to sold)
       if (invoiceData.items && invoiceData.items.length > 0) {
         for (const item of invoiceData.items) {
+          // Get current gem quantities
+          const { data: gemData, error: gemFetchError } = await supabase
+            .from('gems')
+            .select('in_stock, reserved, sold')
+            .eq('id', item.gemId)
+            .single();
+          
+          if (gemFetchError) {
+            console.error(`❌ useInvoices: Error fetching gem ${item.gemId}:`, gemFetchError);
+            continue;
+          }
+          
+          // Prioritize selling from stock first, then from reserved
+          let newInStock = gemData.in_stock;
+          let newReserved = gemData.reserved;
+          let newSold = gemData.sold + item.quantity;
+          
+          if (gemData.in_stock >= item.quantity) {
+            // Sell from stock
+            newInStock = gemData.in_stock - item.quantity;
+          } else if (gemData.in_stock + gemData.reserved >= item.quantity) {
+            // Sell from stock + reserved
+            const remainingToSell = item.quantity - gemData.in_stock;
+            newInStock = 0;
+            newReserved = gemData.reserved - remainingToSell;
+          } else {
+            console.error(`❌ useInvoices: Not enough total quantity for gem ${item.gemId}. Available: ${gemData.in_stock + gemData.reserved}, Requested: ${item.quantity}`);
+            continue;
+          }
+          
           await supabase
             .from('gems')
-            .update({ status: 'Sold' })
+            .update({ 
+              in_stock: newInStock,
+              reserved: newReserved,
+              sold: newSold
+            })
             .eq('id', item.gemId);
         }
-        console.log('✅ useInvoices: Successfully updated gem statuses to "Sold"');
+        console.log('✅ useInvoices: Successfully updated gem quantities for sold items');
       }
 
       await fetchInvoices();

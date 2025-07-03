@@ -140,14 +140,21 @@ export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
                 <p className="text-lg font-semibold">{gem.stockId}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-600">Status</label>
+                <label className="text-sm font-medium text-slate-600">In Stock</label>
                 <div className="mt-1">
-                  <Badge variant={
-                    gem.status === 'In Stock' ? 'secondary' : 
-                    gem.status === 'Sold' ? 'destructive' : 'default'
-                  }>
-                    {gem.status}
-                  </Badge>
+                  <span className="font-medium text-emerald-600">{gem.inStock}</span>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-600">Reserved</label>
+                <div className="mt-1">
+                  <span className="font-medium text-yellow-600">{gem.reserved}</span>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-600">Sold</label>
+                <div className="mt-1">
+                  <span className="font-medium text-red-600">{gem.sold}</span>
                 </div>
               </div>
               <div>

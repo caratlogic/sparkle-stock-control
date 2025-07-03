@@ -79,7 +79,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
       setItems([newItem]);
 
       // If gem is reserved, check for existing consignment
-      if (preselectedGem.status === 'Reserved') {
+      if (preselectedGem.reserved > 0) {
         getConsignmentByGemId(preselectedGem.id).then(consignment => {
           if (consignment) {
             setRelatedConsignmentId(consignment.id);
@@ -103,7 +103,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
 
   // Product search results - use both database gems and sample gems, but prioritize database gems
   const databaseGems = gems.filter(gem =>
-    gem.status === 'In Stock' &&
+    (gem.inStock > 0 || gem.reserved > 0) &&
     (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
@@ -111,7 +111,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   );
 
   const sampleGemsFiltered = sampleGems.filter(gem =>
-    gem.status === 'In Stock' &&
+    gem.inStock > 0 &&
     (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.certificateNumber.toLowerCase().includes(productSearch.toLowerCase()) ||
     gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||

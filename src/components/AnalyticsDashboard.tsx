@@ -35,14 +35,10 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
     acc[gem.gemType].count++;
     acc[gem.gemType].totalValue += gem.price;
     
-    if (gem.status === 'Sold') {
-      acc[gem.gemType].soldCount++;
-      acc[gem.gemType].soldValue += gem.price;
-    } else if (gem.status === 'In Stock') {
-      acc[gem.gemType].inStock++;
-    } else if (gem.status === 'Reserved') {
-      acc[gem.gemType].reserved++;
-    }
+    acc[gem.gemType].soldCount += gem.sold;
+    acc[gem.gemType].soldValue += gem.price * gem.sold;
+    acc[gem.gemType].inStock += gem.inStock;
+    acc[gem.gemType].reserved += gem.reserved;
     
     return acc;
   }, {} as Record<string, any>);
@@ -69,10 +65,8 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
     acc[gem.color].count++;
     acc[gem.color].totalValue += gem.price;
     
-    if (gem.status === 'Sold') {
-      acc[gem.color].soldCount++;
-      acc[gem.color].soldValue += gem.price;
-    }
+    acc[gem.color].soldCount += gem.sold;
+    acc[gem.color].soldValue += gem.price * gem.sold;
     
     return acc;
   }, {} as Record<string, any>);
@@ -97,10 +91,8 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
     acc[gem.cut].count++;
     acc[gem.cut].totalValue += gem.price;
     
-    if (gem.status === 'Sold') {
-      acc[gem.cut].soldCount++;
-      acc[gem.cut].soldValue += gem.price;
-    }
+    acc[gem.cut].soldCount += gem.sold;
+    acc[gem.cut].soldValue += gem.price * gem.sold;
     
     return acc;
   }, {} as Record<string, any>);
@@ -130,7 +122,7 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
 
   // Overall Stats
   const totalInventoryValue = gems.reduce((sum, gem) => sum + gem.price, 0);
-  const totalSoldValue = gems.filter(g => g.status === 'Sold').reduce((sum, gem) => sum + gem.price, 0);
+  const totalSoldValue = gems.reduce((sum, gem) => sum + (gem.price * gem.sold), 0);
   const totalRevenueFromInvoices = invoices.reduce((sum, inv) => sum + inv.total, 0);
 
   return (

@@ -89,7 +89,14 @@ export const GemTable = ({
         (gem.description && gem.description.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesGemType = filterGemType === 'all' || gem.gemType === filterGemType;
-      const matchesStatus = filterStatus === 'all' || gem.status === filterStatus;
+      // Status filter logic now based on quantities
+      const hasInStock = gem.inStock > 0;
+      const hasReserved = gem.reserved > 0;
+      const hasSold = gem.sold > 0;
+      const matchesStatus = filterStatus === 'all' || 
+        (filterStatus === 'In Stock' && hasInStock) ||
+        (filterStatus === 'Reserved' && hasReserved) ||
+        (filterStatus === 'Sold' && hasSold);
       const matchesCut = filterCut === 'all' || gem.cut === filterCut;
       const matchesColor = filterColor === 'all' || gem.color === filterColor;
       
@@ -146,7 +153,9 @@ export const GemTable = ({
         gem.purchaseDate || '',
         gem.price,
         ...(isOwner ? [gem.costPrice] : []),
-        gem.status,
+        gem.inStock,
+        gem.reserved,
+        gem.sold,
         gem.dateAdded
       ].join(','))
     ].join('\n');
@@ -357,7 +366,9 @@ export const GemTable = ({
                     </div>
                   </th>
                 )}
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
+                 <th className="text-left py-3 px-4 font-medium text-slate-600">In Stock</th>
+                 <th className="text-left py-3 px-4 font-medium text-slate-600">Reserved</th>
+                 <th className="text-left py-3 px-4 font-medium text-slate-600">Sold</th>
                 <th 
                   className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
                   onClick={() => handleSort('dateAdded')}
@@ -438,15 +449,13 @@ export const GemTable = ({
                     </td>
                   )}
                   <td className="py-4 px-4">
-                    <Badge 
-                      variant={
-                        gem.status === 'In Stock' ? 'secondary' : 
-                        gem.status === 'Sold' ? 'destructive' : 
-                        gem.status === 'Reserved' ? 'default' : 'secondary'
-                      }
-                    >
-                      {gem.status}
-                    </Badge>
+                     <div className="font-medium text-emerald-600">{gem.inStock}</div>
+                   </td>
+                   <td className="py-4 px-4">
+                     <div className="font-medium text-yellow-600">{gem.reserved}</div>
+                   </td>
+                   <td className="py-4 px-4">
+                     <div className="font-medium text-red-600">{gem.sold}</div>
                   </td>
                   <td className="py-4 px-4">
                     <div className="text-sm text-slate-600">{gem.dateAdded}</div>
@@ -477,7 +486,7 @@ export const GemTable = ({
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
-                      {gem.status === 'In Stock' && onCreateInvoice && (
+                      {gem.inStock > 0 && onCreateInvoice && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -487,7 +496,7 @@ export const GemTable = ({
                           <FileText className="w-4 h-4 text-blue-500" />
                         </Button>
                       )}
-                      {gem.status === 'In Stock' && onCreateConsignment && (
+                      {gem.inStock > 0 && onCreateConsignment && (
                         <Button
                           variant="ghost"
                           size="sm"

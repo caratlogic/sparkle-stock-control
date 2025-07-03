@@ -14,7 +14,9 @@ export const sampleGems: Gem[] = [
     price: 12500,
     costPrice: 8500,
     certificateNumber: 'GIA-1234567890',
-    status: 'In Stock',
+    inStock: 1,
+    reserved: 0,
+    sold: 0,
     dateAdded: '2024-06-20',
     notes: 'Excellent quality diamond with perfect cut'
   },
@@ -30,7 +32,9 @@ export const sampleGems: Gem[] = [
     price: 18500,
     costPrice: 13200,
     certificateNumber: 'GRS-2345678901',
-    status: 'Reserved',
+    inStock: 0,
+    reserved: 1,
+    sold: 0,
     dateAdded: '2024-06-18',
     notes: 'Large emerald with excellent color'
   },
@@ -46,7 +50,9 @@ export const sampleGems: Gem[] = [
     price: 8500,
     costPrice: 6100,
     certificateNumber: 'SSEF-3456789012',
-    status: 'In Stock',
+    inStock: 1,
+    reserved: 0,
+    sold: 0,
     dateAdded: '2024-06-15'
   },
   {
@@ -61,7 +67,9 @@ export const sampleGems: Gem[] = [
     price: 9500,
     costPrice: 6800,
     certificateNumber: 'AIGS-4567890123',
-    status: 'Sold',
+    inStock: 0,
+    reserved: 0,
+    sold: 1,
     dateAdded: '2024-06-10',
     notes: 'Sold to Johnson Jewelry'
   },
@@ -77,7 +85,9 @@ export const sampleGems: Gem[] = [
     price: 1500,
     costPrice: 950,
     certificateNumber: 'GIT-5678901234',
-    status: 'In Stock',
+    inStock: 1,
+    reserved: 0,
+    sold: 0,
     dateAdded: '2024-06-25',
     notes: 'Large amethyst with excellent clarity'
   },
@@ -93,7 +103,9 @@ export const sampleGems: Gem[] = [
     price: 3200,
     costPrice: 2100,
     certificateNumber: 'GUILD-6789012345',
-    status: 'In Stock',
+    inStock: 1,
+    reserved: 0,
+    sold: 0,
     dateAdded: '2024-06-22',
     notes: 'Beautiful aquamarine with excellent blue color'
   }

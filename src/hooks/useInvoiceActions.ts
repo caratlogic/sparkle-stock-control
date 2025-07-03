@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useInvoiceActions = () => {
   const { updateConsignmentStatus } = useConsignments();
   const { addInvoice } = useInvoices();
-  const { gems, updateGemStatus } = useGems();
+  const { gems, moveFromStockToSold } = useGems();
   const { addCommunication } = useCustomerCommunications();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -142,7 +142,7 @@ export const useInvoiceActions = () => {
             }
           }
           
-          await updateGemStatus(gemId, 'Sold');
+          await moveFromStockToSold(gemId);
           console.log(`✅ InvoiceCreation: Updated gem ${gemId} status to Sold`);
         }
         

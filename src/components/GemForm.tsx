@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS } from '../types/gem';
+import { Gem, GEM_TYPES, CUT_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS } from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BarcodeDisplay } from './BarcodeDisplay';
@@ -29,7 +29,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     price: '',
     costPrice: '',
     certificateNumber: '',
-    status: 'In Stock',
+    inStock: 1,
+    reserved: 0,
+    sold: 0,
     purchaseDate: '',
     treatment: '',
     colorComment: '',
@@ -52,7 +54,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         price: gem.price.toString(),
         costPrice: gem.costPrice.toString(),
         certificateNumber: gem.certificateNumber,
-        status: gem.status,
+        inStock: gem.inStock,
+        reserved: gem.reserved,
+        sold: gem.sold,
         purchaseDate: gem.purchaseDate || '',
         treatment: gem.treatment || '',
         colorComment: gem.colorComment || '',
@@ -262,19 +266,39 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        {STATUS_OPTIONS.map((status) => (
-                          <SelectItem key={status} value={status}>{status}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="inStock">In Stock Quantity</Label>
+                     <Input
+                       id="inStock"
+                       type="number"
+                       min="0"
+                       value={formData.inStock}
+                       onChange={(e) => handleChange('inStock', e.target.value)}
+                       className="bg-slate-50 border-slate-200"
+                     />
+                   </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="reserved">Reserved Quantity</Label>
+                     <Input
+                       id="reserved"
+                       type="number"
+                       min="0"
+                       value={formData.reserved}
+                       onChange={(e) => handleChange('reserved', e.target.value)}
+                       className="bg-slate-50 border-slate-200"
+                     />
+                   </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="sold">Sold Quantity</Label>
+                     <Input
+                       id="sold"
+                       type="number"
+                       min="0"
+                       value={formData.sold}
+                       onChange={(e) => handleChange('sold', e.target.value)}
+                       className="bg-slate-50 border-slate-200"
+                     />
+                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="certificateType">Certificate Type</Label>
                     <Select value={formData.certificateType} onValueChange={(value) => handleChange('certificateType', value)}>

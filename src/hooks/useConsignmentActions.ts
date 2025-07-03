@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useConsignmentActions = () => {
   const { addConsignment } = useConsignments();
-  const { gems, updateGemStatus } = useGems();
+  const { gems, moveToConsignment } = useGems();
   const { addCommunication } = useCustomerCommunications();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -128,7 +128,7 @@ export const useConsignmentActions = () => {
             }
           }
           
-          await updateGemStatus(gemId, 'Reserved');
+          await moveToConsignment(gemId);
           console.log(`✅ ConsignmentCreation: Updated gem ${gemId} status to Reserved`);
         }
         
