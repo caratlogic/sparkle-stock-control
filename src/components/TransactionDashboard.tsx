@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2, CreditCard } from 'lucide-react';
+import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2, CreditCard, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
@@ -40,6 +40,10 @@ export const TransactionDashboard = () => {
   const [showConsignmentCreation, setShowConsignmentCreation] = useState(false);
   const [showCreditNoteDialog, setShowCreditNoteDialog] = useState(false);
   const [selectedInvoiceForCredit, setSelectedInvoiceForCredit] = useState<Invoice | null>(null);
+  const [invoiceSortColumn, setInvoiceSortColumn] = useState<string>('');
+  const [invoiceSortDirection, setInvoiceSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [consignmentSortColumn, setConsignmentSortColumn] = useState<string>('');
+  const [consignmentSortDirection, setConsignmentSortDirection] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     fetchPayments();
@@ -129,6 +133,26 @@ export const TransactionDashboard = () => {
     }
   };
 
+  const handleSort = (column: string, type: 'invoice' | 'consignment') => {
+    if (type === 'invoice') {
+      const direction = invoiceSortColumn === column && invoiceSortDirection === 'asc' ? 'desc' : 'asc';
+      setInvoiceSortColumn(column);
+      setInvoiceSortDirection(direction);
+    } else {
+      const direction = consignmentSortColumn === column && consignmentSortDirection === 'asc' ? 'desc' : 'asc';
+      setConsignmentSortColumn(column);
+      setConsignmentSortDirection(direction);
+    }
+  };
+
+  const getSortIcon = (column: string, type: 'invoice' | 'consignment') => {
+    const sortColumn = type === 'invoice' ? invoiceSortColumn : consignmentSortColumn;
+    const sortDirection = type === 'invoice' ? invoiceSortDirection : consignmentSortDirection;
+    
+    if (sortColumn !== column) return <ArrowUpDown className="w-4 h-4" />;
+    return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
+  };
+
   const filteredInvoices = invoices.filter(invoice => {
     const matchesSearch = 
       invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,6 +167,43 @@ export const TransactionDashboard = () => {
     }
     
     return matchesSearch && matchesCustomer && matchesStatus;
+  }).sort((a, b) => {
+    if (!invoiceSortColumn) return 0;
+    
+    let aValue: any, bValue: any;
+    
+    switch (invoiceSortColumn) {
+      case 'invoiceNumber':
+        aValue = a.invoiceNumber;
+        bValue = b.invoiceNumber;
+        break;
+      case 'customer':
+        aValue = getCustomerName(a.customerId);
+        bValue = getCustomerName(b.customerId);
+        break;
+      case 'date':
+        aValue = new Date(a.dateCreated);
+        bValue = new Date(b.dateCreated);
+        break;
+      case 'total':
+        aValue = a.total;
+        bValue = b.total;
+        break;
+      case 'paid':
+        aValue = getTotalPaidAmount(a.id);
+        bValue = getTotalPaidAmount(b.id);
+        break;
+      case 'outstanding':
+        aValue = a.total - getTotalPaidAmount(a.id);
+        bValue = b.total - getTotalPaidAmount(b.id);
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return invoiceSortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return invoiceSortDirection === 'asc' ? 1 : -1;
+    return 0;
   });
 
   const filteredConsignments = consignments.filter(consignment => {
@@ -153,6 +214,39 @@ export const TransactionDashboard = () => {
     const matchesCustomer = customerFilter === 'all' || consignment.customerId === customerFilter;
     
     return matchesSearch && matchesCustomer;
+  }).sort((a, b) => {
+    if (!consignmentSortColumn) return 0;
+    
+    let aValue: any, bValue: any;
+    
+    switch (consignmentSortColumn) {
+      case 'consignmentNumber':
+        aValue = a.consignmentNumber;
+        bValue = b.consignmentNumber;
+        break;
+      case 'customer':
+        aValue = getCustomerName(a.customerId);
+        bValue = getCustomerName(b.customerId);
+        break;
+      case 'dateCreated':
+        aValue = new Date(a.dateCreated);
+        bValue = new Date(b.dateCreated);
+        break;
+      case 'returnDate':
+        aValue = new Date(a.returnDate);
+        bValue = new Date(b.returnDate);
+        break;
+      case 'status':
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return consignmentSortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return consignmentSortDirection === 'asc' ? 1 : -1;
+    return 0;
   });
 
   // Summary calculations
@@ -319,12 +413,60 @@ export const TransactionDashboard = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Paid</TableHead>
-                    <TableHead>Outstanding</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('invoiceNumber', 'invoice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Invoice #
+                        {getSortIcon('invoiceNumber', 'invoice')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('customer', 'invoice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Customer
+                        {getSortIcon('customer', 'invoice')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('date', 'invoice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Date
+                        {getSortIcon('date', 'invoice')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('total', 'invoice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Total
+                        {getSortIcon('total', 'invoice')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('paid', 'invoice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Paid
+                        {getSortIcon('paid', 'invoice')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('outstanding', 'invoice')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Outstanding
+                        {getSortIcon('outstanding', 'invoice')}
+                      </div>
+                    </TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Payment Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -430,11 +572,51 @@ export const TransactionDashboard = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Consignment #</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Date Created</TableHead>
-                    <TableHead>Return Date</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('consignmentNumber', 'consignment')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Consignment #
+                        {getSortIcon('consignmentNumber', 'consignment')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('customer', 'consignment')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Customer
+                        {getSortIcon('customer', 'consignment')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('dateCreated', 'consignment')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Date Created
+                        {getSortIcon('dateCreated', 'consignment')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('returnDate', 'consignment')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Return Date
+                        {getSortIcon('returnDate', 'consignment')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-slate-100"
+                      onClick={() => handleSort('status', 'consignment')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Status
+                        {getSortIcon('status', 'consignment')}
+                      </div>
+                    </TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>

@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2, FileText, Receipt, MessageCircle, Percent, Eye } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, FileText, Receipt, MessageCircle, Percent, Eye, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Customer } from '../types/customer';
 
 interface CustomerTableProps {
@@ -47,6 +47,8 @@ export const CustomerTable = ({
   const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<string | null>(null);
   const [tempDiscount, setTempDiscount] = useState<number>(0);
+  const [sortColumn, setSortColumn] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const handleDiscountEdit = (customer: Customer) => {
     setEditingDiscount(customer.id);
@@ -68,6 +70,17 @@ export const CustomerTable = ({
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handleSort = (column: string) => {
+    const direction = sortColumn === column && sortDirection === 'asc' ? 'desc' : 'asc';
+    setSortColumn(column);
+    setSortDirection(direction);
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) return <ArrowUpDown className="w-4 h-4" />;
+    return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
+  };
+
   const getActivityStatus = (lastPurchaseDate: string | undefined) => {
     if (!lastPurchaseDate) return 'inactive';
     const lastPurchase = new Date(lastPurchaseDate);
@@ -78,6 +91,45 @@ export const CustomerTable = ({
     if (lastPurchase > ninetyDaysAgo) return 'recent';
     return 'inactive';
   };
+
+  const sortedCustomers = [...customers].sort((a, b) => {
+    if (!sortColumn) return 0;
+    
+    let aValue: any, bValue: any;
+    
+    switch (sortColumn) {
+      case 'name':
+        aValue = a.name;
+        bValue = b.name;
+        break;
+      case 'email':
+        aValue = a.email;
+        bValue = b.email;
+        break;
+      case 'totalPurchases':
+        aValue = a.totalPurchases || 0;
+        bValue = b.totalPurchases || 0;
+        break;
+      case 'discount':
+        aValue = a.discount || 0;
+        bValue = b.discount || 0;
+        break;
+      case 'lastPurchaseDate':
+        aValue = a.lastPurchaseDate ? new Date(a.lastPurchaseDate) : new Date(0);
+        bValue = b.lastPurchaseDate ? new Date(b.lastPurchaseDate) : new Date(0);
+        break;
+      case 'status':
+        aValue = getActivityStatus(a.lastPurchaseDate);
+        bValue = getActivityStatus(b.lastPurchaseDate);
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   if (customers.length === 0) {
     return (
@@ -94,17 +146,65 @@ export const CustomerTable = ({
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-slate-200">
-              <th className="text-left py-3 px-4 font-medium text-slate-600">Customer</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-600">Contact</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-600">Total Purchases</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-600">Discount</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-600">Last Purchase</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
+              <th 
+                className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center gap-2">
+                  Customer
+                  {getSortIcon('name')}
+                </div>
+              </th>
+              <th 
+                className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('email')}
+              >
+                <div className="flex items-center gap-2">
+                  Contact
+                  {getSortIcon('email')}
+                </div>
+              </th>
+              <th 
+                className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('totalPurchases')}
+              >
+                <div className="flex items-center gap-2">
+                  Total Purchases
+                  {getSortIcon('totalPurchases')}
+                </div>
+              </th>
+              <th 
+                className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('discount')}
+              >
+                <div className="flex items-center gap-2">
+                  Discount
+                  {getSortIcon('discount')}
+                </div>
+              </th>
+              <th 
+                className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('lastPurchaseDate')}
+              >
+                <div className="flex items-center gap-2">
+                  Last Purchase
+                  {getSortIcon('lastPurchaseDate')}
+                </div>
+              </th>
+              <th 
+                className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('status')}
+              >
+                <div className="flex items-center gap-2">
+                  Status
+                  {getSortIcon('status')}
+                </div>
+              </th>
               <th className="text-right py-3 px-4 font-medium text-slate-600">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {customers.map((customer) => {
+            {sortedCustomers.map((customer) => {
               const activityStatus = getActivityStatus(customer.lastPurchaseDate);
               
               return (
