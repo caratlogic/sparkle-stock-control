@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -6,6 +7,7 @@ import { Edit, Eye, MoreHorizontal } from 'lucide-react';
 import { Payment } from '../../types/payment';
 import { Customer } from '../../types/customer';
 import { CustomerFilter } from '../ui/customer-filter';
+import { PaymentDetailDialog } from './PaymentDetailDialog';
 
 interface PaymentTransactionsTableProps {
   payments: Payment[];
@@ -23,6 +25,14 @@ export const PaymentTransactionsTable = ({
   customerFilter, 
   onCustomerFilterChange 
 }: PaymentTransactionsTableProps) => {
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [showPaymentDetail, setShowPaymentDetail] = useState(false);
+
+  const handleViewPayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setShowPaymentDetail(true);
+  };
+
   const getStatusBadge = (status: string) => {
     const variants = {
       paid: 'bg-green-100 text-green-800',
@@ -140,7 +150,11 @@ export const PaymentTransactionsTable = ({
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleViewPayment(payment)}
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
                       <Button variant="ghost" size="sm">
@@ -157,6 +171,12 @@ export const PaymentTransactionsTable = ({
           </TableBody>
         </Table>
       </div>
+
+      <PaymentDetailDialog
+        payment={selectedPayment}
+        open={showPaymentDetail}
+        onClose={() => setShowPaymentDetail(false)}
+      />
     </div>
   );
 };
