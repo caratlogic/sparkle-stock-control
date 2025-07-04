@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,17 +7,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Customer } from '../types/customer';
 
 interface CreditNoteFormProps {
-  customerId: string;
-  customerName: string;
-  onSuccess: () => void;
-  onCancel: () => void;
+  open: boolean;
+  onClose: () => void;
+  customers: Customer[];
 }
 
-export const CreditNoteForm = ({ customerId, customerName, onSuccess, onCancel }: CreditNoteFormProps) => {
+export const CreditNoteForm = ({ open, onClose, customers }: CreditNoteFormProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
+    customerId: '',
     amount: '',
     reason: '',
     description: '',
@@ -36,7 +37,7 @@ export const CreditNoteForm = ({ customerId, customerName, onSuccess, onCancel }
         .from('credit_notes')
         .insert({
           credit_note_number: creditNoteNumber,
-          customer_id: customerId,
+          customer_id: formData.customerId,
           amount: parseFloat(formData.amount),
           reason: formData.reason,
           description: formData.description,
@@ -52,7 +53,15 @@ export const CreditNoteForm = ({ customerId, customerName, onSuccess, onCancel }
         description: `Credit note ${creditNoteNumber} has been created successfully.`,
       });
 
-      onSuccess();
+      // Reset form and close dialog
+      setFormData({
+        customerId: '',
+        amount: '',
+        reason: '',
+        description: '',
+        currency: 'USD'
+      });
+      onClose();
     } catch (error) {
       console.error('Error creating credit note:', error);
       toast({
@@ -65,13 +74,32 @@ export const CreditNoteForm = ({ customerId, customerName, onSuccess, onCancel }
     }
   };
 
+  const selectedCustomer = customers.find(c => c.id === formData.customerId);
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create Credit Note for {customerName}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Create Credit Note</DialogTitle>
+        </DialogHeader>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="customer">Customer</Label>
+            <Select value={formData.customerId} onValueChange={(value) => setFormData(prev => ({ ...prev, customerId: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select customer" />
+              </SelectTrigger>
+              <SelectContent>
+                {customers.map(customer => (
+                  <SelectItem key={customer.id} value={customer.id}>
+                    {customer.name} ({customer.customerId})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
@@ -129,15 +157,15 @@ export const CreditNoteForm = ({ customerId, customerName, onSuccess, onCancel }
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !formData.customerId || !formData.amount || !formData.reason}>
               {isSubmitting ? 'Creating...' : 'Create Credit Note'}
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };

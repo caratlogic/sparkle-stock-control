@@ -423,22 +423,22 @@ export const GemTable = ({
                     </td>
                   )}
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.treatment || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.treatment || ''}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.colorComment || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.colorComment || ''}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.certificateType || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.certificateType || ''}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.supplier || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.supplier || ''}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.purchaseDate || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.purchaseDate || ''}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.origin || 'N/A'}</div>
+                    <div className="text-sm text-slate-600">{gem.origin || ''}</div>
                   </td>
                   <td className="py-4 px-4">
                     <div className="text-sm font-medium text-emerald-600">{gem.inStock || 0}</div>

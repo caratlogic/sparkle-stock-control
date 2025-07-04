@@ -9,6 +9,7 @@ import { PaymentTransactionsTable } from './payment/PaymentTransactionsTable';
 import { AddPaymentDialog } from './payment/AddPaymentDialog';
 import { ReceivablesTracker } from './payment/ReceivablesTracker';
 import { PaymentExportDialog } from './payment/PaymentExportDialog';
+import { CreditNoteForm } from './CreditNoteForm';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
@@ -20,6 +21,7 @@ export const PaymentDashboard = () => {
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [showReceivables, setShowReceivables] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showCreditNote, setShowCreditNote] = useState(false);
   const [customerFilter, setCustomerFilter] = useState('all');
   const [filters, setFilters] = useState<PaymentFilter>({
     status: 'all'
@@ -173,6 +175,13 @@ export const PaymentDashboard = () => {
             <Plus className="w-4 h-4 mr-2" />
             Record Payment
           </Button>
+          <Button
+            onClick={() => setShowCreditNote(true)}
+            variant="outline"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Credit Note
+          </Button>
         </div>
       </div>
 
@@ -275,6 +284,12 @@ export const PaymentDashboard = () => {
         onClose={() => setShowExport(false)}
         payments={filteredPayments}
         filters={filters}
+      />
+
+      <CreditNoteForm
+        open={showCreditNote}
+        onClose={() => setShowCreditNote(false)}
+        customers={customers}
       />
     </div>
   );
