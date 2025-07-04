@@ -2,8 +2,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Payment } from '../../types/payment';
-import { Calendar, DollarSign, User, FileText, CreditCard, MessageSquare } from 'lucide-react';
+import { Calendar, DollarSign, User, FileText, CreditCard, MessageSquare, Package } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentDetailDialogProps {
   payment: Payment | null;
@@ -11,7 +14,65 @@ interface PaymentDetailDialogProps {
   onClose: () => void;
 }
 
+interface InvoiceItem {
+  id: string;
+  gem_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  gem: {
+    stock_id: string;
+    gem_type: string;
+    carat: number;
+    color: string;
+    description: string;
+    certificate_number: string;
+  };
+}
+
 export const PaymentDetailDialog = ({ payment, open, onClose }: PaymentDetailDialogProps) => {
+  const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchInvoiceDetails = async () => {
+      if (!payment?.invoiceId) return;
+      
+      setLoading(true);
+      try {
+        const { data: items, error } = await supabase
+          .from('invoice_items')
+          .select(`
+            id,
+            gem_id,
+            quantity,
+            unit_price,
+            total_price,
+            gem:gems (
+              stock_id,
+              gem_type,
+              carat,
+              color,
+              description,
+              certificate_number
+            )
+          `)
+          .eq('invoice_id', payment.invoiceId);
+
+        if (error) throw error;
+        setInvoiceItems(items || []);
+      } catch (error) {
+        console.error('Error fetching invoice details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (open) {
+      fetchInvoiceDetails();
+    }
+  }, [payment?.invoiceId, open]);
+
   if (!payment) return null;
 
   const getStatusBadge = (status: string) => {
@@ -134,6 +195,55 @@ export const PaymentDetailDialog = ({ payment, open, onClose }: PaymentDetailDia
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm">{payment.notes}</p>
                 </div>
+              </div>
+            </>
+          )}
+
+          {/* Invoice Items Details */}
+          {payment.invoiceId && (
+            <>
+              <Separator />
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  Invoice Items
+                </h3>
+                {loading ? (
+                  <div className="text-center py-4">Loading invoice details...</div>
+                ) : invoiceItems.length > 0 ? (
+                  <div className="rounded-lg border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Stock ID</TableHead>
+                          <TableHead>Gem Type</TableHead>
+                          <TableHead>Carat</TableHead>
+                          <TableHead>Color</TableHead>
+                          <TableHead>Certificate</TableHead>
+                          <TableHead>Qty</TableHead>
+                          <TableHead>Unit Price</TableHead>
+                          <TableHead>Total</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {invoiceItems.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.gem.stock_id}</TableCell>
+                            <TableCell>{item.gem.gem_type}</TableCell>
+                            <TableCell>{item.gem.carat} ct</TableCell>
+                            <TableCell>{item.gem.color}</TableCell>
+                            <TableCell className="text-xs">{item.gem.certificate_number}</TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>${item.unit_price.toLocaleString()}</TableCell>
+                            <TableCell className="font-medium">${item.total_price.toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">No invoice items found</div>
+                )}
               </div>
             </>
           )}

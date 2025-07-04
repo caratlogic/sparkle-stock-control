@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { TrendingUp, DollarSign, Package, Users, Gem as GemIcon } from 'lucide-react';
+import { TrendingUp, DollarSign, Package, Users, Gem as GemIcon, Calendar, Building2 } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { Customer, Invoice } from '../types/customer';
 
@@ -19,6 +19,27 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
 
   // Color palette for charts
   const colors = ['#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#6366F1', '#84CC16'];
+
+  // Filter data based on selected period
+  const getFilteredInvoices = () => {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+
+    switch (selectedPeriod) {
+      case 'year':
+        return invoices.filter(inv => new Date(inv.dateCreated) >= startOfYear);
+      case 'month':
+        return invoices.filter(inv => new Date(inv.dateCreated) >= startOfMonth);
+      case 'week':
+        return invoices.filter(inv => new Date(inv.dateCreated) >= startOfWeek);
+      default:
+        return invoices;
+    }
+  };
+
+  const filteredInvoices = getFilteredInvoices();
 
   // Analytics by Gem Type
   const typeAnalytics = gems.reduce((acc, gem) => {
@@ -110,9 +131,77 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
     sold: data.soldValue
   }));
 
+  // Supplier Analytics
+  const supplierAnalytics = gems.reduce((acc, gem) => {
+    const supplier = gem.supplier || 'Unknown';
+    if (!acc[supplier]) {
+      acc[supplier] = {
+        name: supplier,
+        totalValue: 0,
+        soldValue: 0,
+        totalQuantity: 0,
+        soldQuantity: 0,
+        gemCount: 0
+      };
+    }
+    acc[supplier].totalValue += gem.price * ((gem.inStock || 0) + (gem.reserved || 0) + (gem.sold || 0));
+    acc[supplier].soldValue += gem.price * (gem.sold || 0);
+    acc[supplier].totalQuantity += (gem.inStock || 0) + (gem.reserved || 0) + (gem.sold || 0);
+    acc[supplier].soldQuantity += (gem.sold || 0);
+    acc[supplier].gemCount++;
+    return acc;
+  }, {} as Record<string, any>);
+
+  const supplierChartData = Object.values(supplierAnalytics)
+    .sort((a: any, b: any) => b.soldValue - a.soldValue)
+    .slice(0, 8);
+
+  // Date-based Analytics
+  const getDateAnalytics = () => {
+    const dateGroups = filteredInvoices.reduce((acc, invoice) => {
+      let dateKey = '';
+      const date = new Date(invoice.dateCreated);
+      
+      switch (selectedPeriod) {
+        case 'year':
+          dateKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          break;
+        case 'month':
+          dateKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          break;
+        case 'week':
+          dateKey = date.toLocaleDateString('en-US', { weekday: 'short' });
+          break;
+        default:
+          dateKey = date.getFullYear().toString();
+      }
+      
+      if (!acc[dateKey]) {
+        acc[dateKey] = {
+          date: dateKey,
+          sales: 0,
+          quantity: 0,
+          invoices: 0
+        };
+      }
+      
+      acc[dateKey].sales += invoice.total;
+      acc[dateKey].quantity += invoice.items.reduce((sum, item) => sum + item.quantity, 0);
+      acc[dateKey].invoices += 1;
+      
+      return acc;
+    }, {} as Record<string, any>);
+
+    return Object.values(dateGroups).sort((a: any, b: any) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  };
+
+  const dateAnalyticsData = getDateAnalytics();
+
   // Customer Analytics
   const customerAnalytics = customers.map(customer => {
-    const customerInvoices = invoices.filter(inv => inv.customerId === customer.id);
+    const customerInvoices = filteredInvoices.filter(inv => inv.customerId === customer.id);
     const totalSales = customerInvoices.reduce((sum, inv) => sum + inv.total, 0);
     const totalQuantity = customerInvoices.reduce((sum, inv) => 
       sum + inv.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
@@ -132,7 +221,7 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
     return sum + (gem.price * totalQuantity);
   }, 0);
   const totalSoldValue = gems.reduce((sum, gem) => sum + (gem.price * (gem.sold || 0)), 0);
-  const totalRevenueFromInvoices = invoices.reduce((sum, inv) => sum + inv.total, 0);
+  const totalRevenueFromInvoices = filteredInvoices.reduce((sum, inv) => sum + inv.total, 0);
   const totalInStockQuantity = gems.reduce((sum, gem) => sum + (gem.inStock || 0), 0);
   const totalReservedQuantity = gems.reduce((sum, gem) => sum + (gem.reserved || 0), 0);
   const totalSoldQuantity = gems.reduce((sum, gem) => sum + (gem.sold || 0), 0);
@@ -151,9 +240,9 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
           </SelectTrigger>
           <SelectContent className="bg-white border-slate-200">
             <SelectItem value="all">All Time</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
-            <SelectItem value="quarter">This Quarter</SelectItem>
             <SelectItem value="year">This Year</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="week">This Week</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -237,7 +326,7 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-slate-800">${totalRevenueFromInvoices.toLocaleString()}</div>
-            <p className="text-xs text-slate-500 mt-1">{invoices.length} invoices</p>
+            <p className="text-xs text-slate-500 mt-1">{filteredInvoices.length} invoices</p>
           </CardContent>
         </Card>
 
@@ -259,7 +348,7 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-slate-800">
-              ${invoices.length ? Math.round(totalRevenueFromInvoices / invoices.length).toLocaleString() : '0'}
+              ${filteredInvoices.length ? Math.round(totalRevenueFromInvoices / filteredInvoices.length).toLocaleString() : '0'}
             </div>
             <p className="text-xs text-slate-500 mt-1">Per invoice</p>
           </CardContent>
@@ -348,7 +437,7 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Total Invoices</span>
-                <Badge variant="secondary">{invoices.length}</Badge>
+                <Badge variant="secondary">{filteredInvoices.length}</Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Total Sold Quantity</span>
@@ -356,7 +445,7 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Average Order Value</span>
-                <span className="font-semibold">${invoices.length ? Math.round(totalRevenueFromInvoices / invoices.length).toLocaleString() : '0'}</span>
+                <span className="font-semibold">${filteredInvoices.length ? Math.round(totalRevenueFromInvoices / filteredInvoices.length).toLocaleString() : '0'}</span>
               </div>
             </div>
           </CardContent>
@@ -395,6 +484,53 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
                 <Tooltip formatter={(value, name) => [`$${value.toLocaleString()}`, name]} />
                 <Bar dataKey="sold" fill="#10B981" />
               </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sales Analytics by Supplier and Date */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Building2 className="w-5 h-5 text-slate-600" />
+              <span>Sales by Supplier</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={supplierChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value, name) => [`$${value.toLocaleString()}`, name]} />
+                <Bar dataKey="soldValue" fill="#8B5CF6" name="Sales Value" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5 text-slate-600" />
+              <span>Sales Over Time</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={dateAnalyticsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value, name) => [
+                  name === 'sales' ? `$${value.toLocaleString()}` : value.toLocaleString(), 
+                  name === 'sales' ? 'Sales' : 'Quantity'
+                ]} />
+                <Line type="monotone" dataKey="sales" stroke="#8B5CF6" strokeWidth={2} name="sales" />
+                <Line type="monotone" dataKey="quantity" stroke="#10B981" strokeWidth={2} name="quantity" />
+              </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
