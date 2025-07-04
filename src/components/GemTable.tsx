@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { GemDetailView } from './GemDetailView';
+import { GemTransactionHistory } from './GemTransactionHistory';
 import { useAuth } from '../contexts/AuthContext';
 
 interface GemTableProps {
@@ -50,6 +51,8 @@ export const GemTable = ({
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedGem, setSelectedGem] = useState<Gem | null>(null);
+  const [transactionHistoryGem, setTransactionHistoryGem] = useState<Gem | null>(null);
+  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
 
   // If a gem is selected, show the detail view
   if (selectedGem) {
@@ -444,10 +447,26 @@ export const GemTable = ({
                     <div className="text-sm font-medium text-emerald-600">{gem.inStock || 0}</div>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm font-medium text-orange-600">{gem.reserved || 0}</div>
+                    <button
+                      onClick={() => {
+                        setTransactionHistoryGem(gem);
+                        setShowTransactionHistory(true);
+                      }}
+                      className="text-sm font-medium text-orange-600 hover:text-orange-800 hover:underline cursor-pointer"
+                    >
+                      {gem.reserved || 0}
+                    </button>
                   </td>
                   <td className="py-4 px-4">
-                    <div className="text-sm font-medium text-red-600">{gem.sold || 0}</div>
+                    <button
+                      onClick={() => {
+                        setTransactionHistoryGem(gem);
+                        setShowTransactionHistory(true);
+                      }}
+                      className="text-sm font-medium text-red-600 hover:text-red-800 hover:underline cursor-pointer"
+                    >
+                      {gem.sold || 0}
+                    </button>
                   </td>
                   <td className="py-4 px-4">
                     <Badge 
@@ -524,6 +543,15 @@ export const GemTable = ({
           )}
         </div>
       </CardContent>
+
+      <GemTransactionHistory
+        gem={transactionHistoryGem}
+        open={showTransactionHistory}
+        onClose={() => {
+          setShowTransactionHistory(false);
+          setTransactionHistoryGem(null);
+        }}
+      />
     </Card>
   );
 };
