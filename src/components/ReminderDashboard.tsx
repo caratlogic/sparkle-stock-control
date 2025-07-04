@@ -8,18 +8,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Bell, Calendar as CalendarIcon, Clock, Mail, MessageSquare, Plus } from 'lucide-react';
+import { Bell, Calendar as CalendarIcon, Clock, Mail, MessageSquare, Plus, Filter } from 'lucide-react';
 import { useActivityLog } from '../hooks/useActivityLog';
 import { useCustomers } from '../hooks/useCustomers';
+import { useOverdueReminders } from '../hooks/useOverdueReminders';
+import { CustomerFilter } from '../components/ui/customer-filter';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
 export const ReminderDashboard = () => {
   const { reminders, addReminder, markReminderSent, fetchReminders } = useActivityLog();
   const { customers } = useCustomers();
+  const { createOverduePaymentReminders } = useOverdueReminders();
   const { toast } = useToast();
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState('all');
   const [newReminder, setNewReminder] = useState({
     customerId: '',
     reminderType: 'follow_up',
@@ -93,8 +97,14 @@ export const ReminderDashboard = () => {
     }
   };
 
-  const upcomingReminders = reminders.filter(r => !r.isSent && new Date(r.reminderDate) >= new Date());
-  const overdueReminders = reminders.filter(r => !r.isSent && new Date(r.reminderDate) < new Date());
+  // Filter reminders by selected customer
+  const filteredReminders = selectedCustomer === 'all' 
+    ? reminders 
+    : reminders.filter(r => r.customerId === selectedCustomer);
+
+  const upcomingReminders = filteredReminders.filter(r => !r.isSent && new Date(r.reminderDate) >= new Date());
+  const overdueReminders = filteredReminders.filter(r => !r.isSent && new Date(r.reminderDate) < new Date());
+  const completedReminders = filteredReminders.filter(r => r.isSent);
 
   return (
     <div className="space-y-6">
@@ -107,14 +117,38 @@ export const ReminderDashboard = () => {
           </h2>
           <p className="text-slate-600 mt-1">Manage follow-up reminders and notifications.</p>
         </div>
-        <Button
-          onClick={() => setShowAddForm(true)}
-          className="bg-diamond-gradient hover:opacity-90"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Reminder
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={createOverduePaymentReminders}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Clock className="w-4 h-4" />
+            Check Overdue Payments
+          </Button>
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="bg-diamond-gradient hover:opacity-90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Reminder
+          </Button>
+        </div>
       </div>
+
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="flex items-center gap-4">
+          <Filter className="w-5 h-5 text-slate-600" />
+          <span className="font-medium text-slate-700">Filter by Customer:</span>
+          <CustomerFilter
+            customers={customers}
+            value={selectedCustomer}
+            onValueChange={setSelectedCustomer}
+            placeholder="All Customers"
+          />
+        </div>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -147,7 +181,7 @@ export const ReminderDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {reminders.filter(r => r.isSent).length}
+              {completedReminders.length}
             </div>
             <p className="text-xs text-slate-500 mt-1">This month</p>
           </CardContent>
