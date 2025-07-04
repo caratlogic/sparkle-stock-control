@@ -412,9 +412,9 @@ export const TransactionDashboard = () => {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="bg-slate-50 border-b-2 border-slate-200">
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('invoiceNumber', 'invoice')}
                     >
                       <div className="flex items-center gap-2">
@@ -423,7 +423,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('customer', 'invoice')}
                     >
                       <div className="flex items-center gap-2">
@@ -432,7 +432,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('date', 'invoice')}
                     >
                       <div className="flex items-center gap-2">
@@ -441,7 +441,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('total', 'invoice')}
                     >
                       <div className="flex items-center gap-2">
@@ -450,7 +450,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('paid', 'invoice')}
                     >
                       <div className="flex items-center gap-2">
@@ -459,7 +459,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('outstanding', 'invoice')}
                     >
                       <div className="flex items-center gap-2">
@@ -467,9 +467,9 @@ export const TransactionDashboard = () => {
                         {getSortIcon('outstanding', 'invoice')}
                       </div>
                     </TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Payment Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="font-semibold text-slate-800 py-4">Status</TableHead>
+                    <TableHead className="font-semibold text-slate-800 py-4">Payment Status</TableHead>
+                    <TableHead className="font-semibold text-slate-800 py-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -571,9 +571,9 @@ export const TransactionDashboard = () => {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="bg-slate-50 border-b-2 border-slate-200">
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('consignmentNumber', 'consignment')}
                     >
                       <div className="flex items-center gap-2">
@@ -582,7 +582,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('customer', 'consignment')}
                     >
                       <div className="flex items-center gap-2">
@@ -591,7 +591,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('dateCreated', 'consignment')}
                     >
                       <div className="flex items-center gap-2">
@@ -600,7 +600,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('returnDate', 'consignment')}
                     >
                       <div className="flex items-center gap-2">
@@ -609,7 +609,7 @@ export const TransactionDashboard = () => {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-slate-100"
+                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
                       onClick={() => handleSort('status', 'consignment')}
                     >
                       <div className="flex items-center gap-2">
@@ -617,7 +617,7 @@ export const TransactionDashboard = () => {
                         {getSortIcon('status', 'consignment')}
                       </div>
                     </TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="font-semibold text-slate-800 py-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
