@@ -9,12 +9,12 @@ export const useOverdueReminders = () => {
 
   const createOverduePaymentReminders = async () => {
     const today = new Date();
-    const twoWeeksAgo = new Date(today.getTime() - (14 * 24 * 60 * 60 * 1000));
+    const oneWeekAgo = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
 
-    // Find invoices that are overdue (created more than 2 weeks ago and not paid)
+    // Find invoices that are overdue (created more than 1 week ago and not paid)
     const overdueInvoices = invoices.filter(invoice => {
       const invoiceDate = new Date(invoice.dateCreated);
-      const isOverdue = invoiceDate <= twoWeeksAgo;
+      const isOverdue = invoiceDate <= oneWeekAgo;
       const isUnpaid = invoice.status !== 'paid' && invoice.status !== 'cancelled';
       return isOverdue && isUnpaid;
     });

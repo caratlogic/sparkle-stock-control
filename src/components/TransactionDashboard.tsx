@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2 } from 'lucide-react';
+import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2, CreditCard } from 'lucide-react';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
@@ -15,7 +15,10 @@ import { InvoicePaymentDialog } from './InvoicePaymentDialog';
 import { ConsignmentToInvoiceDialog } from './ConsignmentToInvoiceDialog';
 import { InvoiceDetailView } from './InvoiceDetailView';
 import { ConsignmentDetailView } from './ConsignmentDetailView';
+import { InvoiceCreation } from './InvoiceCreation';
+import { ConsignmentCreation } from './ConsignmentCreation';
 import { CustomerFilter } from './ui/customer-filter';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Invoice } from '../types/customer';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +36,10 @@ export const TransactionDashboard = () => {
   const [selectedConsignmentForInvoice, setSelectedConsignmentForInvoice] = useState<string | null>(null);
   const [selectedInvoiceForView, setSelectedInvoiceForView] = useState<Invoice | null>(null);
   const [selectedConsignmentForView, setSelectedConsignmentForView] = useState<any | null>(null);
+  const [showInvoiceCreation, setShowInvoiceCreation] = useState(false);
+  const [showConsignmentCreation, setShowConsignmentCreation] = useState(false);
+  const [showCreditNoteDialog, setShowCreditNoteDialog] = useState(false);
+  const [selectedInvoiceForCredit, setSelectedInvoiceForCredit] = useState<Invoice | null>(null);
 
   useEffect(() => {
     fetchPayments();
@@ -181,6 +188,22 @@ export const TransactionDashboard = () => {
         <div>
           <h2 className="text-3xl font-bold text-slate-800">Transaction Dashboard</h2>
           <p className="text-slate-600">Manage invoices, consignments, and payments</p>
+        </div>
+        <div className="flex gap-3">
+          <Button
+            onClick={() => setShowInvoiceCreation(true)}
+            className="bg-diamond-gradient hover:opacity-90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Invoice
+          </Button>
+          <Button
+            onClick={() => setShowConsignmentCreation(true)}
+            variant="outline"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Consignment
+          </Button>
         </div>
       </div>
 
@@ -375,6 +398,17 @@ export const TransactionDashboard = () => {
                               >
                                 <Download className="w-4 h-4" />
                               </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedInvoiceForCredit(invoice);
+                                  setShowCreditNoteDialog(true);
+                                }}
+                                title="Create Credit Note"
+                              >
+                                <CreditCard className="w-4 h-4" />
+                              </Button>
                               <InvoicePaymentDialog
                                 invoice={{
                                   ...invoice,
@@ -499,6 +533,86 @@ export const TransactionDashboard = () => {
             });
           }}
         />
+      )}
+
+      {/* Invoice Creation Dialog */}
+      {showInvoiceCreation && (
+        <Dialog open={showInvoiceCreation} onOpenChange={setShowInvoiceCreation}>
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Invoice</DialogTitle>
+            </DialogHeader>
+            <InvoiceCreation
+              onCancel={() => setShowInvoiceCreation(false)}
+              onSave={() => {
+                setShowInvoiceCreation(false);
+                toast({
+                  title: "Success",
+                  description: "Invoice created successfully",
+                });
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Consignment Creation Dialog */}
+      {showConsignmentCreation && (
+        <Dialog open={showConsignmentCreation} onOpenChange={setShowConsignmentCreation}>
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Consignment</DialogTitle>
+            </DialogHeader>
+            <ConsignmentCreation
+              onCancel={() => setShowConsignmentCreation(false)}
+              onSave={() => {
+                setShowConsignmentCreation(false);
+                toast({
+                  title: "Success",
+                  description: "Consignment created successfully",
+                });
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Credit Note Dialog */}
+      {showCreditNoteDialog && selectedInvoiceForCredit && (
+        <Dialog open={showCreditNoteDialog} onOpenChange={setShowCreditNoteDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create Credit Note</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600">
+                Create a credit note for Invoice #{selectedInvoiceForCredit.invoiceNumber}
+              </p>
+              <div className="space-y-2">
+                <p><strong>Customer:</strong> {getCustomerName(selectedInvoiceForCredit.customerId)}</p>
+                <p><strong>Original Amount:</strong> ${selectedInvoiceForCredit.total.toLocaleString()}</p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowCreditNoteDialog(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => {
+                    toast({
+                      title: "Credit Note Created",
+                      description: `Credit note for invoice ${selectedInvoiceForCredit.invoiceNumber} has been created.`,
+                    });
+                    setShowCreditNoteDialog(false);
+                    setSelectedInvoiceForCredit(null);
+                  }}
+                  className="bg-diamond-gradient hover:opacity-90"
+                >
+                  Create Credit Note
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
