@@ -142,10 +142,9 @@ export const useInvoiceActions = () => {
             }
           }
           
-          // Use the updateGemQuantityForInvoice function that handles quantities
+          // Use the updateGemQuantityForInvoice function that handles quantities and status
           const fromConsignment = relatedConsignmentId !== null;
           await updateGemQuantityForInvoice(gemId, item.quantity, fromConsignment);
-          await updateGemStatus(gemId, 'Sold');
           console.log(`✅ InvoiceCreation: Updated gem ${gemId} quantities and status for invoice`);
         }
         
