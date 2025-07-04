@@ -171,6 +171,13 @@ export const useGems = () => {
       if (gemData.status !== undefined) updateData.status = gemData.status;
       if (gemData.notes !== undefined) updateData.notes = gemData.notes;
       if (gemData.imageUrl !== undefined) updateData.image_url = gemData.imageUrl;
+      if (gemData.treatment !== undefined) updateData.treatment = gemData.treatment === 'none' ? null : gemData.treatment;
+      if (gemData.colorComment !== undefined) updateData.color_comment = gemData.colorComment === 'none' ? null : gemData.colorComment;
+      if (gemData.certificateType !== undefined) updateData.certificate_type = gemData.certificateType === 'none' ? null : gemData.certificateType;
+      if (gemData.supplier !== undefined) updateData.supplier = gemData.supplier;
+      if (gemData.purchaseDate !== undefined) updateData.purchase_date = gemData.purchaseDate;
+      if (gemData.origin !== undefined) updateData.origin = gemData.origin;
+      if (gemData.inStock !== undefined) updateData.in_stock = gemData.inStock;
 
       console.log('Updating gem with data:', updateData);
 

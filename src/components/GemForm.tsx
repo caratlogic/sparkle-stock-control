@@ -37,7 +37,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     certificateType: 'none',
     supplier: '',
     purchaseDate: '',
-    origin: ''
+    origin: '',
+    inStock: ''
   });
 
   useEffect(() => {
@@ -60,7 +61,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         certificateType: gem.certificateType || 'none',
         supplier: gem.supplier || '',
         purchaseDate: gem.purchaseDate || '',
-        origin: gem.origin || ''
+        origin: gem.origin || '',
+        inStock: (gem.inStock || 0).toString()
       });
     }
   }, [gem]);
@@ -73,11 +75,11 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       carat: parseFloat(formData.carat),
       price: parseFloat(formData.price),
       costPrice: parseFloat(formData.costPrice) || 0,
+      inStock: parseInt(formData.inStock) || 0,
       ...(gem && { 
         id: gem.id, 
         stockId: gem.stockId, 
         dateAdded: gem.dateAdded,
-        inStock: gem.inStock,
         reserved: gem.reserved,
         sold: gem.sold
       })
@@ -320,17 +322,30 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="origin">Origin</Label>
-                    <Input
-                      id="origin"
-                      placeholder="e.g., Burma, Ceylon, Thailand"
-                      value={formData.origin}
-                      onChange={(e) => handleChange('origin', e.target.value)}
-                      className="bg-slate-50 border-slate-200"
-                    />
-                  </div>
-                </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="origin">Origin</Label>
+                     <Input
+                       id="origin"
+                       placeholder="e.g., Burma, Ceylon, Thailand"
+                       value={formData.origin}
+                       onChange={(e) => handleChange('origin', e.target.value)}
+                       className="bg-slate-50 border-slate-200"
+                     />
+                   </div>
+
+                   <div className="space-y-2">
+                     <Label htmlFor="inStock">In Stock Quantity</Label>
+                     <Input
+                       id="inStock"
+                       type="number"
+                       placeholder="20"
+                       value={formData.inStock}
+                       onChange={(e) => handleChange('inStock', e.target.value)}
+                       className="bg-slate-50 border-slate-200"
+                       min="0"
+                     />
+                   </div>
+                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="certificateNumber">Certificate Number</Label>
