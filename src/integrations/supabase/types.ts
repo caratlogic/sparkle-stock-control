@@ -98,6 +98,56 @@ export type Database = {
           },
         ]
       }
+      credit_notes: {
+        Row: {
+          amount: number
+          created_at: string
+          credit_note_number: string
+          currency: string
+          customer_id: string
+          date_created: string
+          description: string | null
+          id: string
+          reason: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          credit_note_number: string
+          currency?: string
+          customer_id: string
+          date_created?: string
+          description?: string | null
+          id?: string
+          reason: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          credit_note_number?: string
+          currency?: string
+          customer_id?: string
+          date_created?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_communications: {
         Row: {
           communication_type: string
