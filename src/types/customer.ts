@@ -19,6 +19,7 @@ export interface Customer {
   lastPurchaseDate?: string;
   discount?: number;
   notes?: string;
+  status: 'active' | 'inactive';
 }
 
 export interface CustomerCommunication {

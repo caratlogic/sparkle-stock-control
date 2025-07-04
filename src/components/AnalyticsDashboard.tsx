@@ -25,7 +25,8 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
     const now = new Date();
     const startOfYear = new Date(now.getFullYear(), 0, 1);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    const startOfWeek = new Date(now.getTime() - (now.getDay() * 24 * 60 * 60 * 1000));
+    const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
 
     switch (selectedPeriod) {
       case 'year':
@@ -34,6 +35,8 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
         return invoices.filter(inv => new Date(inv.dateCreated) >= startOfMonth);
       case 'week':
         return invoices.filter(inv => new Date(inv.dateCreated) >= startOfWeek);
+      case 'day':
+        return invoices.filter(inv => new Date(inv.dateCreated) >= thirtyDaysAgo);
       default:
         return invoices;
     }
@@ -172,6 +175,9 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
         case 'week':
           dateKey = date.toLocaleDateString('en-US', { weekday: 'short' });
           break;
+        case 'day':
+          dateKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          break;
         default:
           dateKey = date.getFullYear().toString();
       }
@@ -243,6 +249,7 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
             <SelectItem value="year">This Year</SelectItem>
             <SelectItem value="month">This Month</SelectItem>
             <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="day">Daily (Last 30 Days)</SelectItem>
           </SelectContent>
         </Select>
       </div>

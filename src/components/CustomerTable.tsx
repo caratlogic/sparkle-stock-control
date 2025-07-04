@@ -20,8 +20,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2, FileText, Receipt, MessageCircle, Percent, Eye, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, FileText, Receipt, MessageCircle, Percent, Eye, ArrowUpDown, ArrowUp, ArrowDown, Settings } from 'lucide-react';
 import { Customer } from '../types/customer';
+import { CustomerStatusDialog } from './CustomerStatusDialog';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -32,6 +33,7 @@ interface CustomerTableProps {
   onUpdateDiscount: (customerId: string, discount: number) => void;
   onCommunicate?: (customer: Customer) => void;
   onView?: (customer: Customer) => void;
+  onRefresh?: () => void;
 }
 
 export const CustomerTable = ({ 
@@ -42,13 +44,15 @@ export const CustomerTable = ({
   onCreateConsignment, 
   onUpdateDiscount,
   onCommunicate,
-  onView
+  onView,
+  onRefresh
 }: CustomerTableProps) => {
   const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<string | null>(null);
   const [tempDiscount, setTempDiscount] = useState<number>(0);
   const [sortColumn, setSortColumn] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [statusDialogCustomer, setStatusDialogCustomer] = useState<Customer | null>(null);
 
   const handleDiscountEdit = (customer: Customer) => {
     setEditingDiscount(customer.id);
@@ -269,22 +273,28 @@ export const CustomerTable = ({
                       {formatDate(customer.lastPurchaseDate)}
                     </div>
                   </td>
-                  <td className="py-4 px-4">
-                    <Badge 
-                      variant={
-                        activityStatus === 'active' ? 'default' :
-                        activityStatus === 'recent' ? 'secondary' : 'outline'
-                      }
-                      className={
-                        activityStatus === 'active' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100' :
-                        activityStatus === 'recent' ? 'bg-amber-100 text-amber-800 hover:bg-amber-100' :
-                        'bg-slate-100 text-slate-600 hover:bg-slate-100'
-                      }
-                    >
-                      {activityStatus === 'active' ? 'Active' : 
-                       activityStatus === 'recent' ? 'Recent' : 'Inactive'}
-                    </Badge>
-                  </td>
+                   <td className="py-4 px-4">
+                     <div className="flex items-center gap-2">
+                       <Badge 
+                         variant={customer.status === 'active' ? 'default' : 'secondary'}
+                         className={
+                           customer.status === 'active' 
+                             ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100' 
+                             : 'bg-slate-100 text-slate-600 hover:bg-slate-100'
+                         }
+                       >
+                         {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+                       </Badge>
+                       <Button
+                         size="sm"
+                         variant="ghost"
+                         onClick={() => setStatusDialogCustomer(customer)}
+                         className="h-6 w-6 p-0"
+                       >
+                         <Settings className="w-3 h-3" />
+                       </Button>
+                     </div>
+                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-end gap-2">
                       {onView && (
@@ -375,6 +385,16 @@ export const CustomerTable = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <CustomerStatusDialog
+        customer={statusDialogCustomer}
+        open={statusDialogCustomer !== null}
+        onClose={() => setStatusDialogCustomer(null)}
+        onStatusUpdated={() => {
+          onRefresh?.();
+          setStatusDialogCustomer(null);
+        }}
+      />
     </>
   );
 };

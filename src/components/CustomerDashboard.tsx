@@ -320,6 +320,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
             onUpdateDiscount={handleUpdateDiscount}
             onCommunicate={(customer) => setSelectedCustomerForComms(customer)}
             onView={(customer) => setSelectedCustomerForDetail(customer)}
+            onRefresh={refetch}
           />
         </CardContent>
       </Card>

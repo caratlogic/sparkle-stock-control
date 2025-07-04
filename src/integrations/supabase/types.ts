@@ -291,6 +291,7 @@ export type Database = {
           notes: string | null
           phone: string
           state: string
+          status: string
           street: string
           tax_id: string | null
           total_purchases: number | null
@@ -312,6 +313,7 @@ export type Database = {
           notes?: string | null
           phone: string
           state: string
+          status?: string
           street: string
           tax_id?: string | null
           total_purchases?: number | null
@@ -333,6 +335,7 @@ export type Database = {
           notes?: string | null
           phone?: string
           state?: string
+          status?: string
           street?: string
           tax_id?: string | null
           total_purchases?: number | null
@@ -593,7 +596,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_customer_be_inactive: {
+        Args: { customer_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

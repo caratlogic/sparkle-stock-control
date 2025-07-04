@@ -20,7 +20,8 @@ export const sampleCustomers: Customer[] = [
     dateAdded: '2024-01-15',
     totalPurchases: 45000,
     lastPurchaseDate: '2024-06-15',
-    notes: 'Frequent customer, prefers emeralds'
+    notes: 'Frequent customer, prefers emeralds',
+    status: 'active'
   },
   {
     id: '2',
@@ -39,7 +40,8 @@ export const sampleCustomers: Customer[] = [
     dateAdded: '2024-02-20',
     totalPurchases: 78000,
     lastPurchaseDate: '2024-06-20',
-    notes: 'High-end client, interested in large diamonds'
+    notes: 'High-end client, interested in large diamonds',
+    status: 'active'
   },
   {
     id: '3',
@@ -57,6 +59,7 @@ export const sampleCustomers: Customer[] = [
     dateAdded: '2024-03-10',
     totalPurchases: 23000,
     lastPurchaseDate: '2024-05-30',
-    notes: 'Collector, focuses on rare colored stones'
+    notes: 'Collector, focuses on rare colored stones',
+    status: 'active'
   }
 ];
