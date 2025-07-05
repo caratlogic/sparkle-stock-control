@@ -24,7 +24,7 @@ import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerato
 import { useToast } from '@/hooks/use-toast';
 
 export const TransactionDashboard = () => {
-  const { invoices, loading: invoicesLoading } = useInvoices();
+  const { invoices, loading: invoicesLoading, updateInvoiceStatus } = useInvoices();
   const { consignments, loading: consignmentsLoading, updateConsignmentStatus, deleteConsignment } = useConsignments();
   const { addPayment, getTotalPaidAmount, fetchPayments } = useInvoicePayments();
   const { customers } = useCustomers();
@@ -130,6 +130,22 @@ export const TransactionDashboard = () => {
           variant: "destructive",
         });
       }
+    }
+  };
+
+  const handleUpdateInvoiceStatus = async (invoiceId: string, newStatus: string) => {
+    const result = await updateInvoiceStatus(invoiceId, newStatus);
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: `Invoice status updated to ${newStatus}`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update invoice status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -510,9 +526,25 @@ export const TransactionDashboard = () => {
                             ${outstanding.toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
-                              {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                            </Badge>
+                            <Select 
+                              value={invoice.status} 
+                              onValueChange={(newStatus) => handleUpdateInvoiceStatus(invoice.id, newStatus)}
+                            >
+                              <SelectTrigger className="w-[120px]">
+                                <SelectValue>
+                                  <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
+                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                  </Badge>
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="sent">Sent</SelectItem>
+                                <SelectItem value="paid">Paid</SelectItem>
+                                <SelectItem value="overdue">Overdue</SelectItem>
+                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell>
                             <Badge variant={paymentStatus.variant}>

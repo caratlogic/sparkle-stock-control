@@ -160,6 +160,29 @@ export const useInvoices = () => {
     }
   };
 
+  const updateInvoiceStatus = async (invoiceId: string, status: string) => {
+    try {
+      console.log('🔄 useInvoices: Updating invoice status:', { invoiceId, status });
+      
+      const { error } = await supabase
+        .from('invoices')
+        .update({ status })
+        .eq('id', invoiceId);
+
+      if (error) {
+        console.error('❌ useInvoices: Error updating invoice status:', error);
+        throw error;
+      }
+
+      console.log('✅ useInvoices: Successfully updated invoice status');
+      await fetchInvoices();
+      return { success: true };
+    } catch (err) {
+      console.error('❌ useInvoices: Error in updateInvoiceStatus:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update invoice status' };
+    }
+  };
+
   useEffect(() => {
     fetchInvoices();
     
@@ -192,6 +215,7 @@ export const useInvoices = () => {
     loading,
     error,
     addInvoice,
+    updateInvoiceStatus,
     refetch: fetchInvoices
   };
 };
