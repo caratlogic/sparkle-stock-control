@@ -10,6 +10,7 @@ import { TransactionDashboard } from './TransactionDashboard';
 import { PaymentDashboard } from './PaymentDashboard';
 import { ReminderDashboard } from './ReminderDashboard';
 import { CustomerCommunications } from './CustomerCommunications';
+import { CreditNotesDashboard } from './CreditNotesDashboard';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { useGems } from '../hooks/useGems';
@@ -221,6 +222,12 @@ export const Dashboard = () => {
             >
               Communications
             </TabsTrigger>
+            <TabsTrigger 
+              value="credit-notes" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Credit Notes
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -312,6 +319,10 @@ export const Dashboard = () => {
               setActiveTab('transactions');
             }}
           />
+        </TabsContent>
+
+        <TabsContent value="credit-notes" className="space-y-6">
+          <CreditNotesDashboard />
         </TabsContent>
       </Tabs>
     </div>
