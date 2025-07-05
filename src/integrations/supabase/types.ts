@@ -600,6 +600,10 @@ export type Database = {
         Args: { customer_uuid: string }
         Returns: boolean
       }
+      recalculate_all_customer_totals: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
