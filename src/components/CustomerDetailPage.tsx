@@ -74,7 +74,15 @@ export const CustomerDetailPage = ({
   const totalInvoices = customerInvoices.length;
   const totalConsignments = customerConsignments.length;
   const totalPayments = customerDirectPayments.length + customerInvoicePayments.length;
-  const totalRevenue = customerInvoices.reduce((sum, inv) => sum + inv.total, 0);
+  
+  // Revenue breakdown by status (excluding cancelled invoices)
+  const activeInvoices = customerInvoices.filter(inv => inv.status !== 'cancelled');
+  const draftRevenue = activeInvoices.filter(inv => inv.status === 'draft').reduce((sum, inv) => sum + inv.total, 0);
+  const sentRevenue = activeInvoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
+  const paidRevenue = activeInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
+  const overdueRevenue = activeInvoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.total, 0);
+  const totalRevenue = draftRevenue + sentRevenue + paidRevenue + overdueRevenue;
+  
   const totalCreditNotes = customerCreditNotes.length;
   const totalCreditAmount = customerCreditNotes.reduce((sum, note) => sum + note.amount, 0);
   
@@ -265,7 +273,7 @@ export const CustomerDetailPage = ({
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -329,6 +337,54 @@ export const CustomerDetailPage = ({
                 <p className="text-xl font-bold text-slate-800">${pendingPayments.toLocaleString()}</p>
               </div>
               <DollarSign className="w-8 h-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue Breakdown Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Draft Revenue</p>
+                <p className="text-lg font-bold text-slate-500">${draftRevenue.toLocaleString()}</p>
+              </div>
+              <FileText className="w-6 h-6 text-slate-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Sent Revenue</p>
+                <p className="text-lg font-bold text-blue-600">${sentRevenue.toLocaleString()}</p>
+              </div>
+              <FileText className="w-6 h-6 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Paid Revenue</p>
+                <p className="text-lg font-bold text-green-600">${paidRevenue.toLocaleString()}</p>
+              </div>
+              <FileText className="w-6 h-6 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Overdue Revenue</p>
+                <p className="text-lg font-bold text-red-600">${overdueRevenue.toLocaleString()}</p>
+              </div>
+              <FileText className="w-6 h-6 text-red-600" />
             </div>
           </CardContent>
         </Card>
