@@ -26,6 +26,7 @@ import { useConsignments } from '../hooks/useConsignments';
 import { useCustomerCommunications } from '../hooks/useCustomerCommunications';
 import { usePayments } from '../hooks/usePayments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
+import { useCreditNotes } from '../hooks/useCreditNotes';
 import { CustomerCommunications } from './CustomerCommunications';
 
 interface CustomerDetailPageProps {
@@ -46,12 +47,14 @@ export const CustomerDetailPage = ({
   const { communications } = useCustomerCommunications(customer.id);
   const { payments } = usePayments();
   const { payments: invoicePayments } = useInvoicePayments();
+  const { creditNotes } = useCreditNotes();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Filter data for this customer
   const customerInvoices = invoices.filter(inv => inv.customerId === customer.id);
   const customerConsignments = consignments.filter(cons => cons.customerId === customer.id);
   const customerCommunications = communications.filter(comm => comm.customerId === customer.id);
+  const customerCreditNotes = creditNotes.filter(note => note.customerId === customer.id);
   
   // Get customer invoice IDs for payment filtering
   const customerInvoiceIds = customerInvoices.map(inv => inv.id);
@@ -72,6 +75,8 @@ export const CustomerDetailPage = ({
   const totalConsignments = customerConsignments.length;
   const totalPayments = customerDirectPayments.length + customerInvoicePayments.length;
   const totalRevenue = customerInvoices.reduce((sum, inv) => sum + inv.total, 0);
+  const totalCreditNotes = customerCreditNotes.length;
+  const totalCreditAmount = customerCreditNotes.reduce((sum, note) => sum + note.amount, 0);
   
   // Calculate total payments amount from both legitimate sources only
   const totalDirectPaymentsAmount = customerDirectPayments
@@ -260,7 +265,7 @@ export const CustomerDetailPage = ({
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -302,6 +307,17 @@ export const CustomerDetailPage = ({
                 <p className="text-xl font-bold text-slate-800">${totalPaymentsAmount.toLocaleString()}</p>
               </div>
               <CreditCard className="w-8 h-8 text-indigo-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Credit Notes</p>
+                <p className="text-xl font-bold text-slate-800">${totalCreditAmount.toLocaleString()}</p>
+              </div>
+              <FileText className="w-8 h-8 text-red-500" />
             </div>
           </CardContent>
         </Card>
@@ -351,6 +367,12 @@ export const CustomerDetailPage = ({
               className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
             >
               Communications
+            </TabsTrigger>
+            <TabsTrigger 
+              value="credit-notes" 
+              className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm hover:bg-slate-50"
+            >
+              Credit Notes ({totalCreditNotes})
             </TabsTrigger>
             <TabsTrigger 
               value="activity" 
@@ -552,6 +574,46 @@ export const CustomerDetailPage = ({
           <CustomerCommunications customer={customer} />
         </TabsContent>
 
+        <TabsContent value="credit-notes">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Credit Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {customerCreditNotes.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500">No credit notes found for this customer</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customerCreditNotes.map((creditNote) => (
+                    <div key={creditNote.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h4 className="font-medium">{creditNote.creditNoteNumber}</h4>
+                          <p className="text-sm text-slate-600">
+                            Date: {formatDate(creditNote.dateCreated)} | Reason: {creditNote.reason}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-red-600">${creditNote.amount.toLocaleString()}</p>
+                          <Badge className={getStatusColor(creditNote.status)}>{creditNote.status}</Badge>
+                        </div>
+                      </div>
+                      {creditNote.description && (
+                        <div className="text-sm text-slate-600">
+                          <p>Description: {creditNote.description}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="activity">
           <Card>
             <CardHeader>
@@ -560,7 +622,7 @@ export const CustomerDetailPage = ({
             <CardContent>
               <div className="space-y-4">
                 {/* Combined activity timeline */}
-                {[...customerInvoices, ...customerConsignments, ...customerCommunications, ...allCustomerPayments]
+                {[...customerInvoices, ...customerConsignments, ...customerCommunications, ...allCustomerPayments, ...customerCreditNotes]
                   .sort((a, b) => new Date(getActivityDate(b)).getTime() - new Date(getActivityDate(a)).getTime())
                   .slice(0, 15)
                   .map((activity, index) => (
@@ -572,6 +634,8 @@ export const CustomerDetailPage = ({
                           <Receipt className="w-5 h-5 text-purple-500" />
                         ) : 'referenceNumber' in activity ? (
                           <CreditCard className="w-5 h-5 text-indigo-500" />
+                        ) : 'creditNoteNumber' in activity ? (
+                          <FileText className="w-5 h-5 text-red-500" />
                         ) : (
                           <MessageCircle className="w-5 h-5 text-green-500" />
                         )}
@@ -582,6 +646,7 @@ export const CustomerDetailPage = ({
                             {'invoiceNumber' in activity ? `Invoice ${activity.invoiceNumber}` :
                              'consignmentNumber' in activity ? `Consignment ${activity.consignmentNumber}` :
                              'referenceNumber' in activity ? `Payment ${activity.referenceNumber}` :
+                             'creditNoteNumber' in activity ? `Credit Note ${activity.creditNoteNumber}` :
                              `${activity.communicationType} Communication`}
                           </p>
                           <span className="text-xs text-slate-500">
