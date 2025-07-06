@@ -266,13 +266,16 @@ export const TransactionDashboard = () => {
   });
 
   // Summary calculations
-  const totalInvoices = invoices.length;
-  const totalConsignments = consignments.length;
+  const allInvoices = customerFilter === 'all' ? invoices : invoices.filter(inv => inv.customerId === customerFilter);
+  const allConsignments = customerFilter === 'all' ? consignments : consignments.filter(cons => cons.customerId === customerFilter);
+  
+  const totalInvoices = allInvoices.length;
+  const totalConsignments = allConsignments.length;
   
   // Filter out cancelled invoices for revenue calculations
-  const activeInvoices = invoices.filter(inv => inv.status !== 'cancelled');
+  const activeInvoices = allInvoices.filter(inv => inv.status !== 'cancelled');
   const totalInvoiceValue = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
-  const totalPaidValue = invoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
+  const totalPaidValue = allInvoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
   const totalOutstanding = totalInvoiceValue - totalPaidValue;
 
   // Customer-specific calculations when customer filter is applied

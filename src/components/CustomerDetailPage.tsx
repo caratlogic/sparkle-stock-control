@@ -342,8 +342,13 @@ export const CustomerDetailPage = ({
         </Card>
       </div>
 
-      {/* Revenue Breakdown Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Revenue Breakdown Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-slate-800">Revenue Breakdown</h3>
+          <div className="flex-1 h-px bg-slate-200"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -388,6 +393,7 @@ export const CustomerDetailPage = ({
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Detailed Tabs */}
