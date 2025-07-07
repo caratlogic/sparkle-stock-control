@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,13 +21,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Invoice } from '../types/customer';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
-
 export const TransactionDashboard = () => {
-  const { invoices, loading: invoicesLoading, updateInvoiceStatus } = useInvoices();
-  const { consignments, loading: consignmentsLoading, updateConsignmentStatus, deleteConsignment } = useConsignments();
-  const { addPayment, getTotalPaidAmount, fetchPayments } = useInvoicePayments();
-  const { customers } = useCustomers();
-  const { toast } = useToast();
+  const {
+    invoices,
+    loading: invoicesLoading,
+    updateInvoiceStatus
+  } = useInvoices();
+  const {
+    consignments,
+    loading: consignmentsLoading,
+    updateConsignmentStatus,
+    deleteConsignment
+  } = useConsignments();
+  const {
+    addPayment,
+    getTotalPaidAmount,
+    fetchPayments
+  } = useInvoicePayments();
+  const {
+    customers
+  } = useCustomers();
+  const {
+    toast
+  } = useToast();
   const [activeTab, setActiveTab] = useState<'invoices' | 'consignments'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -44,111 +59,110 @@ export const TransactionDashboard = () => {
   const [invoiceSortDirection, setInvoiceSortDirection] = useState<'asc' | 'desc'>('asc');
   const [consignmentSortColumn, setConsignmentSortColumn] = useState<string>('');
   const [consignmentSortDirection, setConsignmentSortDirection] = useState<'asc' | 'desc'>('asc');
-
   useEffect(() => {
     fetchPayments();
   }, []);
-
   const getCustomerName = (customerId: string) => {
     const customer = customers.find(c => c.id === customerId);
     return customer ? customer.name : 'Unknown Customer';
   };
-
   const getInvoicePaymentStatus = (invoice: Invoice) => {
     const totalPaid = getTotalPaidAmount(invoice.id);
-    if (totalPaid === 0) return { status: 'Unpaid', variant: 'destructive' as const };
-    if (totalPaid >= invoice.total) return { status: 'Paid', variant: 'default' as const };
-    return { status: 'Partial', variant: 'secondary' as const };
+    if (totalPaid === 0) return {
+      status: 'Unpaid',
+      variant: 'destructive' as const
+    };
+    if (totalPaid >= invoice.total) return {
+      status: 'Paid',
+      variant: 'default' as const
+    };
+    return {
+      status: 'Partial',
+      variant: 'secondary' as const
+    };
   };
-
   const handleAddPayment = async (payment: any) => {
     const result = await addPayment(payment);
     if (result.success) {
       await fetchPayments();
       toast({
         title: "Success",
-        description: "Payment recorded successfully",
+        description: "Payment recorded successfully"
       });
     } else {
       toast({
         title: "Error",
         description: result.error || "Failed to record payment",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
     return result;
   };
-
   const handleDownloadInvoice = (invoice: Invoice) => {
     try {
       generateInvoicePDF(invoice);
       toast({
         title: "Success",
-        description: "Invoice downloaded successfully",
+        description: "Invoice downloaded successfully"
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to download invoice",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleDownloadConsignment = (consignment: any) => {
     try {
       generateConsignmentPDF(consignment);
       toast({
         title: "Success",
-        description: "Consignment downloaded successfully",
+        description: "Consignment downloaded successfully"
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to download consignment",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleConsignmentToInvoice = async (consignmentId: string) => {
     setSelectedConsignmentForInvoice(consignmentId);
   };
-
   const handleDeleteConsignment = async (consignmentId: string) => {
     if (window.confirm('Are you sure you want to delete this consignment? This will adjust the gem quantities back to In Stock.')) {
       const result = await deleteConsignment(consignmentId);
       if (result.success) {
         toast({
           title: "Success",
-          description: "Consignment deleted successfully",
+          description: "Consignment deleted successfully"
         });
       } else {
         toast({
           title: "Error",
           description: result.error || "Failed to delete consignment",
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     }
   };
-
   const handleUpdateInvoiceStatus = async (invoiceId: string, newStatus: string) => {
     const result = await updateInvoiceStatus(invoiceId, newStatus);
     if (result.success) {
       toast({
         title: "Success",
-        description: `Invoice status updated to ${newStatus}`,
+        description: `Invoice status updated to ${newStatus}`
       });
     } else {
       toast({
         title: "Error",
         description: result.error || "Failed to update invoice status",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleSort = (column: string, type: 'invoice' | 'consignment') => {
     if (type === 'invoice') {
       const direction = invoiceSortColumn === column && invoiceSortDirection === 'asc' ? 'desc' : 'asc';
@@ -160,34 +174,24 @@ export const TransactionDashboard = () => {
       setConsignmentSortDirection(direction);
     }
   };
-
   const getSortIcon = (column: string, type: 'invoice' | 'consignment') => {
     const sortColumn = type === 'invoice' ? invoiceSortColumn : consignmentSortColumn;
     const sortDirection = type === 'invoice' ? invoiceSortDirection : consignmentSortDirection;
-    
     if (sortColumn !== column) return <ArrowUpDown className="w-4 h-4" />;
     return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
   };
-
   const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = 
-      invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getCustomerName(invoice.customerId).toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) || getCustomerName(invoice.customerId).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCustomer = customerFilter === 'all' || invoice.customerId === customerFilter;
-    
     let matchesStatus = true;
     if (statusFilter !== 'all') {
       const paymentStatus = getInvoicePaymentStatus(invoice);
       matchesStatus = paymentStatus.status.toLowerCase() === statusFilter.toLowerCase();
     }
-    
     return matchesSearch && matchesCustomer && matchesStatus;
   }).sort((a, b) => {
     if (!invoiceSortColumn) return 0;
-    
     let aValue: any, bValue: any;
-    
     switch (invoiceSortColumn) {
       case 'invoiceNumber':
         aValue = a.invoiceNumber;
@@ -216,25 +220,17 @@ export const TransactionDashboard = () => {
       default:
         return 0;
     }
-    
     if (aValue < bValue) return invoiceSortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return invoiceSortDirection === 'asc' ? 1 : -1;
     return 0;
   });
-
   const filteredConsignments = consignments.filter(consignment => {
-    const matchesSearch = 
-      consignment.consignmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getCustomerName(consignment.customerId).toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = consignment.consignmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) || getCustomerName(consignment.customerId).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCustomer = customerFilter === 'all' || consignment.customerId === customerFilter;
-    
     return matchesSearch && matchesCustomer;
   }).sort((a, b) => {
     if (!consignmentSortColumn) return 0;
-    
     let aValue: any, bValue: any;
-    
     switch (consignmentSortColumn) {
       case 'consignmentNumber':
         aValue = a.consignmentNumber;
@@ -259,7 +255,6 @@ export const TransactionDashboard = () => {
       default:
         return 0;
     }
-    
     if (aValue < bValue) return consignmentSortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return consignmentSortDirection === 'asc' ? 1 : -1;
     return 0;
@@ -268,10 +263,9 @@ export const TransactionDashboard = () => {
   // Summary calculations
   const allInvoices = customerFilter === 'all' ? invoices : invoices.filter(inv => inv.customerId === customerFilter);
   const allConsignments = customerFilter === 'all' ? consignments : consignments.filter(cons => cons.customerId === customerFilter);
-  
   const totalInvoices = allInvoices.length;
   const totalConsignments = allConsignments.length;
-  
+
   // Filter out cancelled invoices for revenue calculations
   const activeInvoices = allInvoices.filter(inv => inv.status !== 'cancelled');
   const totalInvoiceValue = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
@@ -288,43 +282,25 @@ export const TransactionDashboard = () => {
 
   // If viewing invoice details, show the detail view
   if (selectedInvoiceForView) {
-    return (
-      <InvoiceDetailView 
-        invoice={selectedInvoiceForView} 
-        onBack={() => setSelectedInvoiceForView(null)} 
-      />
-    );
+    return <InvoiceDetailView invoice={selectedInvoiceForView} onBack={() => setSelectedInvoiceForView(null)} />;
   }
 
   // If viewing consignment details, show the detail view
   if (selectedConsignmentForView) {
-    return (
-      <ConsignmentDetailView 
-        consignment={selectedConsignmentForView} 
-        onBack={() => setSelectedConsignmentForView(null)} 
-      />
-    );
+    return <ConsignmentDetailView consignment={selectedConsignmentForView} onBack={() => setSelectedConsignmentForView(null)} />;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-slate-800">Transaction Dashboard</h2>
           <p className="text-slate-600">Manage invoices, consignments, and payments</p>
         </div>
         <div className="flex gap-3">
-          <Button
-            onClick={() => setShowInvoiceCreation(true)}
-            className="bg-diamond-gradient hover:opacity-90"
-          >
+          <Button onClick={() => setShowInvoiceCreation(true)} className="bg-diamond-gradient hover:opacity-90">
             <Plus className="w-4 h-4 mr-2" />
             Create Invoice
           </Button>
-          <Button
-            onClick={() => setShowConsignmentCreation(true)}
-            variant="outline"
-          >
+          <Button onClick={() => setShowConsignmentCreation(true)} variant="outline">
             <Plus className="w-4 h-4 mr-2" />
             Create Consignment
           </Button>
@@ -379,11 +355,10 @@ export const TransactionDashboard = () => {
       </div>
 
       {/* Revenue Breakdown Cards (shown when customer is selected) */}
-      {customerFilter !== 'all' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {customerFilter !== 'all' && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Draft Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">Draft Invoice Amount</CardTitle>
               <FileText className="h-4 w-4 text-slate-500" />
             </CardHeader>
             <CardContent>
@@ -393,7 +368,7 @@ export const TransactionDashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Sent Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">Sent Invoice Amount</CardTitle>
               <FileText className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
@@ -403,7 +378,7 @@ export const TransactionDashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Paid Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">Paid Invoice Amount</CardTitle>
               <FileText className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
@@ -413,31 +388,22 @@ export const TransactionDashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Overdue Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600">Overdue Invoice Amount</CardTitle>
               <FileText className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
               <div className="text-xl font-bold text-red-600">${customerOverdueRevenue.toLocaleString()}</div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        </div>}
 
       {/* Tabs */}
       <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg w-fit">
-        <Button
-          variant={activeTab === 'invoices' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('invoices')}
-          size="sm"
-        >
+        <Button variant={activeTab === 'invoices' ? 'default' : 'ghost'} onClick={() => setActiveTab('invoices')} size="sm">
           <FileText className="w-4 h-4 mr-2" />
           Invoices
         </Button>
-        <Button
-          variant={activeTab === 'consignments' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('consignments')}
-          size="sm"
-        >
+        <Button variant={activeTab === 'consignments' ? 'default' : 'ghost'} onClick={() => setActiveTab('consignments')} size="sm">
           <Package className="w-4 h-4 mr-2" />
           Consignments
         </Button>
@@ -448,24 +414,13 @@ export const TransactionDashboard = () => {
         <div className="flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <Input
-              placeholder="Search by number or customer name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+            <Input placeholder="Search by number or customer name..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
           </div>
         </div>
         
-        <CustomerFilter
-          customers={customers}
-          value={customerFilter}
-          onValueChange={setCustomerFilter}
-          placeholder="Filter by Customer"
-        />
+        <CustomerFilter customers={customers} value={customerFilter} onValueChange={setCustomerFilter} placeholder="Filter by Customer" />
         
-        {activeTab === 'invoices' && (
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+        {activeTab === 'invoices' && <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -475,8 +430,7 @@ export const TransactionDashboard = () => {
               <SelectItem value="unpaid">Unpaid</SelectItem>
               <SelectItem value="partial">Partial</SelectItem>
             </SelectContent>
-          </Select>
-        )}
+          </Select>}
       </div>
 
       {/* Content */}
@@ -487,60 +441,41 @@ export const TransactionDashboard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activeTab === 'invoices' ? (
-            <div className="overflow-x-auto">
+          {activeTab === 'invoices' ? <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50 border-b-2 border-slate-200">
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('invoiceNumber', 'invoice')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('invoiceNumber', 'invoice')}>
                       <div className="flex items-center gap-2">
                         Invoice #
                         {getSortIcon('invoiceNumber', 'invoice')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('customer', 'invoice')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('customer', 'invoice')}>
                       <div className="flex items-center gap-2">
                         Customer
                         {getSortIcon('customer', 'invoice')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('date', 'invoice')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('date', 'invoice')}>
                       <div className="flex items-center gap-2">
                         Date
                         {getSortIcon('date', 'invoice')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('total', 'invoice')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('total', 'invoice')}>
                       <div className="flex items-center gap-2">
                         Total
                         {getSortIcon('total', 'invoice')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('paid', 'invoice')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('paid', 'invoice')}>
                       <div className="flex items-center gap-2">
                         Paid
                         {getSortIcon('paid', 'invoice')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('outstanding', 'invoice')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('outstanding', 'invoice')}>
                       <div className="flex items-center gap-2">
                         Outstanding
                         {getSortIcon('outstanding', 'invoice')}
@@ -552,26 +487,19 @@ export const TransactionDashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoicesLoading ? (
-                    <TableRow>
+                  {invoicesLoading ? <TableRow>
                       <TableCell colSpan={9} className="text-center py-8">
                         Loading invoices...
                       </TableCell>
-                    </TableRow>
-                  ) : filteredInvoices.length === 0 ? (
-                    <TableRow>
+                    </TableRow> : filteredInvoices.length === 0 ? <TableRow>
                       <TableCell colSpan={9} className="text-center py-8 text-slate-500">
                         No invoices found
                       </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredInvoices.map((invoice) => {
-                      const paidAmount = getTotalPaidAmount(invoice.id);
-                      const outstanding = invoice.total - paidAmount;
-                      const paymentStatus = getInvoicePaymentStatus(invoice);
-                      
-                      return (
-                        <TableRow key={invoice.id}>
+                    </TableRow> : filteredInvoices.map(invoice => {
+                const paidAmount = getTotalPaidAmount(invoice.id);
+                const outstanding = invoice.total - paidAmount;
+                const paymentStatus = getInvoicePaymentStatus(invoice);
+                return <TableRow key={invoice.id}>
                           <TableCell className="font-medium">
                             {invoice.invoiceNumber}
                           </TableCell>
@@ -589,10 +517,7 @@ export const TransactionDashboard = () => {
                             ${outstanding.toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            <Select 
-                              value={invoice.status} 
-                              onValueChange={(newStatus) => handleUpdateInvoiceStatus(invoice.id, newStatus)}
-                            >
+                            <Select value={invoice.status} onValueChange={newStatus => handleUpdateInvoiceStatus(invoice.id, newStatus)}>
                               <SelectTrigger className="w-[120px]">
                                 <SelectValue>
                                   <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
@@ -616,97 +541,60 @@ export const TransactionDashboard = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => setSelectedInvoiceForView(invoice)}
-                                title="View Invoice Details"
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => setSelectedInvoiceForView(invoice)} title="View Invoice Details">
                                 <Eye className="w-4 h-4" />
                               </Button>
                               <Button variant="ghost" size="sm">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDownloadInvoice(invoice)}
-                                title="Download Invoice"
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => handleDownloadInvoice(invoice)} title="Download Invoice">
                                 <Download className="w-4 h-4" />
                               </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedInvoiceForCredit(invoice);
-                                  setShowCreditNoteDialog(true);
-                                }}
-                                title="Create Credit Note"
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => {
+                        setSelectedInvoiceForCredit(invoice);
+                        setShowCreditNoteDialog(true);
+                      }} title="Create Credit Note">
                                 <CreditCard className="w-4 h-4" />
                               </Button>
-                              <InvoicePaymentDialog
-                                invoice={{
-                                  ...invoice,
-                                  paidAmount: paidAmount
-                                }}
-                                onAddPayment={handleAddPayment}
-                              />
+                              <InvoicePaymentDialog invoice={{
+                        ...invoice,
+                        paidAmount: paidAmount
+                      }} onAddPayment={handleAddPayment} />
                             </div>
                           </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
+                        </TableRow>;
+              })}
                 </TableBody>
               </Table>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
+            </div> : <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50 border-b-2 border-slate-200">
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('consignmentNumber', 'consignment')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('consignmentNumber', 'consignment')}>
                       <div className="flex items-center gap-2">
                         Consignment #
                         {getSortIcon('consignmentNumber', 'consignment')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('customer', 'consignment')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('customer', 'consignment')}>
                       <div className="flex items-center gap-2">
                         Customer
                         {getSortIcon('customer', 'consignment')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('dateCreated', 'consignment')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('dateCreated', 'consignment')}>
                       <div className="flex items-center gap-2">
                         Date Created
                         {getSortIcon('dateCreated', 'consignment')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('returnDate', 'consignment')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('returnDate', 'consignment')}>
                       <div className="flex items-center gap-2">
                         Return Date
                         {getSortIcon('returnDate', 'consignment')}
                       </div>
                     </TableHead>
-                    <TableHead 
-                      className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4"
-                      onClick={() => handleSort('status', 'consignment')}
-                    >
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('status', 'consignment')}>
                       <div className="flex items-center gap-2">
                         Status
                         {getSortIcon('status', 'consignment')}
@@ -716,21 +604,15 @@ export const TransactionDashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {consignmentsLoading ? (
-                    <TableRow>
+                  {consignmentsLoading ? <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
                         Loading consignments...
                       </TableCell>
-                    </TableRow>
-                  ) : filteredConsignments.length === 0 ? (
-                    <TableRow>
+                    </TableRow> : filteredConsignments.length === 0 ? <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-slate-500">
                         No consignments found
                       </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredConsignments.map((consignment) => (
-                      <TableRow key={consignment.id}>
+                    </TableRow> : filteredConsignments.map(consignment => <TableRow key={consignment.id}>
                         <TableCell className="font-medium">
                           {consignment.consignmentNumber}
                         </TableCell>
@@ -748,115 +630,72 @@ export const TransactionDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => setSelectedConsignmentForView(consignment)}
-                              title="View Consignment Details"
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedConsignmentForView(consignment)} title="View Consignment Details">
                               <Eye className="w-4 h-4" />
                             </Button>
                             <Button variant="ghost" size="sm">
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleDownloadConsignment(consignment)}
-                              title="Download Consignment"
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => handleDownloadConsignment(consignment)} title="Download Consignment">
                               <Download className="w-4 h-4" />
                             </Button>
-                            {consignment.status === 'pending' && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleConsignmentToInvoice(consignment.id)}
-                                title="Convert to Invoice"
-                              >
+                            {consignment.status === 'pending' && <Button variant="ghost" size="sm" onClick={() => handleConsignmentToInvoice(consignment.id)} title="Convert to Invoice">
                                 <ShoppingCart className="w-4 h-4" />
-                              </Button>
-                            )}
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleDeleteConsignment(consignment.id)}
-                              title="Delete Consignment"
-                              className="text-red-600 hover:text-red-700"
-                            >
+                              </Button>}
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteConsignment(consignment.id)} title="Delete Consignment" className="text-red-600 hover:text-red-700">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                      </TableRow>)}
                 </TableBody>
               </Table>
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
 
-      {selectedConsignmentForInvoice && (
-        <ConsignmentToInvoiceDialog
-          consignmentId={selectedConsignmentForInvoice}
-          onClose={() => setSelectedConsignmentForInvoice(null)}
-          onSuccess={() => {
-            setSelectedConsignmentForInvoice(null);
-            toast({
-              title: "Success",
-              description: "Consignment converted to invoice successfully",
-            });
-          }}
-        />
-      )}
+      {selectedConsignmentForInvoice && <ConsignmentToInvoiceDialog consignmentId={selectedConsignmentForInvoice} onClose={() => setSelectedConsignmentForInvoice(null)} onSuccess={() => {
+      setSelectedConsignmentForInvoice(null);
+      toast({
+        title: "Success",
+        description: "Consignment converted to invoice successfully"
+      });
+    }} />}
 
       {/* Invoice Creation Dialog */}
-      {showInvoiceCreation && (
-        <Dialog open={showInvoiceCreation} onOpenChange={setShowInvoiceCreation}>
+      {showInvoiceCreation && <Dialog open={showInvoiceCreation} onOpenChange={setShowInvoiceCreation}>
           <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Invoice</DialogTitle>
             </DialogHeader>
-            <InvoiceCreation
-              onCancel={() => setShowInvoiceCreation(false)}
-              onSave={() => {
-                setShowInvoiceCreation(false);
-                toast({
-                  title: "Success",
-                  description: "Invoice created successfully",
-                });
-              }}
-            />
+            <InvoiceCreation onCancel={() => setShowInvoiceCreation(false)} onSave={() => {
+          setShowInvoiceCreation(false);
+          toast({
+            title: "Success",
+            description: "Invoice created successfully"
+          });
+        }} />
           </DialogContent>
-        </Dialog>
-      )}
+        </Dialog>}
 
       {/* Consignment Creation Dialog */}
-      {showConsignmentCreation && (
-        <Dialog open={showConsignmentCreation} onOpenChange={setShowConsignmentCreation}>
+      {showConsignmentCreation && <Dialog open={showConsignmentCreation} onOpenChange={setShowConsignmentCreation}>
           <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Consignment</DialogTitle>
             </DialogHeader>
-            <ConsignmentCreation
-              onCancel={() => setShowConsignmentCreation(false)}
-              onSave={() => {
-                setShowConsignmentCreation(false);
-                toast({
-                  title: "Success",
-                  description: "Consignment created successfully",
-                });
-              }}
-            />
+            <ConsignmentCreation onCancel={() => setShowConsignmentCreation(false)} onSave={() => {
+          setShowConsignmentCreation(false);
+          toast({
+            title: "Success",
+            description: "Consignment created successfully"
+          });
+        }} />
           </DialogContent>
-        </Dialog>
-      )}
+        </Dialog>}
 
       {/* Credit Note Dialog */}
-      {showCreditNoteDialog && selectedInvoiceForCredit && (
-        <Dialog open={showCreditNoteDialog} onOpenChange={setShowCreditNoteDialog}>
+      {showCreditNoteDialog && selectedInvoiceForCredit && <Dialog open={showCreditNoteDialog} onOpenChange={setShowCreditNoteDialog}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Create Credit Note</DialogTitle>
@@ -873,24 +712,19 @@ export const TransactionDashboard = () => {
                 <Button variant="outline" onClick={() => setShowCreditNoteDialog(false)}>
                   Cancel
                 </Button>
-                <Button 
-                  onClick={() => {
-                    toast({
-                      title: "Credit Note Created",
-                      description: `Credit note for invoice ${selectedInvoiceForCredit.invoiceNumber} has been created.`,
-                    });
-                    setShowCreditNoteDialog(false);
-                    setSelectedInvoiceForCredit(null);
-                  }}
-                  className="bg-diamond-gradient hover:opacity-90"
-                >
+                <Button onClick={() => {
+              toast({
+                title: "Credit Note Created",
+                description: `Credit note for invoice ${selectedInvoiceForCredit.invoiceNumber} has been created.`
+              });
+              setShowCreditNoteDialog(false);
+              setSelectedInvoiceForCredit(null);
+            }} className="bg-diamond-gradient hover:opacity-90">
                   Create Credit Note
                 </Button>
               </div>
             </div>
           </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
+        </Dialog>}
+    </div>;
 };
