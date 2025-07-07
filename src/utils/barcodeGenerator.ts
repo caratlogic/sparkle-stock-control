@@ -1,16 +1,31 @@
 
 import JsBarcode from 'jsbarcode';
 
-export const generateBarcode = (stockId: string, gemType?: string, color?: string, cut?: string): string => {
+export const generateBarcode = (
+  stockId: string, 
+  carat?: number, 
+  measurements?: string, 
+  certificates?: string,
+  colorComment?: string,
+  origin?: string,
+  treatment?: string
+): string => {
   // Create a canvas element
   const canvas = document.createElement('canvas');
   
-  // Create display text with additional gem information
-  let displayText = stockId;
-  if (gemType || color || cut) {
-    const additionalInfo = [gemType, color, cut].filter(Boolean).join(' ');
-    displayText = `${stockId} | ${additionalInfo}`;
-  }
+  // Create display text with gem information for barcode scanning
+  const barcodeData = {
+    stockId,
+    carat,
+    measurements,
+    certificates,
+    colorComment,
+    origin,
+    treatment: treatment === 'Heated' ? 'Heated' : 'Not Heated'
+  };
+  
+  // Convert to JSON string for barcode data
+  const displayText = JSON.stringify(barcodeData);
   
   // Generate barcode using CODE128 format
   JsBarcode(canvas, stockId, {
@@ -27,13 +42,21 @@ export const generateBarcode = (stockId: string, gemType?: string, color?: strin
   return canvas.toDataURL('image/png');
 };
 
-export const downloadBarcode = (stockId: string, gemType: string, color?: string, cut?: string) => {
-  const barcodeDataUrl = generateBarcode(stockId, gemType, color, cut);
+export const downloadBarcode = (
+  stockId: string, 
+  carat?: number, 
+  measurements?: string, 
+  certificates?: string,
+  colorComment?: string,
+  origin?: string,
+  treatment?: string
+) => {
+  const barcodeDataUrl = generateBarcode(stockId, carat, measurements, certificates, colorComment, origin, treatment);
   
   // Create a download link
   const link = document.createElement('a');
   link.href = barcodeDataUrl;
-  link.download = `barcode-${stockId}-${gemType}.png`;
+  link.download = `barcode-${stockId}.png`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

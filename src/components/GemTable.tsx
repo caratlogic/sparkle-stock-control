@@ -21,6 +21,7 @@ import {
 import { Gem } from '../types/gem';
 import { GemDetailView } from './GemDetailView';
 import { GemTransactionHistory } from './GemTransactionHistory';
+import { BarcodeDisplay } from './BarcodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
 
 interface GemTableProps {
@@ -46,6 +47,7 @@ export const GemTable = ({
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCut, setFilterCut] = useState('all');
   const [filterColor, setFilterColor] = useState('all');
+  const [filterTreatment, setFilterTreatment] = useState('all');
   const [caratRange, setCaratRange] = useState({ min: '', max: '' });
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
@@ -68,6 +70,7 @@ export const GemTable = ({
   const uniqueGemTypes = [...new Set(gems.map(gem => gem.gemType))].filter(type => type && type.trim() !== '').sort();
   const uniqueCuts = [...new Set(gems.map(gem => gem.cut))].filter(cut => cut && cut.trim() !== '').sort();
   const uniqueColors = [...new Set(gems.map(gem => gem.color))].filter(color => color && color.trim() !== '').sort();
+  const uniqueTreatments = [...new Set(gems.map(gem => gem.treatment))].filter(treatment => treatment && treatment.trim() !== '').sort();
 
   // Clear all filters
   const clearAllFilters = () => {
@@ -76,6 +79,7 @@ export const GemTable = ({
     setFilterStatus('all');
     setFilterCut('all');
     setFilterColor('all');
+    setFilterTreatment('all');
     setCaratRange({ min: '', max: '' });
     setPriceRange({ min: '', max: '' });
   };
@@ -95,6 +99,7 @@ export const GemTable = ({
       const matchesStatus = filterStatus === 'all' || gem.status === filterStatus;
       const matchesCut = filterCut === 'all' || gem.cut === filterCut;
       const matchesColor = filterColor === 'all' || gem.color === filterColor;
+      const matchesTreatment = filterTreatment === 'all' || gem.treatment === filterTreatment;
       
       const matchesCaratRange = (!caratRange.min || gem.carat >= parseFloat(caratRange.min)) &&
                                (!caratRange.max || gem.carat <= parseFloat(caratRange.max));
@@ -103,7 +108,7 @@ export const GemTable = ({
                                (!priceRange.max || gem.price <= parseFloat(priceRange.max));
       
       return matchesSearch && matchesGemType && matchesStatus && matchesCut && 
-             matchesColor && matchesCaratRange && matchesPriceRange;
+             matchesColor && matchesTreatment && matchesCaratRange && matchesPriceRange;
     })
     .sort((a, b) => {
       const aValue = a[sortField];
@@ -164,7 +169,7 @@ export const GemTable = ({
   };
 
   const hasActiveFilters = filterGemType !== 'all' || filterStatus !== 'all' || filterCut !== 'all' || 
-                          filterColor !== 'all' || caratRange.min || caratRange.max || 
+                          filterColor !== 'all' || filterTreatment !== 'all' || caratRange.min || caratRange.max || 
                           priceRange.min || priceRange.max || searchTerm;
 
   return (
@@ -261,6 +266,18 @@ export const GemTable = ({
                 <SelectItem value="Reserved">Reserved</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={filterTreatment} onValueChange={setFilterTreatment}>
+              <SelectTrigger className="w-[130px] bg-slate-50 border-slate-200">
+                <SelectValue placeholder="Treatment" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-slate-200">
+                <SelectItem value="all">All Treatments</SelectItem>
+                {uniqueTreatments.map(treatment => (
+                  <SelectItem key={treatment} value={treatment}>{treatment}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Filter Row 2 - Range Filters */}
@@ -343,16 +360,20 @@ export const GemTable = ({
                     <ArrowUpDown className="w-4 h-4" />
                   </div>
                 </th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Price/Carat</th>
                 {isOwner && (
-                  <th 
-                    className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
-                    onClick={() => handleSort('costPrice')}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Cost Price</span>
-                      <ArrowUpDown className="w-4 h-4" />
-                    </div>
-                  </th>
+                  <>
+                    <th 
+                      className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
+                      onClick={() => handleSort('costPrice')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Cost Price</span>
+                        <ArrowUpDown className="w-4 h-4" />
+                      </div>
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-600">Cost/Carat</th>
+                  </>
                 )}
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Treatment</th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Color Comment</th>
@@ -374,6 +395,7 @@ export const GemTable = ({
                   </div>
                 </th>
                 <th className="text-left py-3 px-4 font-medium text-slate-600">Actions</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-600">Barcode</th>
               </tr>
             </thead>
             <tbody>
@@ -420,10 +442,18 @@ export const GemTable = ({
                   <td className="py-4 px-4">
                     <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
                   </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">${(gem.price / gem.carat).toFixed(0)}/ct</div>
+                  </td>
                   {isOwner && (
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
-                    </td>
+                    <>
+                      <td className="py-4 px-4">
+                        <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm text-emerald-600">${(gem.costPrice / gem.carat).toFixed(0)}/ct</div>
+                      </td>
+                    </>
                   )}
                   <td className="py-4 px-4">
                     <div className="text-sm text-slate-600">{gem.treatment || ''}</div>
@@ -529,6 +559,19 @@ export const GemTable = ({
                         </Button>
                       )}
                     </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <BarcodeDisplay 
+                      stockId={gem.stockId}
+                      carat={gem.carat}
+                      measurements={gem.measurements || ''}
+                      certificates={`${gem.certificateNumber} ${gem.certificateType || ''}`.trim()}
+                      colorComment={gem.colorComment || ''}
+                      origin={gem.origin || ''}
+                      treatment={gem.treatment === 'H' ? 'Heated' : 'Not Heated'}
+                      size="small"
+                      showDownload={false}
+                    />
                   </td>
                 </tr>
               ))}

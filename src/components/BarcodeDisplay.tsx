@@ -6,18 +6,24 @@ import { generateBarcode, downloadBarcode } from '../utils/barcodeGenerator';
 
 interface BarcodeDisplayProps {
   stockId: string;
-  gemType: string;
-  color?: string;
-  cut?: string;
+  carat?: number;
+  measurements?: string;
+  certificates?: string;
+  colorComment?: string;
+  origin?: string;
+  treatment?: string;
   size?: 'small' | 'medium' | 'large';
   showDownload?: boolean;
 }
 
 export const BarcodeDisplay = ({ 
   stockId, 
-  gemType,
-  color,
-  cut,
+  carat,
+  measurements,
+  certificates,
+  colorComment,
+  origin,
+  treatment,
   size = 'medium', 
   showDownload = false 
 }: BarcodeDisplayProps) => {
@@ -25,7 +31,7 @@ export const BarcodeDisplay = ({
 
   useEffect(() => {
     if (canvasRef.current) {
-      const barcodeDataUrl = generateBarcode(stockId, gemType, color, cut);
+      const barcodeDataUrl = generateBarcode(stockId, carat, measurements, certificates, colorComment, origin, treatment);
       const img = new Image();
       img.onload = () => {
         const ctx = canvasRef.current?.getContext('2d');
@@ -38,10 +44,10 @@ export const BarcodeDisplay = ({
       };
       img.src = barcodeDataUrl;
     }
-  }, [stockId, gemType, color, cut, size]);
+  }, [stockId, carat, measurements, certificates, colorComment, origin, treatment, size]);
 
   const handleDownload = () => {
-    downloadBarcode(stockId, gemType, color, cut);
+    downloadBarcode(stockId, carat, measurements, certificates, colorComment, origin, treatment);
   };
 
   return (

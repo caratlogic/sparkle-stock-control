@@ -430,7 +430,12 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
               <CardContent className="flex justify-center">
                 <BarcodeDisplay 
                   stockId={gem.stockId} 
-                  gemType={gem.gemType}
+                  carat={gem.carat}
+                  measurements={gem.measurements || ''}
+                  certificates={`${gem.certificateNumber} ${gem.certificateType || ''}`.trim()}
+                  colorComment={gem.colorComment || ''}
+                  origin={gem.origin || ''}
+                  treatment={gem.treatment || ''}
                   size="medium"
                   showDownload={true}
                 />
