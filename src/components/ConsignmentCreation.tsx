@@ -57,7 +57,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     }
   }, [preselectedCustomer, preselectedGem]);
 
-  // Handle preselected gem
+  // Handle preselected gem - only add if gem is explicitly preselected
   useEffect(() => {
     if (preselectedGem && items.length === 0) {
       const newItem: InvoiceItem = {
@@ -79,7 +79,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
       };
       setItems([newItem]);
     }
-  }, [preselectedGem, items.length]);
+  }, [preselectedGem]);
 
   // Customer search results - use database customers
   const customerResults = customers.filter(customer =>

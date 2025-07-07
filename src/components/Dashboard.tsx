@@ -33,6 +33,8 @@ export const Dashboard = () => {
   const [selectedCustomerForComms, setSelectedCustomerForComms] = useState<Customer | null>(null);
   const [invoiceGem, setInvoiceGem] = useState<Gem | null>(null);
   const [consignmentGem, setConsignmentGem] = useState<Gem | null>(null);
+  const [invoiceCustomer, setInvoiceCustomer] = useState<Customer | null>(null);
+  const [consignmentCustomer, setConsignmentCustomer] = useState<Customer | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefreshAll = async () => {
@@ -259,9 +261,11 @@ export const Dashboard = () => {
         <TabsContent value="customers" className="space-y-6">
           <CustomerDashboard 
             onCreateInvoice={(customer) => {
+              setInvoiceCustomer(customer);
               setActiveTab('invoice-creation');
             }}
             onCreateConsignment={(customer) => {
+              setConsignmentCustomer(customer);
               setActiveTab('consignment-creation');
             }}
           />
@@ -296,12 +300,15 @@ export const Dashboard = () => {
         <TabsContent value="invoice-creation" className="space-y-6">
           <InvoiceCreation 
             preselectedGem={invoiceGem}
+            preselectedCustomer={invoiceCustomer}
             onCancel={() => {
               setInvoiceGem(null);
+              setInvoiceCustomer(null);
               setActiveTab('transactions');
             }}
             onSave={() => {
               setInvoiceGem(null);
+              setInvoiceCustomer(null);
               setActiveTab('transactions');
             }}
           />
@@ -310,12 +317,15 @@ export const Dashboard = () => {
         <TabsContent value="consignment-creation" className="space-y-6">
           <ConsignmentCreation 
             preselectedGem={consignmentGem}
+            preselectedCustomer={consignmentCustomer}
             onCancel={() => {
               setConsignmentGem(null);
+              setConsignmentCustomer(null);
               setActiveTab('transactions');
             }}
             onSave={() => {
               setConsignmentGem(null);
+              setConsignmentCustomer(null);
               setActiveTab('transactions');
             }}
           />

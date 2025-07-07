@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Customer } from '../../types/customer';
+import { useState, useEffect } from 'react';
 
 interface InvoiceSummaryProps {
   subtotal: number;
@@ -29,7 +31,15 @@ export const InvoiceSummary = ({
   const currencySymbol = currency === 'USD' ? '$' : '€';
   const exchangeRate = currency === 'EUR' ? 0.85 : 1; // Example exchange rate
   
-  const discountAmount = (subtotal * discount) / 100;
+  const [applyDiscount, setApplyDiscount] = useState(discount > 0);
+  const effectiveDiscount = applyDiscount ? discount : 0;
+  
+  // Update applyDiscount when discount changes
+  useEffect(() => {
+    setApplyDiscount(discount > 0);
+  }, [discount]);
+  
+  const discountAmount = (subtotal * effectiveDiscount) / 100;
   const afterDiscount = subtotal - discountAmount;
   const taxAmount = (afterDiscount * taxRate) / 100;
   const total = (afterDiscount + taxAmount) * exchangeRate;
@@ -46,7 +56,7 @@ export const InvoiceSummary = ({
             <span>{currencySymbol}{(subtotal * exchangeRate).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span>Discount ({discount}%):</span>
+            <span>Discount ({effectiveDiscount}%):</span>
             <span>-{currencySymbol}{(discountAmount * exchangeRate).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
@@ -77,19 +87,40 @@ export const InvoiceSummary = ({
         </div>
         
         <div>
-          <Label htmlFor="discount">Discount (%)</Label>
-          <Input
-            id="discount"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            value={discount}
-            onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-          />
-          <p className="text-xs text-slate-500 mt-1">
-            Adjust discount for this invoice (Customer default: {selectedCustomer?.discount || 0}%)
-          </p>
+          <div className="flex items-center space-x-2 mb-2">
+            <Checkbox 
+              id="apply-discount" 
+              checked={applyDiscount}
+              onCheckedChange={(checked) => setApplyDiscount(checked as boolean)}
+            />
+            <Label htmlFor="apply-discount" className="text-sm font-medium">
+              Apply Customer Discount
+            </Label>
+          </div>
+          
+          {applyDiscount && (
+            <>
+              <Label htmlFor="discount">Discount (%)</Label>
+              <Input
+                id="discount"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={discount}
+                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Customer default: {selectedCustomer?.discount || 0}%
+              </p>
+            </>
+          )}
+          
+          {!applyDiscount && (
+            <p className="text-xs text-slate-500">
+              Customer discount ({selectedCustomer?.discount || 0}%) not applied
+            </p>
+          )}
         </div>
         
         <div>

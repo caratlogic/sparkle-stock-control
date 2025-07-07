@@ -95,7 +95,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         });
       }
     }
-  }, [preselectedGem, selectedCustomer, customers, getConsignmentByGemId, items.length, setItems, setRelatedConsignmentId, setSelectedCustomer, setCustomerSearch]);
+  }, [preselectedGem, getConsignmentByGemId, customers]);
 
   // Customer search results - use database customers
   const customerResults = customers.filter(customer =>
