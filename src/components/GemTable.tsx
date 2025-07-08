@@ -1,10 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ColumnSelector, ColumnConfig } from '@/components/ui/column-selector';
 import { 
   Search, 
   Filter, 
@@ -55,6 +56,42 @@ export const GemTable = ({
   const [selectedGem, setSelectedGem] = useState<Gem | null>(null);
   const [transactionHistoryGem, setTransactionHistoryGem] = useState<Gem | null>(null);
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+
+  // Default column configuration
+  const defaultColumns: ColumnConfig[] = [
+    { key: 'image', label: 'Image', visible: true, order: 0 },
+    { key: 'stockId', label: 'Stock ID', visible: true, mandatory: true, order: 1 },
+    { key: 'gemType', label: 'Gem Type', visible: true, order: 2 },
+    { key: 'carat', label: 'Total Carat', visible: true, order: 3 },
+    { key: 'specifications', label: 'Specifications', visible: true, order: 4 },
+    { key: 'price', label: 'Selling Price', visible: true, order: 5 },
+    { key: 'pricePerCarat', label: 'Price/Carat', visible: true, order: 6 },
+    { key: 'costPrice', label: 'Cost Price', visible: isOwner, order: 7 },
+    { key: 'costPerCarat', label: 'Cost/Carat', visible: isOwner, order: 8 },
+    { key: 'treatment', label: 'Treatment', visible: false, order: 9 },
+    { key: 'colorComment', label: 'Color Comment', visible: false, order: 10 },
+    { key: 'certificateType', label: 'Certificate Type', visible: false, order: 11 },
+    { key: 'supplier', label: 'Supplier', visible: false, order: 12 },
+    { key: 'purchaseDate', label: 'Purchase Date', visible: false, order: 13 },
+    { key: 'origin', label: 'Origin', visible: false, order: 14 },
+    { key: 'inStock', label: 'In Stock', visible: true, order: 15 },
+    { key: 'reserved', label: 'Reserved', visible: true, order: 16 },
+    { key: 'sold', label: 'Sold', visible: true, order: 17 },
+    { key: 'status', label: 'Status', visible: true, order: 18 },
+    { key: 'dateAdded', label: 'Date Added', visible: true, order: 19 },
+    { key: 'actions', label: 'Actions', visible: true, mandatory: true, order: 20 },
+    { key: 'barcode', label: 'Barcode', visible: true, order: 21 },
+  ];
+
+  const [columns, setColumns] = useState<ColumnConfig[]>(defaultColumns);
+
+  // Get visible columns sorted by order
+  const visibleColumns = useMemo(() => 
+    columns
+      .filter(col => col.visible)
+      .sort((a, b) => a.order - b.order),
+    [columns]
+  );
 
   // If a gem is selected, show the detail view
   if (selectedGem) {
@@ -187,6 +224,11 @@ export const GemTable = ({
                 Add Gem
               </Button>
             )}
+            
+            <ColumnSelector
+              columns={columns}
+              onColumnsChange={setColumns}
+            />
             
             <Button variant="outline" onClick={exportToCSV}>
               <Download className="w-4 h-4 mr-2" />
@@ -330,249 +372,211 @@ export const GemTable = ({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Image</th>
-                <th 
-                  className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
-                  onClick={() => handleSort('stockId')}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>Stock ID</span>
-                    <ArrowUpDown className="w-4 h-4" />
-                  </div>
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Gem Type</th>
-                <th 
-                  className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
-                  onClick={() => handleSort('carat')}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>Total Carat</span>
-                    <ArrowUpDown className="w-4 h-4" />
-                  </div>
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Specifications</th>
-                <th 
-                  className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
-                  onClick={() => handleSort('price')}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>Selling Price</span>
-                    <ArrowUpDown className="w-4 h-4" />
-                  </div>
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Price/Carat</th>
-                {isOwner && (
-                  <>
-                    <th 
-                      className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
-                      onClick={() => handleSort('costPrice')}
-                    >
+                {visibleColumns.map((column) => (
+                  <th 
+                    key={column.key}
+                    className={`text-left py-3 px-4 font-medium text-slate-600 ${
+                      ['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key)
+                        ? 'cursor-pointer hover:text-slate-800 transition-colors'
+                        : ''
+                    }`}
+                    onClick={
+                      ['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key)
+                        ? () => handleSort(column.key as keyof Gem)
+                        : undefined
+                    }
+                  >
+                    {['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key) ? (
                       <div className="flex items-center space-x-1">
-                        <span>Cost Price</span>
+                        <span>{column.label}</span>
                         <ArrowUpDown className="w-4 h-4" />
                       </div>
-                    </th>
-                    <th className="text-left py-3 px-4 font-medium text-slate-600">Cost/Carat</th>
-                  </>
-                )}
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Treatment</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Color Comment</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Certificate Type</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Supplier</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Purchase Date</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Origin</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">In Stock</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Reserved</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Sold</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Status</th>
-                <th 
-                  className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:text-slate-800 transition-colors"
-                  onClick={() => handleSort('dateAdded')}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>Date Added</span>
-                    <ArrowUpDown className="w-4 h-4" />
-                  </div>
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Actions</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-600">Barcode</th>
+                    ) : (
+                      <span>{column.label}</span>
+                    )}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {filteredGems.map((gem) => (
                 <tr key={gem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-4">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center">
-                      {gem.imageUrl ? (
-                        <img 
-                          src={gem.imageUrl} 
-                          alt={gem.gemType}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400 text-xs">No Image</div>';
-                          }}
-                        />
-                      ) : (
-                        <div className="text-slate-400 text-xs">No Image</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <button
-                      onClick={() => setSelectedGem(gem)}
-                      className="font-medium text-slate-800 hover:text-blue-600 hover:underline transition-colors cursor-pointer"
-                    >
-                      {gem.stockId}
-                    </button>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="font-medium text-slate-800">{gem.gemType}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="font-medium text-slate-800">{gem.carat}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">
-                      <div>{gem.cut}</div>
-                      <div>{gem.color}</div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">${(gem.price / gem.carat).toFixed(0)}/ct</div>
-                  </td>
-                  {isOwner && (
-                    <>
-                      <td className="py-4 px-4">
-                        <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="text-sm text-emerald-600">${(gem.costPrice / gem.carat).toFixed(0)}/ct</div>
-                      </td>
-                    </>
-                  )}
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.treatment || ''}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.colorComment || ''}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.certificateType || ''}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.supplier || ''}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.purchaseDate || ''}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.origin || ''}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm font-medium text-emerald-600">{gem.inStock || 0}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <button
-                      onClick={() => {
-                        setTransactionHistoryGem(gem);
-                        setShowTransactionHistory(true);
-                      }}
-                      className="text-sm font-medium text-orange-600 hover:text-orange-800 hover:underline cursor-pointer"
-                    >
-                      {gem.reserved || 0}
-                    </button>
-                  </td>
-                  <td className="py-4 px-4">
-                    <button
-                      onClick={() => {
-                        setTransactionHistoryGem(gem);
-                        setShowTransactionHistory(true);
-                      }}
-                      className="text-sm font-medium text-red-600 hover:text-red-800 hover:underline cursor-pointer"
-                    >
-                      {gem.sold || 0}
-                    </button>
-                  </td>
-                  <td className="py-4 px-4">
-                    <Badge 
-                      variant={
-                        gem.status === 'In Stock' ? 'secondary' : 
-                        gem.status === 'Sold' ? 'destructive' : 
-                        gem.status === 'Reserved' ? 'default' : 'secondary'
+                  {visibleColumns.map((column) => {
+                    const renderCell = () => {
+                      switch (column.key) {
+                        case 'image':
+                          return (
+                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center">
+                              {gem.imageUrl ? (
+                                <img 
+                                  src={gem.imageUrl} 
+                                  alt={gem.gemType}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400 text-xs">No Image</div>';
+                                  }}
+                                />
+                              ) : (
+                                <div className="text-slate-400 text-xs">No Image</div>
+                              )}
+                            </div>
+                          );
+                        case 'stockId':
+                          return (
+                            <button
+                              onClick={() => setSelectedGem(gem)}
+                              className="font-medium text-slate-800 hover:text-blue-600 hover:underline transition-colors cursor-pointer"
+                            >
+                              {gem.stockId}
+                            </button>
+                          );
+                        case 'gemType':
+                          return <div className="font-medium text-slate-800">{gem.gemType}</div>;
+                        case 'carat':
+                          return <div className="font-medium text-slate-800">{gem.carat}ct</div>;
+                        case 'specifications':
+                          return (
+                            <div className="text-sm text-slate-600">
+                              <div>{gem.cut}</div>
+                              <div>{gem.color}</div>
+                            </div>
+                          );
+                        case 'price':
+                          return <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>;
+                        case 'pricePerCarat':
+                          return <div className="text-sm text-slate-600">${(gem.price / gem.carat).toFixed(0)}/ct</div>;
+                        case 'costPrice':
+                          return isOwner ? <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div> : null;
+                        case 'costPerCarat':
+                          return isOwner ? <div className="text-sm text-emerald-600">${(gem.costPrice / gem.carat).toFixed(0)}/ct</div> : null;
+                        case 'treatment':
+                          return <div className="text-sm text-slate-600">{gem.treatment || ''}</div>;
+                        case 'colorComment':
+                          return <div className="text-sm text-slate-600">{gem.colorComment || ''}</div>;
+                        case 'certificateType':
+                          return <div className="text-sm text-slate-600">{gem.certificateType || ''}</div>;
+                        case 'supplier':
+                          return <div className="text-sm text-slate-600">{gem.supplier || ''}</div>;
+                        case 'purchaseDate':
+                          return <div className="text-sm text-slate-600">{gem.purchaseDate || ''}</div>;
+                        case 'origin':
+                          return <div className="text-sm text-slate-600">{gem.origin || ''}</div>;
+                        case 'inStock':
+                          return <div className="text-sm font-medium text-emerald-600">{gem.inStock || 0}</div>;
+                        case 'reserved':
+                          return (
+                            <button
+                              onClick={() => {
+                                setTransactionHistoryGem(gem);
+                                setShowTransactionHistory(true);
+                              }}
+                              className="text-sm font-medium text-orange-600 hover:text-orange-800 hover:underline cursor-pointer"
+                            >
+                              {gem.reserved || 0}
+                            </button>
+                          );
+                        case 'sold':
+                          return (
+                            <button
+                              onClick={() => {
+                                setTransactionHistoryGem(gem);
+                                setShowTransactionHistory(true);
+                              }}
+                              className="text-sm font-medium text-red-600 hover:text-red-800 hover:underline cursor-pointer"
+                            >
+                              {gem.sold || 0}
+                            </button>
+                          );
+                        case 'status':
+                          return (
+                            <Badge 
+                              variant={
+                                gem.status === 'In Stock' ? 'secondary' : 
+                                gem.status === 'Sold' ? 'destructive' : 
+                                gem.status === 'Reserved' ? 'default' : 'secondary'
+                              }
+                            >
+                              {gem.status}
+                            </Badge>
+                          );
+                        case 'dateAdded':
+                          return <div className="text-sm text-slate-600">{gem.dateAdded}</div>;
+                        case 'actions':
+                          return (
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedGem(gem)}
+                                title="View Details"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onEdit(gem)}
+                                title="Edit Gem"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onDelete(gem.id)}
+                                title="Delete Gem"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                              </Button>
+                              {gem.status === 'In Stock' && onCreateInvoice && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onCreateInvoice(gem)}
+                                  title="Create Invoice"
+                                >
+                                  <FileText className="w-4 h-4 text-blue-500" />
+                                </Button>
+                              )}
+                              {gem.status === 'In Stock' && onCreateConsignment && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onCreateConsignment(gem)}
+                                  title="Create Consignment"
+                                >
+                                  <Handshake className="w-4 h-4 text-green-500" />
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        case 'barcode':
+                          return (
+                            <BarcodeDisplay 
+                              stockId={gem.stockId}
+                              carat={gem.carat}
+                              measurements={gem.measurements || ''}
+                              certificates={`${gem.certificateNumber} ${gem.certificateType || ''}`.trim()}
+                              colorComment={gem.colorComment || ''}
+                              origin={gem.origin || ''}
+                              treatment={gem.treatment === 'H' ? 'Heated' : 'Not Heated'}
+                              size="small"
+                              showDownload={false}
+                            />
+                          );
+                        default:
+                          return null;
                       }
-                    >
-                      {gem.status}
-                    </Badge>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="text-sm text-slate-600">{gem.dateAdded}</div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedGem(gem)}
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit(gem)}
-                        title="Edit Gem"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(gem.id)}
-                        title="Delete Gem"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                      {gem.status === 'In Stock' && onCreateInvoice && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onCreateInvoice(gem)}
-                          title="Create Invoice"
-                        >
-                          <FileText className="w-4 h-4 text-blue-500" />
-                        </Button>
-                      )}
-                      {gem.status === 'In Stock' && onCreateConsignment && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onCreateConsignment(gem)}
-                          title="Create Consignment"
-                        >
-                          <Handshake className="w-4 h-4 text-green-500" />
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <BarcodeDisplay 
-                      stockId={gem.stockId}
-                      carat={gem.carat}
-                      measurements={gem.measurements || ''}
-                      certificates={`${gem.certificateNumber} ${gem.certificateType || ''}`.trim()}
-                      colorComment={gem.colorComment || ''}
-                      origin={gem.origin || ''}
-                      treatment={gem.treatment === 'H' ? 'Heated' : 'Not Heated'}
-                      size="small"
-                      showDownload={false}
-                    />
-                  </td>
+                    };
+
+                    return (
+                      <td key={column.key} className="py-4 px-4">
+                        {renderCell()}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

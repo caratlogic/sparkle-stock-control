@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Package, User, Calendar } from 'lucide-react';
+import { ArrowLeft, Package, User, Calendar, Printer } from 'lucide-react';
 
 interface ConsignmentItem {
   id: string;
@@ -60,17 +60,27 @@ interface ConsignmentDetailViewProps {
 
 export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetailViewProps) => {
   const totalValue = consignment.items.reduce((sum, item) => sum + item.totalPrice, 0);
+  
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Transactions
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Transactions
+          </Button>
+          <h1 className="text-2xl font-bold text-slate-800">
+            Consignment Details - {consignment.consignmentNumber}
+          </h1>
+        </div>
+        <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700">
+          <Printer className="w-4 h-4 mr-2" />
+          Print Consignment
         </Button>
-        <h1 className="text-2xl font-bold text-slate-800">
-          Consignment Details - {consignment.consignmentNumber}
-        </h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -183,7 +193,8 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
                       <div className="text-sm">
                         {item.productDetails && (
                           <>
-                            <div>{item.productDetails.carat}ct {item.productDetails.cut}</div>
+                            <div><strong>Total:</strong> {item.productDetails.carat}ct {item.productDetails.cut}</div>
+                            <div><strong>Consigned:</strong> {(item as any).caratConsigned || 0}ct</div>
                             <div>{item.productDetails.color}</div>
                             <div>Cert: {item.productDetails.certificateNumber}</div>
                             {item.productDetails.measurements && (

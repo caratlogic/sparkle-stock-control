@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, FileText, User, Calendar, DollarSign } from 'lucide-react';
+import { ArrowLeft, FileText, User, Calendar, DollarSign, Printer } from 'lucide-react';
 import { Invoice } from '../types/customer';
 
 interface InvoiceDetailViewProps {
@@ -11,16 +11,26 @@ interface InvoiceDetailViewProps {
 }
 
 export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) => {
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Transactions
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Transactions
+          </Button>
+          <h1 className="text-2xl font-bold text-slate-800">
+            Invoice Details - {invoice.invoiceNumber}
+          </h1>
+        </div>
+        <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700">
+          <Printer className="w-4 h-4 mr-2" />
+          Print Invoice
         </Button>
-        <h1 className="text-2xl font-bold text-slate-800">
-          Invoice Details - {invoice.invoiceNumber}
-        </h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
