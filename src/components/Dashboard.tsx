@@ -163,7 +163,7 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="w-full min-h-screen space-y-6 animate-fade-in px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Diamond Business Dashboard</h1>

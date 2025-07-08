@@ -272,6 +272,24 @@ export const TransactionDashboard = () => {
   const totalPaidValue = allInvoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
   const totalOutstanding = totalInvoiceValue - totalPaidValue;
 
+  // Calculate overdue payments (more than 1 week old with no payment)
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  
+  const overdueInvoices = allInvoices.filter(inv => {
+    const totalPaid = getTotalPaidAmount(inv.id);
+    const invoiceDate = new Date(inv.dateCreated);
+    return totalPaid === 0 && invoiceDate < oneWeekAgo && inv.status !== 'cancelled';
+  });
+  const overduePaymentAmount = overdueInvoices.reduce((sum, inv) => sum + inv.total, 0);
+
+  // Calculate overdue consignments (past return date)
+  const today = new Date();
+  const overdueConsignments = allConsignments.filter(cons => {
+    const returnDate = new Date(cons.returnDate);
+    return returnDate < today && cons.status === 'pending';
+  });
+
   // Customer-specific calculations when customer filter is applied
   const customerSpecificInvoices = customerFilter === 'all' ? activeInvoices : activeInvoices.filter(inv => inv.customerId === customerFilter);
   const customerDraftRevenue = customerSpecificInvoices.filter(inv => inv.status === 'draft').reduce((sum, inv) => sum + inv.total, 0);
@@ -289,7 +307,7 @@ export const TransactionDashboard = () => {
   if (selectedConsignmentForView) {
     return <ConsignmentDetailView consignment={selectedConsignmentForView} onBack={() => setSelectedConsignmentForView(null)} />;
   }
-  return <div className="space-y-6">
+  return <div className="w-full space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-slate-800">Transaction Dashboard</h2>
@@ -308,7 +326,7 @@ export const TransactionDashboard = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-slate-600 text-xl font-extrabold">
@@ -350,6 +368,28 @@ export const TransactionDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">${totalOutstanding.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Overdue Payment</CardTitle>
+            <Calendar className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">${overduePaymentAmount.toLocaleString()}</div>
+            <p className="text-xs text-slate-600 mt-1">{overdueInvoices.length} invoice(s)</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Consignments Overdue</CardTitle>
+            <Package className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">{overdueConsignments.length}</div>
+            <p className="text-xs text-slate-600 mt-1">Not returned</p>
           </CardContent>
         </Card>
       </div>
