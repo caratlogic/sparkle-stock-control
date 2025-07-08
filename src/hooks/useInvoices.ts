@@ -58,7 +58,7 @@ export const useInvoices = () => {
           productType: (item.gems?.gem_type?.toLowerCase() || 'diamond') as 'diamond' | 'emerald' | 'ruby' | 'sapphire' | 'amethyst' | 'aquamarine' | 'garnet' | 'opal' | 'topaz' | 'tourmaline',
           productDetails: {
             stockId: item.gems?.stock_id || '',
-            carat: parseFloat(item.gems?.carat?.toString() || '0'),
+            totalCarat: parseFloat(item.gems?.carat?.toString() || '0'),
             cut: item.gems?.cut || '',
             color: item.gems?.color || '',
             description: item.gems?.description || item.gems?.notes || 'No description available',
@@ -67,7 +67,8 @@ export const useInvoices = () => {
             gemType: item.gems?.gem_type
           },
           quantity: item.quantity,
-          unitPrice: parseFloat(item.unit_price?.toString() || '0'),
+          caratPurchased: parseFloat(item.carat_purchased?.toString() || '0'),
+          pricePerCarat: parseFloat(item.unit_price?.toString() || '0'),
           totalPrice: parseFloat(item.total_price?.toString() || '0')
         })),
         subtotal: parseFloat(invoice.subtotal?.toString() || '0'),
@@ -125,6 +126,7 @@ export const useInvoices = () => {
           invoice_id: invoiceResult.id,
           gem_id: item.gemId,
           quantity: item.quantity,
+          carat_purchased: item.caratPurchased,
           unit_price: item.unitPrice,
           total_price: item.totalPrice
         }));

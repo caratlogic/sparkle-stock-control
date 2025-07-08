@@ -21,7 +21,7 @@ export const useConsignmentActions = () => {
           consignmentNumber: consignment.consignmentNumber,
           consignmentDetails: {
             items: consignment.items.map(item => ({
-              description: `${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} - ${item.productDetails.stockId}`,
+              description: `${item.caratConsigned}ct from ${item.productDetails.totalCarat}ct total ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} - ${item.productDetails.stockId}`,
               quantity: item.quantity,
               estimatedValue: item.totalPrice
             })),
@@ -60,7 +60,7 @@ export const useConsignmentActions = () => {
 
   const handleSaveConsignment = async (
     selectedCustomer: Customer | null,
-    items: InvoiceItem[],
+    items: ConsignmentItem[],
     returnDate: string,
     notes: string,
     onSave: (consignment: Consignment) => void
@@ -91,8 +91,9 @@ export const useConsignmentActions = () => {
               return {
                 gemId: dbGem.id,
                 quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                totalPrice: item.totalPrice
+                unitPrice: item.pricePerCarat,
+                totalPrice: item.totalPrice,
+                caratConsigned: item.caratPurchased
               };
             } else {
               console.error(`❌ ConsignmentCreation: No database gem found for stock ID ${item.productDetails.stockId}`);
@@ -103,8 +104,9 @@ export const useConsignmentActions = () => {
           return {
             gemId: item.productId,
             quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice
+            unitPrice: item.pricePerCarat,
+            totalPrice: item.totalPrice,
+            caratConsigned: item.caratPurchased
           };
         })
       };
@@ -138,7 +140,8 @@ export const useConsignmentActions = () => {
           id: `temp-${Date.now()}-${Math.random()}`,
           gemId: item.productId,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
+          caratConsigned: item.caratPurchased,
+          pricePerCarat: item.pricePerCarat,
           totalPrice: item.totalPrice,
           productDetails: item.productDetails
         }));

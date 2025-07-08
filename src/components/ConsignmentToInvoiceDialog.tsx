@@ -44,7 +44,7 @@ export const ConsignmentToInvoiceDialog = ({
         productType: (item.productDetails?.gemType?.toLowerCase() || 'diamond') as any,
         productDetails: {
           stockId: item.productDetails?.stockId || '',
-          carat: item.productDetails?.carat || 0,
+          totalCarat: item.productDetails?.totalCarat || 0,
           cut: item.productDetails?.cut || '',
           color: item.productDetails?.color || '',
           description: item.productDetails?.description || '',
@@ -53,7 +53,8 @@ export const ConsignmentToInvoiceDialog = ({
           gemType: item.productDetails?.gemType
         },
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
+        caratPurchased: item.caratConsigned,
+        pricePerCarat: item.pricePerCarat,
         totalPrice: item.totalPrice
       }));
 
@@ -140,7 +141,7 @@ export const ConsignmentToInvoiceDialog = ({
                       <div>
                         <p className="text-sm text-slate-600">Description</p>
                         <p className="font-semibold">
-                          {item.productDetails?.carat}ct {item.productDetails?.gemType} {item.productDetails?.cut}
+                          {item.caratConsigned}ct from {item.productDetails?.totalCarat}ct total {item.productDetails?.gemType} {item.productDetails?.cut}
                         </p>
                       </div>
                       <div>

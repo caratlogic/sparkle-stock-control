@@ -127,13 +127,13 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
                     </td>
                     <td className="py-4 px-4">
                       <div className="text-sm">
-                        <div>{item.productDetails.carat}ct {item.productDetails.cut}</div>
+                        <div>{item.caratPurchased}ct from {item.productDetails.totalCarat}ct total {item.productDetails.cut}</div>
                         <div>{item.productDetails.color}</div>
                         <div>Cert: {item.productDetails.certificateNumber}</div>
                       </div>
                     </td>
                     <td className="py-4 px-4">{item.quantity}</td>
-                    <td className="py-4 px-4">${item.unitPrice.toLocaleString()}</td>
+                    <td className="py-4 px-4">${item.pricePerCarat.toFixed(2)}/ct</td>
                     <td className="py-4 px-4 font-semibold">${item.totalPrice.toLocaleString()}</td>
                   </tr>
                 ))}

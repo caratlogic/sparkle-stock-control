@@ -36,11 +36,12 @@ interface ConsignmentItem {
   id: string;
   gemId: string;
   quantity: number;
-  unitPrice: number;
+  caratConsigned: number;
+  pricePerCarat: number;
   totalPrice: number;
   productDetails?: {
     stockId: string;
-    carat: number;
+    totalCarat: number;
     cut: string;
     color: string;
     description: string;
@@ -133,11 +134,12 @@ export const useConsignments = () => {
             id: item.id,
             gemId: item.gem_id,
             quantity: item.quantity,
-            unitPrice: parseFloat(item.unit_price?.toString() || '0'),
+            caratConsigned: parseFloat(item.carat_consigned?.toString() || '0'),
+            pricePerCarat: parseFloat(item.unit_price?.toString() || '0'),
             totalPrice: parseFloat(item.total_price?.toString() || '0'),
             productDetails: item.gems ? {
               stockId: item.gems.stock_id || '',
-              carat: parseFloat(item.gems.carat?.toString() || '0'),
+              totalCarat: parseFloat(item.gems.carat?.toString() || '0'),
               cut: item.gems.shape || '',
               color: item.gems.color || '',
               description: item.gems.description || '',
@@ -192,6 +194,7 @@ export const useConsignments = () => {
           consignment_id: consignmentResult.id,
           gem_id: item.gemId,
           quantity: item.quantity,
+          carat_consigned: item.caratConsigned,
           unit_price: item.unitPrice,
           total_price: item.totalPrice
         }));
