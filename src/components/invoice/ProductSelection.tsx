@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Trash2 } from 'lucide-react';
 import { Gem } from '../../types/gem';
 import { InvoiceItem } from '../../types/customer';
+import { useState } from 'react';
 
 interface ProductSelectionProps {
   productSearch: string;
@@ -20,7 +21,115 @@ interface ProductSelectionProps {
   onProductSelect: (product: Gem) => void;
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;
+  onUpdateItem?: (items: InvoiceItem[]) => void;
 }
+
+const InvoiceItemRow = ({ 
+  item, 
+  index, 
+  onRemoveItem, 
+  onUpdateItem 
+}: { 
+  item: InvoiceItem; 
+  index: number; 
+  onRemoveItem: (index: number) => void;
+  onUpdateItem: (updatedItem: InvoiceItem) => void;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editQuantity, setEditQuantity] = useState(item.quantity);
+  const [editCarat, setEditCarat] = useState(item.caratPurchased);
+
+  const handleSave = () => {
+    const updatedItem = {
+      ...item,
+      quantity: editQuantity,
+      caratPurchased: editCarat,
+      totalPrice: editCarat * item.pricePerCarat
+    };
+    onUpdateItem(updatedItem);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditQuantity(item.quantity);
+    setEditCarat(item.caratPurchased);
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+      <div className="flex-1">
+        <div className="font-medium">{item.productDetails.stockId}</div>
+        <div className="text-sm text-slate-600">
+          {item.caratPurchased}ct purchased from {item.productDetails.totalCarat}ct total | {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color}
+        </div>
+        <div className="text-sm text-slate-500 truncate max-w-md">
+          {item.productDetails.description}
+        </div>
+        <div className="text-xs text-slate-500">
+          Cert: {item.productDetails.certificateNumber} | Size: {item.productDetails.measurements}
+        </div>
+      </div>
+      
+      {isEditing ? (
+        <div className="flex items-center gap-2 mr-4">
+          <div className="text-xs">
+            <Input
+              type="number"
+              min="1"
+              value={editQuantity}
+              onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
+              className="w-16 h-8 text-xs"
+              placeholder="Qty"
+            />
+          </div>
+          <div className="text-xs">
+            <Input
+              type="number"
+              step="0.01"
+              min="0.01"
+              max={item.productDetails.totalCarat}
+              value={editCarat}
+              onChange={(e) => setEditCarat(parseFloat(e.target.value) || 0.01)}
+              className="w-20 h-8 text-xs"
+              placeholder="Carat"
+            />
+          </div>
+          <Button size="sm" onClick={handleSave} className="h-8 px-2 text-xs">
+            Save
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleCancel} className="h-8 px-2 text-xs">
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <div className="text-right mr-4">
+          <div className="font-medium">${item.totalPrice.toLocaleString()}</div>
+          <div className="text-sm text-slate-500">
+            {item.quantity} stones • {item.caratPurchased}ct @ ${item.pricePerCarat.toFixed(2)}/ct
+          </div>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => setIsEditing(true)}
+            className="text-xs mt-1 h-6 px-2"
+          >
+            Edit
+          </Button>
+        </div>
+      )}
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onRemoveItem(index)}
+        className="text-red-500 hover:text-red-700"
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+};
 
 export const ProductSelection = ({
   productSearch,
@@ -35,6 +144,7 @@ export const ProductSelection = ({
   onProductSelect,
   onAddItem,
   onRemoveItem,
+  onUpdateItem,
 }: ProductSelectionProps) => {
   return (
     <Card className="lg:col-span-3">
@@ -112,33 +222,19 @@ export const ProductSelection = ({
             <h3 className="font-semibold mb-4">Invoice Items</h3>
             <div className="space-y-3">
               {items.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium">{item.productDetails.stockId}</div>
-                    <div className="text-sm text-slate-600">
-                      {item.caratPurchased}ct purchased from {item.productDetails.totalCarat}ct total | {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color}
-                    </div>
-                    <div className="text-sm text-slate-500 truncate max-w-md">
-                      {item.productDetails.description}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      Cert: {item.productDetails.certificateNumber} | Size: {item.productDetails.measurements}
-                    </div>
-                  </div>
-                  <div className="text-right mr-4">
-                    <div className="font-medium">${item.totalPrice.toLocaleString()}</div>
-                    <div className="text-sm text-slate-500">
-                      {item.quantity} stones • {item.caratPurchased}ct @ ${item.pricePerCarat.toFixed(2)}/ct
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveItem(index)}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                </div>
+                <InvoiceItemRow 
+                  key={index} 
+                  item={item} 
+                  index={index} 
+                  onRemoveItem={onRemoveItem}
+                  onUpdateItem={(updatedItem) => {
+                    const newItems = [...items];
+                    newItems[index] = updatedItem;
+                    if (onUpdateItem) {
+                      onUpdateItem(newItems);
+                    }
+                  }}
+                />
               ))}
             </div>
           </div>

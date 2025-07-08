@@ -175,6 +175,18 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
           onProductSelect={handleProductSelect}
           onAddItem={handleAddItem}
           onRemoveItem={handleRemoveItem}
+          onUpdateItem={(updatedItems) => {
+            const updatedConsignmentItems = updatedItems.map(item => ({
+              id: `temp-${Date.now()}-${Math.random()}`,
+              gemId: item.productId,
+              quantity: item.quantity,
+              caratConsigned: item.caratPurchased,
+              pricePerCarat: item.pricePerCarat,
+              totalPrice: item.totalPrice,
+              productDetails: item.productDetails
+            }));
+            setItems(updatedConsignmentItems);
+          }}
         />
 
         <InvoiceNotes notes={notes} setNotes={setNotes} />

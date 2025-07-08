@@ -202,6 +202,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           onProductSelect={handleProductSelect}
           onAddItem={handleAddItem}
           onRemoveItem={handleRemoveItem}
+          onUpdateItem={setItems}
         />
 
         <InvoiceNotes notes={notes} setNotes={setNotes} />
