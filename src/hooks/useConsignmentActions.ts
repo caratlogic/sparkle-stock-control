@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Customer, Consignment, InvoiceItem } from '../types/customer';
+import { Customer, Consignment, ConsignmentItem, InvoiceItem } from '../types/customer';
 import { useConsignments } from './useConsignments';
 import { useGems } from './useGems';
 import { useCustomerCommunications } from './useCustomerCommunications';
@@ -81,32 +81,32 @@ export const useConsignmentActions = () => {
         notes,
         items: items.map(item => {
           // Check if this is a database gem (UUID format) or sample gem (numeric string)
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.gemId);
           
           if (!isUuid) {
             // This is a sample gem, try to find corresponding database gem by stock ID
-            const dbGem = gems.find(g => g.stockId === item.productDetails.stockId);
+            const dbGem = gems.find(g => g.stockId === item.productDetails?.stockId);
             if (dbGem) {
-              console.log(`🔄 ConsignmentCreation: Mapping sample gem ${item.productId} to database gem ${dbGem.id}`);
+              console.log(`🔄 ConsignmentCreation: Mapping sample gem ${item.gemId} to database gem ${dbGem.id}`);
               return {
                 gemId: dbGem.id,
                 quantity: item.quantity,
                 unitPrice: item.pricePerCarat,
                 totalPrice: item.totalPrice,
-                caratConsigned: item.caratPurchased
+                caratConsigned: item.caratConsigned
               };
             } else {
-              console.error(`❌ ConsignmentCreation: No database gem found for stock ID ${item.productDetails.stockId}`);
-              throw new Error(`Gem with stock ID ${item.productDetails.stockId} not found in database. Please ensure all gems are properly imported.`);
+              console.error(`❌ ConsignmentCreation: No database gem found for stock ID ${item.productDetails?.stockId}`);
+              throw new Error(`Gem with stock ID ${item.productDetails?.stockId} not found in database. Please ensure all gems are properly imported.`);
             }
           }
           
           return {
-            gemId: item.productId,
+            gemId: item.gemId,
             quantity: item.quantity,
             unitPrice: item.pricePerCarat,
             totalPrice: item.totalPrice,
-            caratConsigned: item.caratPurchased
+            caratConsigned: item.caratConsigned
           };
         })
       };
@@ -120,11 +120,11 @@ export const useConsignmentActions = () => {
         
         // Update gem quantities for consigned gems
         for (const item of items) {
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
-          let gemId = item.productId;
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.gemId);
+          let gemId = item.gemId;
           
           if (!isUuid) {
-            const dbGem = gems.find(g => g.stockId === item.productDetails.stockId);
+            const dbGem = gems.find(g => g.stockId === item.productDetails?.stockId);
             if (dbGem) {
               gemId = dbGem.id;
             }
@@ -138,9 +138,9 @@ export const useConsignmentActions = () => {
         // Create the consignment object for the callback with proper ConsignmentItem structure
         const consignmentItems = items.map(item => ({
           id: `temp-${Date.now()}-${Math.random()}`,
-          gemId: item.productId,
+          gemId: item.gemId,
           quantity: item.quantity,
-          caratConsigned: item.caratPurchased,
+          caratConsigned: item.caratConsigned,
           pricePerCarat: item.pricePerCarat,
           totalPrice: item.totalPrice,
           productDetails: item.productDetails
