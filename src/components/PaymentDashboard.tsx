@@ -22,6 +22,7 @@ export const PaymentDashboard = () => {
   const [showReceivables, setShowReceivables] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showCreditNote, setShowCreditNote] = useState(false);
+  const [showOverduePayments, setShowOverduePayments] = useState(false);
   const [customerFilter, setCustomerFilter] = useState('all');
   const [filters, setFilters] = useState<PaymentFilter>({
     status: 'all'
@@ -77,16 +78,21 @@ export const PaymentDashboard = () => {
       return sum + (remaining > 0 ? remaining : 0);
     }, 0);
 
-    // Calculate overdue payments (invoices past due date that aren't fully paid)
+    // Calculate overdue payments (invoices more than 1 week old with no payment)
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
     const overduePayments = invoices.reduce((sum, invoice) => {
-      const isOverdue = new Date(invoice.dateDue) < new Date();
-      if (!isOverdue) return sum;
-      
-      const paidAmount = invoicePayments
+      const totalPaid = invoicePayments
         .filter(p => p.invoiceId === invoice.id)
         .reduce((total, payment) => total + payment.amount, 0);
-      const remaining = invoice.total - paidAmount;
-      return sum + (remaining > 0 ? remaining : 0);
+      const invoiceDate = new Date(invoice.dateCreated);
+      
+      // Only count as overdue if no payment received and created more than 1 week ago
+      if (totalPaid === 0 && invoiceDate < oneWeekAgo && invoice.status !== 'cancelled') {
+        return sum + invoice.total;
+      }
+      return sum;
     }, 0);
 
     return {
@@ -146,6 +152,101 @@ export const PaymentDashboard = () => {
     return result;
   };
 
+  // Get overdue invoices for display
+  const getOverdueInvoices = () => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    return invoices.filter(invoice => {
+      const totalPaid = invoicePayments
+        .filter(p => p.invoiceId === invoice.id)
+        .reduce((total, payment) => total + payment.amount, 0);
+      const invoiceDate = new Date(invoice.dateCreated);
+      
+      return totalPaid === 0 && invoiceDate < oneWeekAgo && invoice.status !== 'cancelled';
+    });
+  };
+
+  // If showing overdue payments list
+  if (showOverduePayments) {
+    const overdueInvoices = getOverdueInvoices();
+    return (
+      <div className="w-full space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">Overdue Payment Invoices</h2>
+            <p className="text-slate-600">Invoices with no payments received (more than 1 week old)</p>
+          </div>
+          <Button 
+            onClick={() => setShowOverduePayments(false)} 
+            variant="outline"
+          >
+            ← Back to Dashboard
+          </Button>
+        </div>
+        
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="border-b">
+                  <tr>
+                    <th className="text-left p-4 font-medium">Invoice #</th>
+                    <th className="text-left p-4 font-medium">Customer</th>
+                    <th className="text-left p-4 font-medium">Date Created</th>
+                    <th className="text-left p-4 font-medium">Amount Due</th>
+                    <th className="text-left p-4 font-medium">Days Overdue</th>
+                    <th className="text-left p-4 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {overdueInvoices.map((invoice) => {
+                    const customer = customers.find(c => c.id === invoice.customerId);
+                    const daysDiff = Math.floor((new Date().getTime() - new Date(invoice.dateCreated).getTime()) / (1000 * 3600 * 24));
+                    return (
+                      <tr key={invoice.id} className="border-b hover:bg-slate-50">
+                        <td className="p-4 font-medium">{invoice.invoiceNumber}</td>
+                        <td className="p-4">{customer?.name || 'Unknown Customer'}</td>
+                        <td className="p-4">{new Date(invoice.dateCreated).toLocaleDateString()}</td>
+                        <td className="p-4 font-bold text-red-600">${invoice.total.toLocaleString()}</td>
+                        <td className="p-4">
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">
+                            {daysDiff} days
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                // View invoice logic here
+                                console.log('View invoice:', invoice.id);
+                              }}
+                            >
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowAddPayment(true)}
+                            >
+                              Add Payment
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
@@ -185,7 +286,11 @@ export const PaymentDashboard = () => {
         </div>
       </div>
 
-      <PaymentSummaryCards summary={summary} loading={paymentsLoading} />
+      <PaymentSummaryCards 
+        summary={summary} 
+        loading={paymentsLoading} 
+        onOverdueClick={() => setShowOverduePayments(true)}
+      />
 
       {showReceivables && (
         <ReceivablesTracker onClose={() => setShowReceivables(false)} />

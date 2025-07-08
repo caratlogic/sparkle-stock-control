@@ -6,9 +6,10 @@ import { PaymentSummary } from '../../types/payment';
 interface PaymentSummaryCardsProps {
   summary: PaymentSummary;
   loading: boolean;
+  onOverdueClick?: () => void;
 }
 
-export const PaymentSummaryCards = ({ summary, loading }: PaymentSummaryCardsProps) => {
+export const PaymentSummaryCards = ({ summary, loading, onOverdueClick }: PaymentSummaryCardsProps) => {
   const cards = [
     {
       title: 'Total Amount Received',
@@ -56,27 +57,34 @@ export const PaymentSummaryCards = ({ summary, loading }: PaymentSummaryCardsPro
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {cards.map((card, index) => (
-        <Card key={index} className="relative overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">
-              {card.title}
-            </CardTitle>
-            <div className={`p-2 rounded-lg ${card.bgColor}`}>
-              <card.icon className={`h-4 w-4 ${card.color}`} />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${card.color}`}>
-              {loading ? (
-                <div className="animate-pulse bg-slate-200 h-8 w-24 rounded"></div>
-              ) : (
-                formatValue(card.value, card.format)
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {cards.map((card, index) => {
+        const isOverdueCard = card.title === 'Overdue Payments';
+        return (
+          <Card 
+            key={index} 
+            className={`relative overflow-hidden ${isOverdueCard && onOverdueClick ? 'cursor-pointer hover:bg-slate-50 transition-colors' : ''}`}
+            onClick={isOverdueCard && onOverdueClick ? onOverdueClick : undefined}
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-slate-600">
+                {card.title}
+              </CardTitle>
+              <div className={`p-2 rounded-lg ${card.bgColor}`}>
+                <card.icon className={`h-4 w-4 ${card.color}`} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${card.color}`}>
+                {loading ? (
+                  <div className="animate-pulse bg-slate-200 h-8 w-24 rounded"></div>
+                ) : (
+                  formatValue(card.value, card.format)
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };

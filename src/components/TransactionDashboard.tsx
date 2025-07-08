@@ -59,6 +59,8 @@ export const TransactionDashboard = () => {
   const [invoiceSortDirection, setInvoiceSortDirection] = useState<'asc' | 'desc'>('asc');
   const [consignmentSortColumn, setConsignmentSortColumn] = useState<string>('');
   const [consignmentSortDirection, setConsignmentSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [showOverdueInvoices, setShowOverdueInvoices] = useState(false);
+  const [showOverdueConsignments, setShowOverdueConsignments] = useState(false);
   useEffect(() => {
     fetchPayments();
   }, []);
@@ -307,6 +309,150 @@ export const TransactionDashboard = () => {
   if (selectedConsignmentForView) {
     return <ConsignmentDetailView consignment={selectedConsignmentForView} onBack={() => setSelectedConsignmentForView(null)} />;
   }
+
+  // If showing overdue invoices list
+  if (showOverdueInvoices) {
+    return (
+      <div className="w-full space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">Overdue Invoices</h2>
+            <p className="text-slate-600">Invoices overdue for payment (more than 1 week old with no payment)</p>
+          </div>
+          <Button 
+            onClick={() => setShowOverdueInvoices(false)} 
+            variant="outline"
+          >
+            ← Back to Dashboard
+          </Button>
+        </div>
+        
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Invoice #</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Days Overdue</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {overdueInvoices.map((invoice) => {
+                  const daysDiff = Math.floor((new Date().getTime() - new Date(invoice.dateCreated).getTime()) / (1000 * 3600 * 24));
+                  return (
+                    <TableRow key={invoice.id}>
+                      <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                      <TableCell>{getCustomerName(invoice.customerId)}</TableCell>
+                      <TableCell>{new Date(invoice.dateCreated).toLocaleDateString()}</TableCell>
+                      <TableCell>${invoice.total.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant="destructive">{daysDiff} days</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedInvoiceForView(invoice)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDownloadInvoice(invoice)}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // If showing overdue consignments list
+  if (showOverdueConsignments) {
+    return (
+      <div className="w-full space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">Overdue Consignments</h2>
+            <p className="text-slate-600">Consignments past their return date and not yet returned</p>
+          </div>
+          <Button 
+            onClick={() => setShowOverdueConsignments(false)} 
+            variant="outline"
+          >
+            ← Back to Dashboard
+          </Button>
+        </div>
+        
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Consignment #</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Return Date</TableHead>
+                  <TableHead>Days Overdue</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {overdueConsignments.map((consignment) => {
+                  const daysDiff = Math.floor((new Date().getTime() - new Date(consignment.returnDate).getTime()) / (1000 * 3600 * 24));
+                  return (
+                    <TableRow key={consignment.id}>
+                      <TableCell className="font-medium">{consignment.consignmentNumber}</TableCell>
+                      <TableCell>{getCustomerName(consignment.customerId)}</TableCell>
+                      <TableCell>{new Date(consignment.returnDate).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge variant="destructive">{daysDiff} days</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{consignment.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedConsignmentForView(consignment)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDownloadConsignment(consignment)}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   return <div className="w-full space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -371,7 +517,10 @@ export const TransactionDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          onClick={() => setShowOverdueInvoices(true)}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Overdue Payment</CardTitle>
             <Calendar className="h-4 w-4 text-orange-600" />
@@ -382,7 +531,10 @@ export const TransactionDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          onClick={() => setShowOverdueConsignments(true)}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Consignments Overdue</CardTitle>
             <Package className="h-4 w-4 text-purple-600" />
