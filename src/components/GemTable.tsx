@@ -346,7 +346,7 @@ export const GemTable = ({
                   onClick={() => handleSort('carat')}
                 >
                   <div className="flex items-center space-x-1">
-                    <span>Carat</span>
+                    <span>Total Carat</span>
                     <ArrowUpDown className="w-4 h-4" />
                   </div>
                 </th>

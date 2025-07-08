@@ -222,15 +222,15 @@ export const useGems = () => {
     }
   };
 
-  // New function to update gem quantities when creating consignments
-  const updateGemQuantityForConsignment = async (gemId: string, quantity: number = 1) => {
+  // New function to update gem quantities when creating consignments - now with carat tracking
+  const updateGemQuantityForConsignment = async (gemId: string, quantity: number = 1, caratAmount: number = 0) => {
     try {
-      console.log(`🔄 useGems: Updating gem ${gemId} quantity for consignment (quantity: ${quantity})`);
+      console.log(`🔄 useGems: Updating gem ${gemId} for consignment (quantity: ${quantity}, carat: ${caratAmount})`);
       
       // First get the current gem data
       const { data: currentGem, error: fetchError } = await supabase
         .from('gems')
-        .select('in_stock, reserved')
+        .select('in_stock, reserved, carat')
         .eq('id', gemId)
         .single();
 
@@ -239,10 +239,13 @@ export const useGems = () => {
       // Ensure in_stock never goes below 0
       const newInStock = Math.max(0, (currentGem.in_stock || 0) - quantity);
       const newReserved = (currentGem.reserved || 0) + quantity;
+      const newTotalCarat = Math.max(0, (currentGem.carat || 0) - caratAmount);
       
-      // Determine status based on quantities - if in_stock > 0, always "In Stock"
+      // Determine status based on total carat and quantities
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
-      if (newInStock > 0) {
+      if (newTotalCarat <= 0) {
+        newStatus = 'Sold';
+      } else if (newInStock > 0) {
         newStatus = 'In Stock';
       } else if (newReserved > 0) {
         newStatus = 'Reserved';
@@ -255,33 +258,34 @@ export const useGems = () => {
         .update({ 
           in_stock: newInStock,
           reserved: newReserved,
+          carat: newTotalCarat,
           status: newStatus
         })
         .eq('id', gemId);
 
       if (error) {
-        console.error('❌ useGems: Error updating gem quantity for consignment:', error);
+        console.error('❌ useGems: Error updating gem for consignment:', error);
         throw error;
       }
       
-      console.log(`✅ useGems: Successfully updated gem ${gemId} quantity for consignment`);
+      console.log(`✅ useGems: Successfully updated gem ${gemId} for consignment`);
       await fetchGems();
       return { success: true };
     } catch (err) {
-      console.error('❌ useGems: Update gem quantity for consignment error:', err);
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem quantity for consignment' };
+      console.error('❌ useGems: Update gem for consignment error:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem for consignment' };
     }
   };
 
-  // New function to update gem quantities when creating invoices
-  const updateGemQuantityForInvoice = async (gemId: string, quantity: number = 1, fromConsignment: boolean = false) => {
+  // New function to update gem quantities when creating invoices - now with carat tracking
+  const updateGemQuantityForInvoice = async (gemId: string, quantity: number = 1, caratAmount: number = 0, fromConsignment: boolean = false) => {
     try {
-      console.log(`🔄 useGems: Updating gem ${gemId} quantity for invoice (quantity: ${quantity}, fromConsignment: ${fromConsignment})`);
+      console.log(`🔄 useGems: Updating gem ${gemId} for invoice (quantity: ${quantity}, carat: ${caratAmount}, fromConsignment: ${fromConsignment})`);
       
       // First get the current gem data
       const { data: currentGem, error: fetchError } = await supabase
         .from('gems')
-        .select('in_stock, reserved, sold')
+        .select('in_stock, reserved, sold, carat')
         .eq('id', gemId)
         .single();
 
@@ -290,6 +294,7 @@ export const useGems = () => {
       let newInStock = currentGem.in_stock || 0;
       let newReserved = currentGem.reserved || 0;
       let newSold = (currentGem.sold || 0) + quantity;
+      let newTotalCarat = (currentGem.carat || 0) - caratAmount;
 
       if (fromConsignment) {
         // Moving from consignment to sold
@@ -299,9 +304,12 @@ export const useGems = () => {
         newInStock = Math.max(0, newInStock - quantity);
       }
 
-      // Determine status based on quantities - if in_stock > 0, always "In Stock"
+      // Determine status based on total carat - if carat is 0, item is sold out
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
-      if (newInStock > 0) {
+      if (newTotalCarat <= 0) {
+        newStatus = 'Sold';
+        newTotalCarat = 0;
+      } else if (newInStock > 0) {
         newStatus = 'In Stock';
       } else if (newReserved > 0) {
         newStatus = 'Reserved';
@@ -315,21 +323,22 @@ export const useGems = () => {
           in_stock: newInStock,
           reserved: newReserved,
           sold: newSold,
+          carat: Math.max(0, newTotalCarat),
           status: newStatus
         })
         .eq('id', gemId);
 
       if (error) {
-        console.error('❌ useGems: Error updating gem quantity for invoice:', error);
+        console.error('❌ useGems: Error updating gem for invoice:', error);
         throw error;
       }
       
-      console.log(`✅ useGems: Successfully updated gem ${gemId} quantity for invoice`);
+      console.log(`✅ useGems: Successfully updated gem ${gemId} for invoice`);
       await fetchGems();
       return { success: true };
     } catch (err) {
-      console.error('❌ useGems: Update gem quantity for invoice error:', err);
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem quantity for invoice' };
+      console.error('❌ useGems: Update gem for invoice error:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to update gem for invoice' };
     }
   };
 

@@ -154,13 +154,13 @@ export const generateInvoicePDF = (invoice: Invoice) => {
             <tr>
               <td><strong>${item.productDetails.stockId}</strong></td>
               <td>
-                ${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut}<br>
+                ${item.caratPurchased}ct from ${item.productDetails.totalCarat}ct total ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut}<br>
                 <small>Color: ${item.productDetails.color} | ${item.productDetails.description}</small><br>
                 <small>Measurements: ${item.productDetails.measurements}</small><br>
                 <small>Certificate: ${item.productDetails.certificateNumber}</small>
               </td>
-              <td>${item.quantity}</td>
-              <td>$${item.unitPrice.toLocaleString()}</td>
+              <td>${item.quantity} stones (${item.caratPurchased}ct)</td>
+              <td>$${item.pricePerCarat.toFixed(2)}/ct</td>
               <td>$${item.totalPrice.toLocaleString()}</td>
             </tr>
           `).join('')}
@@ -373,13 +373,13 @@ export const generateConsignmentPDF = (consignment: Consignment) => {
             <tr>
               <td><strong>${item.productDetails.stockId}</strong></td>
               <td>
-                ${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut}<br>
-                <small>Color: ${item.productDetails.color} | ${item.productDetails.description}</small><br>
-                <small>Measurements: ${item.productDetails.measurements}</small><br>
-                <small>Certificate: ${item.productDetails.certificateNumber}</small>
+                ${item.caratConsigned}ct from ${item.productDetails?.totalCarat}ct total ${item.productDetails?.gemType || 'Diamond'} ${item.productDetails?.cut}<br>
+                <small>Color: ${item.productDetails?.color} | ${item.productDetails?.description}</small><br>
+                <small>Measurements: ${item.productDetails?.measurements}</small><br>
+                <small>Certificate: ${item.productDetails?.certificateNumber}</small>
               </td>
-              <td>${item.quantity}</td>
-              <td>$${item.unitPrice.toLocaleString()}</td>
+              <td>${item.quantity} stones (${item.caratConsigned}ct)</td>
+              <td>$${item.pricePerCarat.toFixed(2)}/ct</td>
             </tr>
           `).join('')}
         </tbody>

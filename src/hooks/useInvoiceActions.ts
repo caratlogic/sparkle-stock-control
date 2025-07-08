@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Customer, Invoice, InvoiceItem } from '../types/customer';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
@@ -24,9 +23,9 @@ export const useInvoiceActions = () => {
           invoiceNumber: invoice.invoiceNumber,
           invoiceDetails: {
             items: invoice.items.map(item => ({
-              description: `${item.productDetails.carat}ct ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} - ${item.productDetails.stockId}`,
+              description: `${item.caratPurchased}ct from ${item.productDetails.totalCarat}ct total ${item.productDetails.gemType || 'Diamond'} ${item.productDetails.cut} ${item.productDetails.color} - ${item.productDetails.stockId}`,
               quantity: item.quantity,
-              unitPrice: item.unitPrice,
+              pricePerCarat: item.pricePerCarat,
               totalPrice: item.totalPrice
             })),
             subtotal: invoice.subtotal,
@@ -105,8 +104,9 @@ export const useInvoiceActions = () => {
               return {
                 gemId: dbGem.id,
                 quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                totalPrice: item.totalPrice
+                unitPrice: item.pricePerCarat,
+                totalPrice: item.totalPrice,
+                caratPurchased: item.caratPurchased
               };
             } else {
               console.error(`❌ InvoiceCreation: No database gem found for stock ID ${item.productDetails.stockId}`);
@@ -117,8 +117,9 @@ export const useInvoiceActions = () => {
           return {
             gemId: item.productId,
             quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice
+            unitPrice: item.pricePerCarat,
+            totalPrice: item.totalPrice,
+            caratPurchased: item.caratPurchased
           };
         })
       };
@@ -144,7 +145,7 @@ export const useInvoiceActions = () => {
           
           // Use the updateGemQuantityForInvoice function that handles quantities and status
           const fromConsignment = relatedConsignmentId !== null;
-          await updateGemQuantityForInvoice(gemId, item.quantity, fromConsignment);
+          await updateGemQuantityForInvoice(gemId, item.quantity, item.caratPurchased, fromConsignment);
           console.log(`✅ InvoiceCreation: Updated gem ${gemId} quantities and status for invoice`);
         }
         

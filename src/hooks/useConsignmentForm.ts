@@ -1,27 +1,23 @@
-
 import { useState, useEffect } from 'react';
 import { Customer } from '../types/customer';
 import { Gem } from '../types/gem';
-import { InvoiceItem } from '../types/customer';
+import { ConsignmentItem } from '../types/customer';
 
-interface UseInvoiceFormProps {
+interface UseConsignmentFormProps {
   preselectedCustomer?: Customer | null;
   preselectedGem?: Gem | null;
 }
 
-export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoiceFormProps) => {
+export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseConsignmentFormProps) => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerSearch, setCustomerSearch] = useState('');
-  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [items, setItems] = useState<ConsignmentItem[]>([]);
   const [productSearch, setProductSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [caratAmount, setCaratAmount] = useState(0.01);
-  const [taxRate, setTaxRate] = useState(8.5);
-  const [currency, setCurrency] = useState<'USD' | 'EUR'>('USD');
-  const [discount, setDiscount] = useState(0);
+  const [returnDate, setReturnDate] = useState('');
   const [notes, setNotes] = useState('');
-  const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
 
   // Reset form when preselected values change
   useEffect(() => {
@@ -32,37 +28,24 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setSelectedProduct(null);
     setQuantity(1);
     setCaratAmount(0.01);
-    setTaxRate(8.5);
-    setDiscount(0);
+    setReturnDate('');
     setNotes('');
-    setRelatedConsignmentId(null);
 
     if (preselectedCustomer) {
       setSelectedCustomer(preselectedCustomer);
       setCustomerSearch(preselectedCustomer.name);
-      setDiscount(preselectedCustomer.discount || 0);
     }
   }, [preselectedCustomer, preselectedGem]);
 
-  // Set discount when customer is selected
-  useEffect(() => {
-    if (selectedCustomer) {
-      console.log('Setting discount for customer:', selectedCustomer.name, 'discount:', selectedCustomer.discount);
-      setDiscount(selectedCustomer.discount || 0);
-    }
-  }, [selectedCustomer]);
-
   const handleCustomerSelect = (customer: Customer) => {
-    console.log('Customer selected:', customer.name, 'with discount:', customer.discount);
     setSelectedCustomer(customer);
     setCustomerSearch(customer.name);
-    setDiscount(customer.discount || 0);
   };
 
   const handleProductSelect = (product: Gem) => {
     setSelectedProduct(product);
     setProductSearch(`${product.stockId} - ${product.carat}ct total ${product.gemType} ${product.cut}`);
-    setCaratAmount(Math.min(0.01, product.carat)); // Set minimum carat or available carat
+    setCaratAmount(Math.min(0.01, product.carat));
   };
 
   const handleAddItem = () => {
@@ -71,9 +54,13 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     const pricePerCarat = selectedProduct.price / selectedProduct.carat;
     const totalPrice = caratAmount * pricePerCarat;
 
-    const newItem: InvoiceItem = {
-      productId: selectedProduct.id,
-      productType: selectedProduct.gemType.toLowerCase() as 'diamond',
+    const newItem: ConsignmentItem = {
+      id: `temp-${Date.now()}`,
+      gemId: selectedProduct.id,
+      quantity,
+      caratConsigned: caratAmount,
+      pricePerCarat,
+      totalPrice,
       productDetails: {
         stockId: selectedProduct.stockId,
         totalCarat: selectedProduct.carat,
@@ -84,10 +71,6 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
         certificateNumber: selectedProduct.certificateNumber,
         gemType: selectedProduct.gemType,
       },
-      quantity,
-      caratPurchased: caratAmount,
-      pricePerCarat,
-      totalPrice,
     };
 
     setItems([...items, newItem]);
@@ -116,16 +99,10 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setQuantity,
     caratAmount,
     setCaratAmount,
-    taxRate,
-    setTaxRate,
-    currency,
-    setCurrency,
-    discount,
-    setDiscount,
+    returnDate,
+    setReturnDate,
     notes,
     setNotes,
-    relatedConsignmentId,
-    setRelatedConsignmentId,
     handleCustomerSelect,
     handleProductSelect,
     handleAddItem,

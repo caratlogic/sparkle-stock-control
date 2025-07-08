@@ -39,7 +39,7 @@ export interface InvoiceItem {
   productType: 'diamond' | 'emerald' | 'ruby' | 'sapphire' | 'amethyst' | 'aquamarine' | 'garnet' | 'opal' | 'topaz' | 'tourmaline';
   productDetails: {
     stockId: string;
-    carat: number;
+    totalCarat: number; // Total carat available in stock
     cut: string;
     color: string;
     description: string;
@@ -47,20 +47,22 @@ export interface InvoiceItem {
     certificateNumber: string;
     gemType?: string;
   };
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
+  quantity: number; // Number of stones purchased
+  caratPurchased: number; // Total carat weight purchased
+  pricePerCarat: number; // Price per carat
+  totalPrice: number; // caratPurchased * pricePerCarat
 }
 
 export interface ConsignmentItem {
   id: string;
   gemId: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
+  quantity: number; // Number of stones consigned
+  caratConsigned: number; // Total carat weight consigned
+  pricePerCarat: number; // Price per carat
+  totalPrice: number; // caratConsigned * pricePerCarat
   productDetails?: {
     stockId: string;
-    carat: number;
+    totalCarat: number; // Total carat available in stock
     cut: string;
     color: string;
     description: string;

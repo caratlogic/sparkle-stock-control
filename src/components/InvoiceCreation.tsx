@@ -40,6 +40,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
     selectedProduct,
     quantity,
     setQuantity,
+    caratAmount,
+    setCaratAmount,
     taxRate,
     setTaxRate,
     currency,
@@ -61,12 +63,13 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   // Auto-add preselected gem to items and check for existing consignment
   useEffect(() => {
     if (preselectedGem && items.length === 0) {
+      const pricePerCarat = preselectedGem.price / preselectedGem.carat;
       const newItem = {
         productId: preselectedGem.id,
         productType: preselectedGem.gemType.toLowerCase() as 'diamond',
         productDetails: {
           stockId: preselectedGem.stockId,
-          carat: preselectedGem.carat,
+          totalCarat: preselectedGem.carat,
           cut: preselectedGem.cut,
           color: preselectedGem.color,
           description: preselectedGem.description,
@@ -75,8 +78,9 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           gemType: preselectedGem.gemType,
         },
         quantity: 1,
-        unitPrice: preselectedGem.price,
-        totalPrice: preselectedGem.price,
+        caratPurchased: Math.min(0.01, preselectedGem.carat),
+        pricePerCarat,
+        totalPrice: Math.min(0.01, preselectedGem.carat) * pricePerCarat,
       };
       setItems([newItem]);
 
@@ -192,6 +196,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           productResults={productResults}
           quantity={quantity}
           setQuantity={setQuantity}
+          caratAmount={caratAmount}
+          setCaratAmount={setCaratAmount}
           items={items}
           onProductSelect={handleProductSelect}
           onAddItem={handleAddItem}

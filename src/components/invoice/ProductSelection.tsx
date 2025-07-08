@@ -14,6 +14,8 @@ interface ProductSelectionProps {
   productResults: Gem[];
   quantity: number;
   setQuantity: (value: number) => void;
+  caratAmount: number;
+  setCaratAmount: (value: number) => void;
   items: InvoiceItem[];
   onProductSelect: (product: Gem) => void;
   onAddItem: () => void;
@@ -27,6 +29,8 @@ export const ProductSelection = ({
   productResults,
   quantity,
   setQuantity,
+  caratAmount,
+  setCaratAmount,
   items,
   onProductSelect,
   onAddItem,
@@ -38,7 +42,7 @@ export const ProductSelection = ({
         <CardTitle className="text-lg">Add Products</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="md:col-span-2">
             <Label htmlFor="product-search">Search Gem</Label>
             <Input
@@ -56,9 +60,9 @@ export const ProductSelection = ({
                     onClick={() => onProductSelect(product)}
                   >
                     <div className="font-medium">{product.stockId}</div>
-                    <div className="text-sm text-slate-500">
-                      {product.carat}ct {product.gemType} {product.cut} {product.color} - ${product.price.toLocaleString()}
-                    </div>
+                     <div className="text-sm text-slate-500">
+                       {product.carat}ct total ({product.inStock || 0} stones) {product.gemType} {product.cut} {product.color} - ${(product.price / product.carat).toFixed(2)}/ct
+                     </div>
                   </div>
                 ))}
               </div>
@@ -66,20 +70,34 @@ export const ProductSelection = ({
           </div>
           
           <div>
-            <Label htmlFor="quantity">Quantity</Label>
+            <Label htmlFor="quantity">Stones</Label>
             <Input
               id="quantity"
               type="number"
               min="1"
+              max={selectedProduct?.inStock || 999}
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="carat-amount">Carat</Label>
+            <Input
+              id="carat-amount"
+              type="number"
+              step="0.01"
+              min="0.01"
+              max={selectedProduct?.carat || 999}
+              value={caratAmount}
+              onChange={(e) => setCaratAmount(parseFloat(e.target.value) || 0.01)}
             />
           </div>
           
           <div className="flex items-end">
             <Button
               onClick={onAddItem}
-              disabled={!selectedProduct}
+              disabled={!selectedProduct || caratAmount > (selectedProduct?.carat || 0)}
               className="w-full"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -98,7 +116,7 @@ export const ProductSelection = ({
                   <div className="flex-1">
                     <div className="font-medium">{item.productDetails.stockId}</div>
                     <div className="text-sm text-slate-600">
-                      {item.productDetails.carat}ct {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color}
+                      {item.caratPurchased}ct purchased from {item.productDetails.totalCarat}ct total | {item.productDetails.gemType || 'Diamond'} {item.productDetails.cut} {item.productDetails.color}
                     </div>
                     <div className="text-sm text-slate-500 truncate max-w-md">
                       {item.productDetails.description}
@@ -110,7 +128,7 @@ export const ProductSelection = ({
                   <div className="text-right mr-4">
                     <div className="font-medium">${item.totalPrice.toLocaleString()}</div>
                     <div className="text-sm text-slate-500">
-                      {item.quantity} × ${item.unitPrice.toLocaleString()}
+                      {item.quantity} stones • {item.caratPurchased}ct @ ${item.pricePerCarat.toFixed(2)}/ct
                     </div>
                   </div>
                   <Button
