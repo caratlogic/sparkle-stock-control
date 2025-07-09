@@ -46,6 +46,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
           country: customer.address.country || 'USA',
           notes: customer.notes,
           discount: customer.discount || 0,
+          kyc_status: customer.kycStatus || false,
           customer_id: `CUST${String(totalCustomers + 1).padStart(3, '0')}`
         }])
         .select()
@@ -86,7 +87,8 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
           zip_code: customer.address.zipCode,
           country: customer.address.country || 'USA',
           notes: customer.notes,
-          discount: customer.discount || 0
+          discount: customer.discount || 0,
+          kyc_status: customer.kycStatus || false
         })
         .eq('id', customer.id);
 

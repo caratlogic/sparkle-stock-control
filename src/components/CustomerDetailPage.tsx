@@ -237,6 +237,14 @@ export const CustomerDetailPage = ({
                 </div>
                 <p className="font-medium">{customer.discount}%</p>
               </div>}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <span>KYC Status</span>
+              </div>
+              <Badge variant={customer.kycStatus ? 'default' : 'secondary'} className={customer.kycStatus ? 'bg-green-100 text-green-800 hover:bg-green-100' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'}>
+                {customer.kycStatus ? 'Complete' : 'Pending'}
+              </Badge>
+            </div>
           </div>
           {customer.notes && <div className="mt-4 pt-4 border-t">
               <h4 className="font-medium text-slate-700 mb-2">Notes</h4>

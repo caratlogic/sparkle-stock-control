@@ -28,9 +28,10 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
     country: customer?.address.country || 'USA',
     discount: customer?.discount || 0,
     notes: customer?.notes || '',
+    kycStatus: customer?.kycStatus || false,
   });
 
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -53,6 +54,7 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
       },
       discount: formData.discount,
       notes: formData.notes || undefined,
+      kycStatus: formData.kycStatus,
       lastPurchaseDate: customer?.lastPurchaseDate,
     };
 
@@ -146,6 +148,22 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
                 />
                 <p className="text-xs text-slate-500 mt-1">
                   Default discount percentage for this customer (0-100%)
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="kycStatus">KYC Status</Label>
+                <select
+                  id="kycStatus"
+                  value={formData.kycStatus ? 'complete' : 'pending'}
+                  onChange={(e) => handleInputChange('kycStatus', e.target.value === 'complete')}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="complete">Complete</option>
+                </select>
+                <p className="text-xs text-slate-500 mt-1">
+                  KYC (Know Your Customer) verification status
                 </p>
               </div>
             </CardContent>
