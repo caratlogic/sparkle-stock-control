@@ -151,7 +151,7 @@ export const CustomerTable = ({
                   {getSortIcon('status')}
                 </div>
               </th>
-              <th className="text-right py-3 px-4 font-medium text-slate-600">KYC Actions</th>
+              <th className="text-right py-3 px-4 font-medium text-slate-600">KYC___________ Actions</th>
             </tr>
           </thead>
           <tbody>
