@@ -10,6 +10,7 @@ import { PaymentDashboard } from './PaymentDashboard';
 import { ReminderDashboard } from './ReminderDashboard';
 import { CommunicationsDashboard } from './CommunicationsDashboard';
 import { CreditNotesDashboard } from './CreditNotesDashboard';
+import { QRCodeManagement } from './QRCodeManagement';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { useGems } from '../hooks/useGems';
@@ -189,6 +190,9 @@ export const Dashboard = () => {
             <TabsTrigger value="credit-notes" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
               Credit Notes
             </TabsTrigger>
+            <TabsTrigger value="qr-codes" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
+              QR Codes
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -262,6 +266,10 @@ export const Dashboard = () => {
 
         <TabsContent value="credit-notes" className="space-y-6">
           <CreditNotesDashboard />
+        </TabsContent>
+
+        <TabsContent value="qr-codes" className="space-y-6">
+          <QRCodeManagement gems={gems} />
         </TabsContent>
       </Tabs>
     </div>;

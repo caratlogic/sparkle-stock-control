@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, QrCode } from 'lucide-react';
-import { generateQRCode, downloadQRCode, QRCodeData } from '../utils/qrCodeGenerator';
+import { generateCustomQRCode, downloadCustomQRCode, QRCodeData } from '../utils/qrCodeGenerator';
+import { QRCodeFieldConfig } from './QRCodeSettings';
 import { useToast } from '@/hooks/use-toast';
 
 interface QRCodeDisplayProps {
   gemData: QRCodeData;
+  fieldConfig?: QRCodeFieldConfig;
   size?: 'small' | 'medium' | 'large';
   showDownload?: boolean;
 }
 
 export const QRCodeDisplay = ({ 
   gemData, 
+  fieldConfig,
   size = 'medium', 
   showDownload = false 
 }: QRCodeDisplayProps) => {
@@ -20,11 +23,29 @@ export const QRCodeDisplay = ({
   const [downloading, setDownloading] = useState(false);
   const { toast } = useToast();
 
+  // Default field configuration if none provided
+  const defaultConfig: QRCodeFieldConfig = {
+    stockId: true,
+    gemType: true,
+    carat: true,
+    color: true,
+    cut: true,
+    measurements: true,
+    certificateNumber: true,
+    price: true,
+    treatment: true,
+    origin: true,
+    supplier: false,
+    description: false
+  };
+
+  const config = fieldConfig || defaultConfig;
+
   useEffect(() => {
     const generateQR = async () => {
       try {
         setLoading(true);
-        const url = await generateQRCode(gemData);
+        const url = await generateCustomQRCode(gemData, config);
         setQrCodeUrl(url);
       } catch (error) {
         console.error('Error generating QR code:', error);
@@ -39,12 +60,12 @@ export const QRCodeDisplay = ({
     };
 
     generateQR();
-  }, [gemData, toast]);
+  }, [gemData, config, toast]);
 
   const handleDownload = async () => {
     try {
       setDownloading(true);
-      await downloadQRCode(gemData);
+      await downloadCustomQRCode(gemData, config);
       toast({
         title: "Success",
         description: "QR code downloaded successfully",
