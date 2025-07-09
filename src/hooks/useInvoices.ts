@@ -51,7 +51,9 @@ export const useInvoices = () => {
           totalPurchases: parseFloat(invoice.customers.total_purchases?.toString() || '0'),
           lastPurchaseDate: invoice.customers.last_purchase_date || undefined,
           notes: invoice.customers.notes || undefined,
-          status: invoice.customers.status as 'active' | 'inactive'
+          discount: parseFloat(invoice.customers.discount?.toString() || '0'),
+          status: invoice.customers.status as 'active' | 'inactive',
+          kycStatus: invoice.customers.kyc_status || false
         },
         items: invoice.invoice_items.map((item: any) => ({
           productId: item.gem_id,

@@ -38,7 +38,8 @@ export const useCustomers = () => {
         lastPurchaseDate: customer.last_purchase_date || undefined,
         notes: customer.notes || undefined,
         discount: parseFloat(customer.discount?.toString() || '0'),
-        status: customer.status as 'active' | 'inactive'
+        status: customer.status as 'active' | 'inactive',
+        kycStatus: customer.kyc_status || false
       }));
 
       setCustomers(transformedCustomers);

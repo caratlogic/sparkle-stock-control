@@ -294,6 +294,7 @@ export type Database = {
           discount: number | null
           email: string
           id: string
+          kyc_status: boolean
           last_purchase_date: string | null
           name: string
           notes: string | null
@@ -316,6 +317,7 @@ export type Database = {
           discount?: number | null
           email: string
           id?: string
+          kyc_status?: boolean
           last_purchase_date?: string | null
           name: string
           notes?: string | null
@@ -338,6 +340,7 @@ export type Database = {
           discount?: number | null
           email?: string
           id?: string
+          kyc_status?: boolean
           last_purchase_date?: string | null
           name?: string
           notes?: string | null

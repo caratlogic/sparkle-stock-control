@@ -20,6 +20,7 @@ export interface Customer {
   discount?: number;
   notes?: string;
   status: 'active' | 'inactive';
+  kycStatus: boolean;
 }
 
 export interface CustomerCommunication {

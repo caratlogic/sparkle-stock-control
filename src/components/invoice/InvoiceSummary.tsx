@@ -16,6 +16,10 @@ interface InvoiceSummaryProps {
   selectedCustomer: Customer | null;
   currency: 'USD' | 'EUR';
   setCurrency: (value: 'USD' | 'EUR') => void;
+  shippingRequired: boolean;
+  setShippingRequired: (value: boolean) => void;
+  shippingCost: number;
+  setShippingCost: (value: number) => void;
 }
 
 export const InvoiceSummary = ({
@@ -27,6 +31,10 @@ export const InvoiceSummary = ({
   selectedCustomer,
   currency,
   setCurrency,
+  shippingRequired,
+  setShippingRequired,
+  shippingCost,
+  setShippingCost,
 }: InvoiceSummaryProps) => {
   const currencySymbol = currency === 'USD' ? '$' : '€';
   const exchangeRate = currency === 'EUR' ? 0.85 : 1; // Example exchange rate
@@ -41,8 +49,10 @@ export const InvoiceSummary = ({
   
   const discountAmount = (subtotal * effectiveDiscount) / 100;
   const afterDiscount = subtotal - discountAmount;
-  const taxAmount = (afterDiscount * taxRate) / 100;
-  const total = (afterDiscount + taxAmount) * exchangeRate;
+  const effectiveShippingCost = shippingRequired ? shippingCost : 0;
+  const afterShipping = afterDiscount + effectiveShippingCost;
+  const taxAmount = (afterShipping * taxRate) / 100;
+  const total = (afterShipping + taxAmount) * exchangeRate;
 
   return (
     <Card>
@@ -63,6 +73,12 @@ export const InvoiceSummary = ({
             <span>After Discount:</span>
             <span>{currencySymbol}{((afterDiscount) * exchangeRate).toLocaleString()}</span>
           </div>
+          {shippingRequired && (
+            <div className="flex justify-between text-sm">
+              <span>Shipping:</span>
+              <span>{currencySymbol}{(effectiveShippingCost * exchangeRate).toLocaleString()}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span>Tax ({taxRate}%):</span>
             <span>{currencySymbol}{(taxAmount * exchangeRate).toLocaleString()}</span>
@@ -123,6 +139,33 @@ export const InvoiceSummary = ({
           )}
         </div>
         
+        <div>
+          <div className="flex items-center space-x-2 mb-2">
+            <Checkbox 
+              id="shipping-required" 
+              checked={shippingRequired}
+              onCheckedChange={(checked) => setShippingRequired(checked as boolean)}
+            />
+            <Label htmlFor="shipping-required" className="text-sm font-medium">
+              Shipping Required
+            </Label>
+          </div>
+          
+          {shippingRequired && (
+            <>
+              <Label htmlFor="shipping-cost">Shipping Cost</Label>
+              <Input
+                id="shipping-cost"
+                type="number"
+                min="0"
+                step="0.01"
+                value={shippingCost}
+                onChange={(e) => setShippingCost(parseFloat(e.target.value) || 0)}
+              />
+            </>
+          )}
+        </div>
+
         <div>
           <Label htmlFor="tax-rate">Tax Rate (%)</Label>
           <Input

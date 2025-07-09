@@ -21,7 +21,8 @@ export const sampleCustomers: Customer[] = [
     totalPurchases: 45000,
     lastPurchaseDate: '2024-06-15',
     notes: 'Frequent customer, prefers emeralds',
-    status: 'active'
+    status: 'active',
+    kycStatus: true
   },
   {
     id: '2',
@@ -41,7 +42,8 @@ export const sampleCustomers: Customer[] = [
     totalPurchases: 78000,
     lastPurchaseDate: '2024-06-20',
     notes: 'High-end client, interested in large diamonds',
-    status: 'active'
+    status: 'active',
+    kycStatus: false
   },
   {
     id: '3',
@@ -60,6 +62,7 @@ export const sampleCustomers: Customer[] = [
     totalPurchases: 23000,
     lastPurchaseDate: '2024-05-30',
     notes: 'Collector, focuses on rare colored stones',
-    status: 'active'
+    status: 'active',
+    kycStatus: true
   }
 ];

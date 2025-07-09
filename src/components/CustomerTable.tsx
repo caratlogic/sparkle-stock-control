@@ -295,6 +295,18 @@ export const CustomerTable = ({
                        </Button>
                      </div>
                    </td>
+                   <td className="py-4 px-4">
+                     <Badge 
+                       variant={customer.kycStatus ? 'default' : 'secondary'}
+                       className={
+                         customer.kycStatus 
+                           ? 'bg-green-100 text-green-800 hover:bg-green-100' 
+                           : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
+                       }
+                     >
+                       {customer.kycStatus ? 'Complete' : 'Pending'}
+                     </Badge>
+                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-end gap-2">
                       {onView && (

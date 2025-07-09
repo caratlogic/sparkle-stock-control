@@ -22,7 +22,7 @@ import {
 import { Gem } from '../types/gem';
 import { GemDetailView } from './GemDetailView';
 import { GemTransactionHistory } from './GemTransactionHistory';
-import { BarcodeDisplay } from './BarcodeDisplay';
+import { QRCodeDisplay } from './QRCodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
 
 interface GemTableProps {
@@ -552,20 +552,28 @@ export const GemTable = ({
                               )}
                             </div>
                           );
-                        case 'barcode':
-                          return (
-                            <BarcodeDisplay 
-                              stockId={gem.stockId}
-                              carat={gem.carat}
-                              measurements={gem.measurements || ''}
-                              certificates={`${gem.certificateNumber} ${gem.certificateType || ''}`.trim()}
-                              colorComment={gem.colorComment || ''}
-                              origin={gem.origin || ''}
-                              treatment={gem.treatment === 'H' ? 'Heated' : 'Not Heated'}
-                              size="small"
-                              showDownload={false}
-                            />
-                          );
+                         case 'barcode':
+                           return (
+                             <QRCodeDisplay 
+                               gemData={{
+                                 stockId: gem.stockId,
+                                 gemType: gem.gemType,
+                                 carat: gem.carat,
+                                 color: gem.color,
+                                 cut: gem.cut,
+                                 measurements: gem.measurements || '',
+                                 certificateNumber: gem.certificateNumber,
+                                 price: gem.price,
+                                 pricePerCarat: gem.price / gem.carat,
+                                 description: gem.description,
+                                 origin: gem.origin,
+                                 treatment: gem.treatment,
+                                 dateAdded: gem.dateAdded
+                               }}
+                               size="small"
+                               showDownload={true}
+                             />
+                           );
                         default:
                           return null;
                       }

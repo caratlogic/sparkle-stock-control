@@ -8,7 +8,7 @@ import { CustomerDashboard } from './CustomerDashboard';
 import { TransactionDashboard } from './TransactionDashboard';
 import { PaymentDashboard } from './PaymentDashboard';
 import { ReminderDashboard } from './ReminderDashboard';
-import { CustomerCommunications } from './CustomerCommunications';
+import { CommunicationsDashboard } from './CommunicationsDashboard';
 import { CreditNotesDashboard } from './CreditNotesDashboard';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
@@ -134,7 +134,7 @@ export const Dashboard = () => {
             Back to Dashboard
           </Button>
         </div>
-        <CustomerCommunications customer={selectedCustomerForComms} />
+        <div>Customer Communication View</div>
       </div>;
   }
   if (showGemForm) {
@@ -233,17 +233,7 @@ export const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="communications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Communications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <div className="text-slate-400 text-lg mb-2">Select a customer from the Customers tab</div>
-                <div className="text-slate-500">Choose a customer to view their communication history</div>
-              </div>
-            </CardContent>
-          </Card>
+          <CommunicationsDashboard />
         </TabsContent>
 
         <TabsContent value="invoice-creation" className="space-y-6">

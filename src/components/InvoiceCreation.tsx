@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save, Download, FileText } from 'lucide-react';
 import { Customer } from '../types/customer';
@@ -57,6 +57,10 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
     handleAddItem,
     handleRemoveItem,
   } = useInvoiceForm({ preselectedCustomer, preselectedGem });
+
+  // Shipping state
+  const [shippingRequired, setShippingRequired] = useState(false);
+  const [shippingCost, setShippingCost] = useState(0);
 
   const { handleSaveInvoice, downloadInvoice, isSaving } = useInvoiceActions();
 
@@ -130,8 +134,10 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
   const discountAmount = (subtotal * discount) / 100;
   const afterDiscount = subtotal - discountAmount;
-  const taxAmount = (afterDiscount * taxRate) / 100;
-  const total = afterDiscount + taxAmount;
+  const effectiveShippingCost = shippingRequired ? shippingCost : 0;
+  const afterShipping = afterDiscount + effectiveShippingCost;
+  const taxAmount = (afterShipping * taxRate) / 100;
+  const total = afterShipping + taxAmount;
 
   const onSaveInvoice = () => {
     handleSaveInvoice(
@@ -187,6 +193,10 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
               selectedCustomer={selectedCustomer}
               currency={currency}
               setCurrency={setCurrency}
+              shippingRequired={shippingRequired}
+              setShippingRequired={setShippingRequired}
+              shippingCost={shippingCost}
+              setShippingCost={setShippingCost}
             />
 
         <ProductSelection
