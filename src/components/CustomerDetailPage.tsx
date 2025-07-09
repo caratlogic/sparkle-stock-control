@@ -241,7 +241,7 @@ export const CustomerDetailPage = ({
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <span>KYC Status</span>
               </div>
-              <Badge variant={customer.kycStatus ? 'default' : 'secondary'} className={customer.kycStatus ? 'bg-green-100 text-green-800 hover:bg-green-100' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'}>
+              <Badge variant={customer.kycStatus ? 'default' : 'secondary'}>
                 {customer.kycStatus ? 'Complete' : 'Pending'}
               </Badge>
             </div>
