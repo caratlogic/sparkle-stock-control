@@ -16,6 +16,10 @@ import { ConsignmentCreation } from './ConsignmentCreation';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
+import { useConsignments } from '../hooks/useConsignments';
+import { useCreditNotes } from '../hooks/useCreditNotes';
+import { useInvoicePayments } from '../hooks/useInvoicePayments';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import { useToast } from '@/hooks/use-toast';
 import { Gem } from '../types/gem';
 import { Customer } from '../types/customer';
@@ -39,6 +43,28 @@ export const Dashboard = () => {
     refetch: refetchInvoices
   } = useInvoices();
   const {
+    consignments,
+    refetch: refetchConsignments
+  } = useConsignments();
+  const { creditNotes, refetch: refetchCreditNotes } = useCreditNotes();
+  const { payments, fetchPayments } = useInvoicePayments();
+
+  // Auto-refresh when any data changes
+  const handleAutoRefresh = () => {
+    refetchGems();
+    refetchCustomers();
+    refetchInvoices();
+    refetchConsignments();
+    refetchCreditNotes();
+    fetchPayments();
+  };
+
+  useAutoRefresh({
+    onRefresh: handleAutoRefresh,
+    tables: ['gems', 'customers', 'invoices', 'consignments', 'credit_notes', 'invoice_payments'],
+    enabled: true
+  });
+  const {
     toast
   } = useToast();
   const [activeTab, setActiveTab] = useState('analytics');
@@ -53,7 +79,14 @@ export const Dashboard = () => {
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([refetchGems(), refetchCustomers(), refetchInvoices()]);
+      await Promise.all([
+        refetchGems(),
+        refetchCustomers(),
+        refetchInvoices(),
+        refetchConsignments(),
+        refetchCreditNotes(),
+        fetchPayments()
+      ]);
       toast({
         title: "Success",
         description: "All data refreshed successfully"

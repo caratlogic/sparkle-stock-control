@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS } from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { BarcodeDisplay } from './BarcodeDisplay';
+import { QRCodeDisplay } from './QRCodeDisplay';
 
 interface GemFormProps {
   gem?: Gem | null;
@@ -420,22 +420,30 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
           </Card>
         </div>
 
-        {/* Barcode Preview Section */}
+        {/* QR Code Preview Section */}
         {gem && (
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Barcode Preview</CardTitle>
+                <CardTitle className="text-lg">QR Code Preview</CardTitle>
               </CardHeader>
               <CardContent className="flex justify-center">
-                <BarcodeDisplay 
-                  stockId={gem.stockId} 
-                  carat={gem.carat}
-                  measurements={gem.measurements || ''}
-                  certificates={`${gem.certificateNumber} ${gem.certificateType || ''}`.trim()}
-                  colorComment={gem.colorComment || ''}
-                  origin={gem.origin || ''}
-                  treatment={gem.treatment || ''}
+                <QRCodeDisplay 
+                  gemData={{
+                    stockId: gem.stockId,
+                    gemType: gem.gemType,
+                    carat: gem.carat,
+                    color: gem.color,
+                    cut: gem.cut,
+                    measurements: gem.measurements || '',
+                    certificateNumber: gem.certificateNumber,
+                    price: gem.price,
+                    pricePerCarat: gem.price / gem.carat,
+                    description: gem.description,
+                    origin: gem.origin,
+                    treatment: gem.treatment,
+                    dateAdded: gem.dateAdded
+                  }}
                   size="medium"
                   showDownload={true}
                 />

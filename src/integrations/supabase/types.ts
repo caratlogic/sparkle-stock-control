@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      column_customizations: {
+        Row: {
+          column_key: string
+          created_at: string | null
+          display_name: string
+          id: string
+          table_name: string
+          updated_at: string | null
+          user_email: string
+        }
+        Insert: {
+          column_key: string
+          created_at?: string | null
+          display_name: string
+          id?: string
+          table_name: string
+          updated_at?: string | null
+          user_email: string
+        }
+        Update: {
+          column_key?: string
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          table_name?: string
+          updated_at?: string | null
+          user_email?: string
+        }
+        Relationships: []
+      }
       consignment_items: {
         Row: {
           carat_consigned: number
@@ -73,6 +103,7 @@ export type Database = {
           return_date: string
           status: string
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           consignment_number: string
@@ -84,6 +115,7 @@ export type Database = {
           return_date: string
           status?: string
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           consignment_number?: string
@@ -95,6 +127,7 @@ export type Database = {
           return_date?: string
           status?: string
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -119,6 +152,7 @@ export type Database = {
           reason: string
           status: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           amount: number
@@ -132,6 +166,7 @@ export type Database = {
           reason: string
           status?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           amount?: number
@@ -145,6 +180,7 @@ export type Database = {
           reason?: string
           status?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -241,6 +277,7 @@ export type Database = {
           reminder_type: string
           staff_email: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           communication_id?: string | null
@@ -253,6 +290,7 @@ export type Database = {
           reminder_type: string
           staff_email?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           communication_id?: string | null
@@ -265,6 +303,7 @@ export type Database = {
           reminder_type?: string
           staff_email?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -305,6 +344,7 @@ export type Database = {
           tax_id: string | null
           total_purchases: number | null
           updated_at: string | null
+          updated_by: string | null
           zip_code: string
         }
         Insert: {
@@ -328,6 +368,7 @@ export type Database = {
           tax_id?: string | null
           total_purchases?: number | null
           updated_at?: string | null
+          updated_by?: string | null
           zip_code: string
         }
         Update: {
@@ -351,6 +392,7 @@ export type Database = {
           tax_id?: string | null
           total_purchases?: number | null
           updated_at?: string | null
+          updated_by?: string | null
           zip_code?: string
         }
         Relationships: []
@@ -390,6 +432,7 @@ export type Database = {
           total_in_letters: string | null
           treatment: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           box_number?: string | null
@@ -425,6 +468,7 @@ export type Database = {
           total_in_letters?: string | null
           treatment?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           box_number?: string | null
@@ -460,6 +504,7 @@ export type Database = {
           total_in_letters?: string | null
           treatment?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -564,6 +609,7 @@ export type Database = {
           tax_rate: number
           total: number
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           created_at?: string | null
@@ -579,6 +625,7 @@ export type Database = {
           tax_rate?: number
           total: number
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           created_at?: string | null
@@ -594,6 +641,7 @@ export type Database = {
           tax_rate?: number
           total?: number
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: [
           {

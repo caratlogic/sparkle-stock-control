@@ -138,14 +138,26 @@ export const PaymentTransactionsTable = ({
                   </TableCell>
                   <TableCell>
                     {payment.invoiceId && (
-                      <span className="text-sm text-blue-600">
+                      <button 
+                        className="text-sm text-blue-600 hover:text-blue-800 underline"
+                        onClick={() => {
+                          // Navigate to invoice detail view
+                          window.location.href = `/invoice/${payment.invoiceId}`;
+                        }}
+                      >
                         Invoice #{payment.invoiceId.slice(-6)}
-                      </span>
+                      </button>
                     )}
                     {payment.consignmentId && (
-                      <span className="text-sm text-purple-600">
+                      <button 
+                        className="text-sm text-purple-600 hover:text-purple-800 underline"
+                        onClick={() => {
+                          // Navigate to consignment detail view
+                          window.location.href = `/consignment/${payment.consignmentId}`;
+                        }}
+                      >
                         Consignment #{payment.consignmentId.slice(-6)}
-                      </span>
+                      </button>
                     )}
                   </TableCell>
                   <TableCell>
@@ -157,10 +169,24 @@ export const PaymentTransactionsTable = ({
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          // Handle edit payment
+                          console.log('Edit payment:', payment.id);
+                        }}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          // Handle more actions
+                          console.log('More actions for payment:', payment.id);
+                        }}
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </div>

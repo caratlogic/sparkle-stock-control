@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,9 @@ import { GemDetailView } from './GemDetailView';
 import { GemTransactionHistory } from './GemTransactionHistory';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { useAuth } from '../contexts/AuthContext';
+import { ColumnCustomizer } from './ColumnCustomizer';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface GemTableProps {
   gems: Gem[];
@@ -42,7 +45,8 @@ export const GemTable = ({
   onCreateInvoice, 
   onCreateConsignment 
 }: GemTableProps) => {
-  const { isOwner } = useAuth();
+  const { isOwner, user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGemType, setFilterGemType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -56,34 +60,92 @@ export const GemTable = ({
   const [selectedGem, setSelectedGem] = useState<Gem | null>(null);
   const [transactionHistoryGem, setTransactionHistoryGem] = useState<Gem | null>(null);
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+  const [showColumnCustomizer, setShowColumnCustomizer] = useState(false);
+  const [customColumnLabels, setCustomColumnLabels] = useState<Record<string, string>>({});
 
-  // Default column configuration
-  const defaultColumns: ColumnConfig[] = [
-    { key: 'image', label: 'Image', visible: true, order: 0 },
-    { key: 'stockId', label: 'Stock ID', visible: true, mandatory: true, order: 1 },
-    { key: 'gemType', label: 'Gem Type', visible: true, order: 2 },
-    { key: 'carat', label: 'Total Carat', visible: true, order: 3 },
-    { key: 'specifications', label: 'Specifications', visible: true, order: 4 },
-    { key: 'price', label: 'Selling Price', visible: true, order: 5 },
-    { key: 'pricePerCarat', label: 'Price/Carat', visible: true, order: 6 },
-    { key: 'costPrice', label: 'Cost Price', visible: isOwner, order: 7 },
-    { key: 'costPerCarat', label: 'Cost/Carat', visible: isOwner, order: 8 },
-    { key: 'treatment', label: 'Treatment', visible: false, order: 9 },
-    { key: 'colorComment', label: 'Color Comment', visible: false, order: 10 },
-    { key: 'certificateType', label: 'Certificate Type', visible: false, order: 11 },
-    { key: 'supplier', label: 'Supplier', visible: false, order: 12 },
-    { key: 'purchaseDate', label: 'Purchase Date', visible: false, order: 13 },
-    { key: 'origin', label: 'Origin', visible: false, order: 14 },
-    { key: 'inStock', label: 'In Stock', visible: true, order: 15 },
-    { key: 'reserved', label: 'Reserved', visible: true, order: 16 },
-    { key: 'sold', label: 'Sold', visible: true, order: 17 },
-    { key: 'status', label: 'Status', visible: true, order: 18 },
-    { key: 'dateAdded', label: 'Date Added', visible: true, order: 19 },
-    { key: 'actions', label: 'Actions', visible: true, mandatory: true, order: 20 },
-    { key: 'barcode', label: 'Barcode', visible: true, order: 21 },
+  // Default column configuration with custom labels support
+  const getDefaultColumns = (): ColumnConfig[] => [
+    { key: 'image', label: customColumnLabels['image'] || 'Image', visible: true, order: 0 },
+    { key: 'stockId', label: customColumnLabels['stockId'] || 'Stock ID', visible: true, mandatory: true, order: 1 },
+    { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', visible: true, order: 2 },
+    { key: 'carat', label: customColumnLabels['carat'] || 'Total Carat', visible: true, order: 3 },
+    { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 4 },
+    { key: 'price', label: customColumnLabels['price'] || 'Selling Price', visible: true, order: 5 },
+    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Price/Carat', visible: true, order: 6 },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', visible: isOwner, order: 7 },
+    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 8 },
+    { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 9 },
+    { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 10 },
+    { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 11 },
+    { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', visible: false, order: 12 },
+    { key: 'purchaseDate', label: customColumnLabels['purchaseDate'] || 'Purchase Date', visible: false, order: 13 },
+    { key: 'origin', label: customColumnLabels['origin'] || 'Origin', visible: false, order: 14 },
+    { key: 'inStock', label: customColumnLabels['inStock'] || 'In Stock', visible: true, order: 15 },
+    { key: 'reserved', label: customColumnLabels['reserved'] || 'Reserved', visible: true, order: 16 },
+    { key: 'sold', label: customColumnLabels['sold'] || 'Sold', visible: true, order: 17 },
+    { key: 'status', label: customColumnLabels['status'] || 'Status', visible: true, order: 18 },
+    { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 19 },
+    { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 20 },
+    { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 21 },
+    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 22 },
+    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 23 },
   ];
 
-  const [columns, setColumns] = useState<ColumnConfig[]>(defaultColumns);
+  const [columns, setColumns] = useState<ColumnConfig[]>(getDefaultColumns());
+
+  // Load custom column labels on component mount
+  useEffect(() => {
+    if (user?.email) {
+      loadColumnCustomizations();
+    }
+  }, [user?.email]);
+
+  // Update columns when custom labels change
+  useEffect(() => {
+    setColumns(getDefaultColumns());
+  }, [customColumnLabels]);
+
+  const loadColumnCustomizations = async () => {
+    if (!user?.email) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('column_customizations')
+        .select('column_key, display_name')
+        .eq('user_email', user.email)
+        .eq('table_name', 'gems');
+
+      if (error) throw error;
+
+      const customizations: Record<string, string> = {};
+      data?.forEach(item => {
+        customizations[item.column_key] = item.display_name;
+      });
+
+      setCustomColumnLabels(customizations);
+    } catch (error) {
+      console.error('Error loading column customizations:', error);
+    }
+  };
+
+  const handleColumnCustomizationSave = (customizations: Record<string, string>) => {
+    setCustomColumnLabels(customizations);
+    toast({
+      title: "Success",
+      description: "Column names updated successfully"
+    });
+  };
+
+  const customizableColumns = [
+    { key: 'stockId', label: customColumnLabels['stockId'] || 'Stock ID', defaultLabel: 'Stock ID' },
+    { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', defaultLabel: 'Gem Type' },
+    { key: 'price', label: customColumnLabels['price'] || 'Selling Price', defaultLabel: 'Selling Price' },
+    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Price/Carat', defaultLabel: 'Price/Carat' },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', defaultLabel: 'Cost Price' },
+    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', defaultLabel: 'Cost/Carat' },
+    { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', defaultLabel: 'Treatment' },
+    { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', defaultLabel: 'Supplier' },
+  ];
 
   // Get visible columns sorted by order
   const visibleColumns = useMemo(() => 
@@ -229,6 +291,15 @@ export const GemTable = ({
               columns={columns}
               onColumnsChange={setColumns}
             />
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setShowColumnCustomizer(true)}
+              className="flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              Customize Names
+            </Button>
             
             <Button variant="outline" onClick={exportToCSV}>
               <Download className="w-4 h-4 mr-2" />
@@ -501,8 +572,47 @@ export const GemTable = ({
                               {gem.status}
                             </Badge>
                           );
-                        case 'dateAdded':
-                          return <div className="text-sm text-slate-600">{gem.dateAdded}</div>;
+                        case 'updatedBy':
+                          return (
+                            <span className="text-sm text-slate-600">
+                              {(gem as any).updatedBy || 'System'}
+                            </span>
+                          );
+
+                        case 'lastUpdated':
+                          return (
+                            <span className="text-sm text-slate-600">
+                              {(gem as any).updatedAt ? new Date((gem as any).updatedAt).toLocaleDateString() : '-'}
+                            </span>
+                          );
+
+                        case 'qrcode':
+                          return (
+                            <div className="flex items-center space-x-2">
+                              <QRCodeDisplay 
+                                gemData={{
+                                  stockId: gem.stockId,
+                                  gemType: gem.gemType,
+                                  carat: gem.carat,
+                                  color: gem.color,
+                                  cut: gem.cut,
+                                  measurements: gem.measurements || '',
+                                  certificateNumber: gem.certificateNumber,
+                                  price: gem.price,
+                                  pricePerCarat: gem.price / gem.carat,
+                                  description: gem.description,
+                                  origin: gem.origin,
+                                  treatment: gem.treatment,
+                                  dateAdded: gem.dateAdded
+                                }}
+                                size="small"
+                                showDownload={true}
+                              />
+                            </div>
+                          );
+                         
+                         case 'dateAdded':
+                           return <div className="text-sm text-slate-600">{gem.dateAdded}</div>;
                         case 'actions':
                           return (
                             <div className="flex space-x-2">
@@ -552,28 +662,6 @@ export const GemTable = ({
                               )}
                             </div>
                           );
-                         case 'barcode':
-                           return (
-                             <QRCodeDisplay 
-                               gemData={{
-                                 stockId: gem.stockId,
-                                 gemType: gem.gemType,
-                                 carat: gem.carat,
-                                 color: gem.color,
-                                 cut: gem.cut,
-                                 measurements: gem.measurements || '',
-                                 certificateNumber: gem.certificateNumber,
-                                 price: gem.price,
-                                 pricePerCarat: gem.price / gem.carat,
-                                 description: gem.description,
-                                 origin: gem.origin,
-                                 treatment: gem.treatment,
-                                 dateAdded: gem.dateAdded
-                               }}
-                               size="small"
-                               showDownload={true}
-                             />
-                           );
                         default:
                           return null;
                       }
@@ -606,6 +694,15 @@ export const GemTable = ({
           setShowTransactionHistory(false);
           setTransactionHistoryGem(null);
         }}
+      />
+      
+      <ColumnCustomizer
+        open={showColumnCustomizer}
+        onClose={() => setShowColumnCustomizer(false)}
+        tableName="gems"
+        columns={customizableColumns}
+        onSave={handleColumnCustomizationSave}
+        userEmail={user?.email || ''}
       />
     </Card>
   );
