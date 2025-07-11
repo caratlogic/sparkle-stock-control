@@ -59,7 +59,7 @@ interface ConsignmentDetailViewProps {
 }
 
 export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetailViewProps) => {
-  const totalValue = consignment.items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const totalValue = consignment.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   
   const handlePrint = () => {
     window.print();
@@ -204,9 +204,9 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-4">{item.quantity}</td>
-                    <td className="py-4 px-4">${item.unitPrice.toLocaleString()}</td>
-                    <td className="py-4 px-4 font-semibold">${item.totalPrice.toLocaleString()}</td>
+                    <td className="py-4 px-4">{item.quantity || 0}</td>
+                    <td className="py-4 px-4">${(item.unitPrice || 0).toLocaleString()}</td>
+                    <td className="py-4 px-4 font-semibold">${(item.totalPrice || 0).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
