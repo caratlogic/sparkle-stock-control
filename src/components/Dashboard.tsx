@@ -46,8 +46,14 @@ export const Dashboard = () => {
     consignments,
     refetch: refetchConsignments
   } = useConsignments();
-  const { creditNotes, refetch: refetchCreditNotes } = useCreditNotes();
-  const { payments, fetchPayments } = useInvoicePayments();
+  const {
+    creditNotes,
+    refetch: refetchCreditNotes
+  } = useCreditNotes();
+  const {
+    payments,
+    fetchPayments
+  } = useInvoicePayments();
 
   // Auto-refresh when any data changes
   const handleAutoRefresh = () => {
@@ -58,7 +64,6 @@ export const Dashboard = () => {
     refetchCreditNotes();
     fetchPayments();
   };
-
   useAutoRefresh({
     onRefresh: handleAutoRefresh,
     tables: ['gems', 'customers', 'invoices', 'consignments', 'credit_notes', 'invoice_payments'],
@@ -79,14 +84,7 @@ export const Dashboard = () => {
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([
-        refetchGems(),
-        refetchCustomers(),
-        refetchInvoices(),
-        refetchConsignments(),
-        refetchCreditNotes(),
-        fetchPayments()
-      ]);
+      await Promise.all([refetchGems(), refetchCustomers(), refetchInvoices(), refetchConsignments(), refetchCreditNotes(), fetchPayments()]);
       toast({
         title: "Success",
         description: "All data refreshed successfully"
@@ -187,7 +185,7 @@ export const Dashboard = () => {
   return <div className="w-full min-h-screen space-y-6 animate-fade-in px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Gems Business Dashboard</h1>
+          <h1 className="text-3xl font-bold text-slate-800">Business Dashboard</h1>
           <p className="text-slate-600 mt-1">Manage your diamond inventory and business operations</p>
         </div>
         <Button onClick={handleRefreshAll} disabled={isRefreshing} className="bg-primary text-primary-foreground hover:bg-primary/90">
