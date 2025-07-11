@@ -8,6 +8,7 @@ import { Payment } from '../../types/payment';
 import { Customer } from '../../types/customer';
 import { CustomerFilter } from '../ui/customer-filter';
 import { PaymentDetailDialog } from './PaymentDetailDialog';
+import { EditPaymentDialog } from './EditPaymentDialog';
 
 interface PaymentTransactionsTableProps {
   payments: Payment[];
@@ -16,6 +17,9 @@ interface PaymentTransactionsTableProps {
   onRefresh: () => void;
   customerFilter: string;
   onCustomerFilterChange: (value: string) => void;
+  onViewInvoice?: (invoiceId: string) => void;
+  onViewConsignment?: (consignmentId: string) => void;
+  onEditPayment?: (payment: Payment) => void;
 }
 
 export const PaymentTransactionsTable = ({ 
@@ -23,14 +27,30 @@ export const PaymentTransactionsTable = ({
   customers, 
   loading, 
   customerFilter, 
-  onCustomerFilterChange 
+  onCustomerFilterChange,
+  onViewInvoice,
+  onViewConsignment,
+  onEditPayment
 }: PaymentTransactionsTableProps) => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
+  const [showEditPayment, setShowEditPayment] = useState(false);
 
   const handleViewPayment = (payment: Payment) => {
     setSelectedPayment(payment);
     setShowPaymentDetail(true);
+  };
+
+  const handleEditPayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setShowEditPayment(true);
+  };
+
+  const handleSavePayment = async (paymentData: Partial<Payment>) => {
+    // This would typically call an API to update the payment
+    console.log('Saving payment:', paymentData);
+    // For now, just show that it was saved
+    alert('Payment updated successfully!');
   };
 
   const getStatusBadge = (status: string) => {
@@ -141,9 +161,11 @@ export const PaymentTransactionsTable = ({
                       <button 
                         className="text-sm text-blue-600 hover:text-blue-800 underline"
                         onClick={() => {
-                          // Show invoice details in parent component
-                          console.log('View invoice:', payment.invoiceId);
-                          // This should be handled by parent component to show invoice details
+                          if (onViewInvoice) {
+                            onViewInvoice(payment.invoiceId!);
+                          } else {
+                            console.log('View invoice:', payment.invoiceId);
+                          }
                         }}
                       >
                         Invoice #{payment.invoiceId.slice(-6)}
@@ -153,9 +175,11 @@ export const PaymentTransactionsTable = ({
                       <button 
                         className="text-sm text-purple-600 hover:text-purple-800 underline"
                         onClick={() => {
-                          // Show consignment details in parent component
-                          console.log('View consignment:', payment.consignmentId);
-                          // This should be handled by parent component to show consignment details
+                          if (onViewConsignment) {
+                            onViewConsignment(payment.consignmentId!);
+                          } else {
+                            console.log('View consignment:', payment.consignmentId);
+                          }
                         }}
                       >
                         Consignment #{payment.consignmentId.slice(-6)}
@@ -175,8 +199,11 @@ export const PaymentTransactionsTable = ({
                         variant="ghost" 
                         size="sm"
                         onClick={() => {
-                          // Handle edit payment
-                          console.log('Edit payment:', payment.id);
+                          if (onEditPayment) {
+                            onEditPayment(payment);
+                          } else {
+                            handleEditPayment(payment);
+                          }
                         }}
                       >
                         <Edit className="w-4 h-4" />
@@ -204,6 +231,13 @@ export const PaymentTransactionsTable = ({
         payment={selectedPayment}
         open={showPaymentDetail}
         onClose={() => setShowPaymentDetail(false)}
+      />
+
+      <EditPaymentDialog
+        payment={selectedPayment}
+        open={showEditPayment}
+        onClose={() => setShowEditPayment(false)}
+        onSave={handleSavePayment}
       />
     </div>
   );

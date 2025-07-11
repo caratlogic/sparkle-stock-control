@@ -9,12 +9,14 @@ import { PaymentTransactionsTable } from './payment/PaymentTransactionsTable';
 import { AddPaymentDialog } from './payment/AddPaymentDialog';
 import { ReceivablesTracker } from './payment/ReceivablesTracker';
 import { PaymentExportDialog } from './payment/PaymentExportDialog';
+import { InvoiceViewDialog } from './payment/InvoiceViewDialog';
+import { ConsignmentViewDialog } from './payment/ConsignmentViewDialog';
 import { CreditNoteForm } from './CreditNoteForm';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
 import { PaymentFilter, Payment, PaymentSummary } from '../types/payment';
-import { InvoicePayment } from '../types/customer';
+import { InvoicePayment, Invoice } from '../types/customer';
 
 export const PaymentDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +26,10 @@ export const PaymentDashboard = () => {
   const [showCreditNote, setShowCreditNote] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
   const [customerFilter, setCustomerFilter] = useState('all');
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
+  const [selectedConsignment, setSelectedConsignment] = useState<any>(null);
+  const [showConsignmentDialog, setShowConsignmentDialog] = useState(false);
   const [filters, setFilters] = useState<PaymentFilter>({
     status: 'all'
   });
@@ -150,6 +156,20 @@ export const PaymentDashboard = () => {
       memoizedRefetch();
     }
     return result;
+  };
+
+  const handleViewInvoice = (invoiceId: string) => {
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    if (invoice) {
+      setSelectedInvoice(invoice);
+      setShowInvoiceDialog(true);
+    }
+  };
+
+  const handleViewConsignment = (consignmentId: string) => {
+    // For now, just show a placeholder - you would fetch consignment data here
+    console.log('View consignment:', consignmentId);
+    alert('Consignment viewing not yet implemented - would show consignment details');
   };
 
   // Get overdue invoices for display
@@ -370,6 +390,8 @@ export const PaymentDashboard = () => {
             onRefresh={memoizedRefetch}
             customerFilter={customerFilter}
             onCustomerFilterChange={handleCustomerFilterChange}
+            onViewInvoice={handleViewInvoice}
+            onViewConsignment={handleViewConsignment}
           />
         </CardContent>
       </Card>
@@ -395,6 +417,18 @@ export const PaymentDashboard = () => {
         open={showCreditNote}
         onClose={() => setShowCreditNote(false)}
         customers={customers}
+      />
+
+      <InvoiceViewDialog
+        invoice={selectedInvoice}
+        open={showInvoiceDialog}
+        onClose={() => setShowInvoiceDialog(false)}
+      />
+
+      <ConsignmentViewDialog
+        consignment={selectedConsignment}
+        open={showConsignmentDialog}
+        onClose={() => setShowConsignmentDialog(false)}
       />
     </div>
   );
