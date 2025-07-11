@@ -167,11 +167,10 @@ export const CustomerTable = ({
                   <td className="py-4 px-4">
                     <div>
                       <div className="font-medium text-slate-900">{customer.name}</div>
-                      <div className="text-sm text-slate-500">
-                        {customer.customerId}
-                        {customer.company && ` • ${customer.company}`}
-                        {customer.vatNumber && ` • VAT: ${customer.vatNumber}`}
-                      </div>
+                       <div className="text-sm text-slate-500">
+                         {customer.customerId}
+                         {customer.company && ` • ${customer.company}`}
+                       </div>
                     </div>
                   </td>
                   <td className="py-4 px-4">
