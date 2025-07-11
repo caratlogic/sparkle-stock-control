@@ -107,16 +107,49 @@ export const QRCodeDisplay = ({
     );
   }
 
+  // Generate field list for preview
+  const getIncludedFields = () => {
+    const fields = [];
+    if (config.stockId) fields.push('Stock ID');
+    if (config.gemType) fields.push('Gem Type');
+    if (config.carat) fields.push('Carat');
+    if (config.color) fields.push('Color');
+    if (config.cut) fields.push('Cut');
+    if (config.measurements) fields.push('Measurements');
+    if (config.certificateNumber) fields.push('Certificate Number');
+    if (config.price) fields.push('Price');
+    if (config.treatment) fields.push('Treatment');
+    if (config.origin) fields.push('Origin');
+    if (config.supplier) fields.push('Supplier');
+    if (config.description) fields.push('Description');
+    return fields;
+  };
+
   return (
-    <div className="flex flex-col items-center space-y-2">
+    <div className="flex flex-col items-center space-y-4">
       <img 
         src={qrCodeUrl}
         alt={`QR Code for ${gemData.stockId}`}
         className={`${getSize()} border border-slate-200 rounded`}
       />
-      <p className="text-xs text-slate-600 text-center">
-        {gemData.stockId} - {gemData.carat}ct {gemData.gemType}
-      </p>
+      <div className="text-center space-y-2">
+        <p className="text-xs text-slate-600">
+          {gemData.stockId} - {gemData.carat}ct {gemData.gemType}
+        </p>
+        <div className="bg-slate-50 rounded-lg p-3 max-w-sm">
+          <p className="text-xs font-medium text-slate-700 mb-2">QR Code includes:</p>
+          <div className="flex flex-wrap gap-1">
+            {getIncludedFields().map((field) => (
+              <span
+                key={field}
+                className="inline-block px-2 py-1 text-xs bg-primary/10 text-primary rounded"
+              >
+                {field}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
       {showDownload && (
         <Button
           variant="outline"

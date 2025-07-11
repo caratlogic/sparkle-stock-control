@@ -65,11 +65,16 @@ export const CustomerSelection = ({
                 {selectedCustomer.company && (
                   <p className="text-sm text-slate-600">{selectedCustomer.company}</p>
                 )}
-                {selectedCustomer.discount && selectedCustomer.discount > 0 && (
-                  <p className="text-sm text-blue-600 font-medium">
-                    Customer Discount: {selectedCustomer.discount}%
-                  </p>
-                )}
+                 {selectedCustomer.vatNumber && (
+                   <p className="text-sm text-slate-600">
+                     VAT Number: {selectedCustomer.vatNumber}
+                   </p>
+                 )}
+                 {selectedCustomer.discount && selectedCustomer.discount > 0 && (
+                   <p className="text-sm text-blue-600 font-medium">
+                     Customer Discount: {selectedCustomer.discount}%
+                   </p>
+                 )}
               </div>
               <Badge variant="secondary">{selectedCustomer.customerId}</Badge>
             </div>
