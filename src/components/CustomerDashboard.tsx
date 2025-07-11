@@ -74,6 +74,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
 
   const handleEditCustomer = async (customer: Customer) => {
     try {
+      console.log('Updating customer with VAT number:', customer.vatNumber);
       const { error } = await supabase
         .from('customers')
         .update({
