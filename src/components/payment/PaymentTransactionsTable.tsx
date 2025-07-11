@@ -141,8 +141,9 @@ export const PaymentTransactionsTable = ({
                       <button 
                         className="text-sm text-blue-600 hover:text-blue-800 underline"
                         onClick={() => {
-                          // Navigate to invoice detail view
-                          window.location.href = `/invoice/${payment.invoiceId}`;
+                          // Show invoice details in parent component
+                          console.log('View invoice:', payment.invoiceId);
+                          // This should be handled by parent component to show invoice details
                         }}
                       >
                         Invoice #{payment.invoiceId.slice(-6)}
@@ -152,8 +153,9 @@ export const PaymentTransactionsTable = ({
                       <button 
                         className="text-sm text-purple-600 hover:text-purple-800 underline"
                         onClick={() => {
-                          // Navigate to consignment detail view
-                          window.location.href = `/consignment/${payment.consignmentId}`;
+                          // Show consignment details in parent component
+                          console.log('View consignment:', payment.consignmentId);
+                          // This should be handled by parent component to show consignment details
                         }}
                       >
                         Consignment #{payment.consignmentId.slice(-6)}
