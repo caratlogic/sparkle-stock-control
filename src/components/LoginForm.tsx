@@ -13,8 +13,9 @@ export const LoginForm = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showOverdueModal, setShowOverdueModal] = useState(false);
-  const { login } = useAuth();
-
+  const {
+    login
+  } = useAuth();
   useEffect(() => {
     // Show overdue modal 3 seconds after successful login when user exists  
     let timer: NodeJS.Timeout;
@@ -49,7 +50,7 @@ export const LoginForm = () => {
           <div className="w-16 h-16 bg-diamond-gradient rounded-full flex items-center justify-center mx-auto mb-4">
             <Diamond className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-800">Gems Inventory</CardTitle>
+          <CardTitle className="text-2xl font-bold text-slate-800">Gems & Diamond  Inventory Management </CardTitle>
           <p className="text-slate-600">Sign in to your account</p>
         </CardHeader>
         <CardContent>
@@ -95,9 +96,6 @@ export const LoginForm = () => {
         </CardContent>
       </Card>
       
-      <OverdueNotificationModal 
-        isOpen={showOverdueModal}
-        onClose={() => setShowOverdueModal(false)}
-      />
+      <OverdueNotificationModal isOpen={showOverdueModal} onClose={() => setShowOverdueModal(false)} />
     </div>;
 };
