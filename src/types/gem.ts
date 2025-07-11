@@ -26,6 +26,8 @@ export interface Gem {
   inStock?: number;
   reserved?: number;
   sold?: number;
+  updatedAt?: string;
+  updatedBy?: string;
   consignmentInfo?: {
     id: string;
     consignmentNumber: string;

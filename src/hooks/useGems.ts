@@ -42,7 +42,9 @@ export const useGems = () => {
         origin: gem.origin || undefined,
         inStock: gem.in_stock || 0,
         reserved: gem.reserved || 0,
-        sold: gem.sold || 0
+        sold: gem.sold || 0,
+        updatedAt: gem.updated_at || undefined,
+        updatedBy: gem.updated_by || undefined
       }));
 
       setGems(transformedGems);

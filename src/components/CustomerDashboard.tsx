@@ -47,7 +47,8 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
           notes: customer.notes,
           discount: customer.discount || 0,
           kyc_status: customer.kycStatus || false,
-          customer_id: `CUST${String(totalCustomers + 1).padStart(3, '0')}`
+          customer_id: `CUST${String(totalCustomers + 1).padStart(3, '0')}`,
+          vat_number: customer.vatNumber
         }])
         .select()
         .single();
@@ -81,6 +82,7 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
           phone: customer.phone,
           company: customer.company,
           tax_id: customer.taxId,
+          vat_number: customer.vatNumber,
           street: customer.address.street,
           city: customer.address.city,
           state: customer.address.state,
