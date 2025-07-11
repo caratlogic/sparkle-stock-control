@@ -101,6 +101,12 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
                 <p className="text-lg">{invoice.customerDetails.company}</p>
               </div>
             )}
+            {invoice.customerDetails.vatNumber && (
+              <div>
+                <label className="text-sm font-medium text-slate-600">VAT Number</label>
+                <p className="text-lg">{invoice.customerDetails.vatNumber}</p>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-slate-600">Address</label>
               <p className="text-lg">

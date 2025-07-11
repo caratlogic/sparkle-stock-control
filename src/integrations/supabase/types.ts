@@ -345,6 +345,7 @@ export type Database = {
           total_purchases: number | null
           updated_at: string | null
           updated_by: string | null
+          vat_number: string | null
           zip_code: string
         }
         Insert: {
@@ -369,6 +370,7 @@ export type Database = {
           total_purchases?: number | null
           updated_at?: string | null
           updated_by?: string | null
+          vat_number?: string | null
           zip_code: string
         }
         Update: {
@@ -393,6 +395,7 @@ export type Database = {
           total_purchases?: number | null
           updated_at?: string | null
           updated_by?: string | null
+          vat_number?: string | null
           zip_code?: string
         }
         Relationships: []

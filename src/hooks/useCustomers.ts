@@ -26,6 +26,7 @@ export const useCustomers = () => {
         phone: customer.phone,
         company: customer.company || undefined,
         taxId: customer.tax_id || undefined,
+        vatNumber: customer.vat_number || undefined,
         address: {
           street: customer.street,
           city: customer.city,

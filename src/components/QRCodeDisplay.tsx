@@ -59,7 +59,12 @@ export const QRCodeDisplay = ({
       }
     };
 
-    generateQR();
+    // Add a small delay to ensure config changes are processed
+    const timeoutId = setTimeout(() => {
+      generateQR();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [gemData, config, toast]);
 
   const handleDownload = async () => {

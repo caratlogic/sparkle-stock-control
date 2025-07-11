@@ -181,6 +181,9 @@ export const useGems = () => {
 
       console.log('Updating gem with data:', updateData);
 
+      // Force updated_at to current timestamp
+      updateData.updated_at = new Date().toISOString();
+
       const { error } = await supabase
         .from('gems')
         .update(updateData)

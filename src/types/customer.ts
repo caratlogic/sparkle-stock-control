@@ -7,6 +7,7 @@ export interface Customer {
   phone: string;
   company?: string;
   taxId?: string;
+  vatNumber?: string;
   address: {
     street: string;
     city: string;

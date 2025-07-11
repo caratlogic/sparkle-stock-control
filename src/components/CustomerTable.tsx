@@ -133,6 +133,9 @@ export const CustomerTable = ({
                   {getSortIcon('totalPurchases')}
                 </div>
               </th>
+              <th className="text-left py-3 px-4 font-medium text-slate-600">
+                VAT Number
+              </th>
               <th className="text-left py-3 px-4 font-medium text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('discount')}>
                 <div className="flex items-center gap-2">
                   Discount
@@ -167,6 +170,7 @@ export const CustomerTable = ({
                       <div className="text-sm text-slate-500">
                         {customer.customerId}
                         {customer.company && ` • ${customer.company}`}
+                        {customer.vatNumber && ` • VAT: ${customer.vatNumber}`}
                       </div>
                     </div>
                   </td>
@@ -178,6 +182,11 @@ export const CustomerTable = ({
                   </td>
                   <td className="py-4 px-4">
                     <div className="font-medium">${customer.totalPurchases.toLocaleString()}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-slate-600">
+                      {customer.vatNumber || '-'}
+                    </div>
                   </td>
                   <td className="py-4 px-4">
                     {editingDiscount === customer.id ? <div className="flex items-center gap-2">

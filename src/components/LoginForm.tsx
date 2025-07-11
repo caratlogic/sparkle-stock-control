@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,14 +6,28 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Diamond, User, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { OverdueNotificationModal } from './OverdueNotificationModal';
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const {
-    login
-  } = useAuth();
+  const [showOverdueModal, setShowOverdueModal] = useState(false);
+  const { login } = useAuth();
+
+  useEffect(() => {
+    // Show overdue modal 3 seconds after successful login when user exists  
+    let timer: NodeJS.Timeout;
+    const userFromStorage = localStorage.getItem('user');
+    if (userFromStorage && !loading) {
+      timer = setTimeout(() => {
+        setShowOverdueModal(true);
+      }, 3000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [loading]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -21,6 +35,11 @@ export const LoginForm = () => {
     const success = await login(email, password);
     if (!success) {
       setError('Invalid email or password');
+    } else {
+      // Show overdue modal after successful login
+      setTimeout(() => {
+        setShowOverdueModal(true);
+      }, 2000);
     }
     setLoading(false);
   };
@@ -75,5 +94,10 @@ export const LoginForm = () => {
           </div>
         </CardContent>
       </Card>
+      
+      <OverdueNotificationModal 
+        isOpen={showOverdueModal}
+        onClose={() => setShowOverdueModal(false)}
+      />
     </div>;
 };

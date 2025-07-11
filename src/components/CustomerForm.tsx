@@ -21,6 +21,7 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
     phone: customer?.phone || '',
     company: customer?.company || '',
     taxId: customer?.taxId || '',
+    vatNumber: customer?.vatNumber || '',
     street: customer?.address.street || '',
     city: customer?.address.city || '',
     state: customer?.address.state || '',
@@ -45,6 +46,7 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
       phone: formData.phone,
       company: formData.company || undefined,
       taxId: formData.taxId || undefined,
+      vatNumber: formData.vatNumber || undefined,
       address: {
         street: formData.street,
         city: formData.city,
@@ -132,6 +134,16 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
                   id="taxId"
                   value={formData.taxId}
                   onChange={(e) => handleInputChange('taxId', e.target.value)}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="vatNumber">VAT Number</Label>
+                <Input
+                  id="vatNumber"
+                  value={formData.vatNumber}
+                  onChange={(e) => handleInputChange('vatNumber', e.target.value)}
+                  placeholder="Enter VAT number"
                 />
               </div>
 
