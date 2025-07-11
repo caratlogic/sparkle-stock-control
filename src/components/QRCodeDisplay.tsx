@@ -45,6 +45,7 @@ export const QRCodeDisplay = ({
     const generateQR = async () => {
       try {
         setLoading(true);
+        console.log('Generating QR code with config:', config);
         const url = await generateCustomQRCode(gemData, config);
         setQrCodeUrl(url);
       } catch (error) {
