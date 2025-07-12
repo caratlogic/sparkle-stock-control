@@ -63,6 +63,42 @@ export const useInvoicePayments = () => {
       }
 
       console.log('✅ Successfully added payment:', data);
+
+      // Check if invoice is now fully paid and update status
+      const { data: invoiceData, error: invoiceError } = await supabase
+        .from('invoices')
+        .select('id, total')
+        .eq('id', payment.invoiceId)
+        .single();
+
+      if (!invoiceError && invoiceData) {
+        // Calculate total payments for this invoice
+        const { data: allPayments } = await supabase
+          .from('invoice_payments')
+          .select('amount')
+          .eq('invoice_id', payment.invoiceId);
+
+        const totalPaid = (allPayments || []).reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
+        const invoiceTotal = parseFloat(invoiceData.total.toString());
+
+        console.log('💰 Payment check:', { totalPaid, invoiceTotal });
+
+        // Update invoice status based on payment
+        if (totalPaid >= invoiceTotal) {
+          await supabase
+            .from('invoices')
+            .update({ status: 'paid' })
+            .eq('id', payment.invoiceId);
+          console.log('✅ Invoice marked as paid');
+        } else if (totalPaid > 0) {
+          await supabase
+            .from('invoices')
+            .update({ status: 'partial' })
+            .eq('id', payment.invoiceId);
+          console.log('✅ Invoice marked as partially paid');
+        }
+      }
+
       await fetchPayments();
       return { success: true, data };
     } catch (err) {

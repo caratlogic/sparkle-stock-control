@@ -73,7 +73,12 @@ export const PaymentDashboard = () => {
 
   // Calculate summary from transformed payments
   const calculateSummary = useCallback((): PaymentSummary => {
-    const totalReceived = transformedPayments.reduce((sum, p) => sum + p.amount, 0);
+    console.log('💰 Calculating payment summary...');
+    console.log('Invoice payments:', invoicePayments.length);
+    console.log('Total invoices:', invoices.length);
+    
+    const totalReceived = invoicePayments.reduce((sum, p) => sum + p.amount, 0);
+    console.log('Total received:', totalReceived);
     
     // Calculate pending payments from invoices that haven't been fully paid
     const pendingPayments = invoices.reduce((sum, invoice) => {
@@ -81,33 +86,43 @@ export const PaymentDashboard = () => {
         .filter(p => p.invoiceId === invoice.id)
         .reduce((total, payment) => total + payment.amount, 0);
       const remaining = invoice.total - paidAmount;
-      return sum + (remaining > 0 ? remaining : 0);
+      
+      // Only count unpaid/partial invoices as pending (excluding cancelled and fully paid)
+      if (invoice.status !== 'cancelled' && invoice.status !== 'paid' && remaining > 0) {
+        return sum + remaining;
+      }
+      return sum;
     }, 0);
+    console.log('Pending payments:', pendingPayments);
 
-    // Calculate overdue payments (invoices more than 1 week old with no payment)
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
+    // Calculate overdue payments (invoices past due date or marked as overdue)
     const overduePayments = invoices.reduce((sum, invoice) => {
       const totalPaid = invoicePayments
         .filter(p => p.invoiceId === invoice.id)
         .reduce((total, payment) => total + payment.amount, 0);
-      const invoiceDate = new Date(invoice.dateCreated);
+      const remaining = invoice.total - totalPaid;
       
-      // Only count as overdue if no payment received and created more than 1 week ago
-      if (totalPaid === 0 && invoiceDate < oneWeekAgo && invoice.status !== 'cancelled') {
-        return sum + invoice.total;
+      // Check if invoice is overdue
+      const dueDate = new Date(invoice.dateDue);
+      const isOverdue = invoice.status === 'overdue' || (dueDate < new Date() && remaining > 0);
+      
+      if (isOverdue && invoice.status !== 'cancelled' && invoice.status !== 'paid' && remaining > 0) {
+        return sum + remaining;
       }
       return sum;
     }, 0);
+    console.log('Overdue payments:', overduePayments);
 
-    return {
+    const summary = {
       totalReceived,
       pendingPayments,
       overduePayments,
       totalRefunds: 0 // Would be calculated from refund records
     };
-  }, [transformedPayments, invoices, invoicePayments]);
+    
+    console.log('Final payment summary:', summary);
+    return summary;
+  }, [invoicePayments, invoices]);
 
   const summary = calculateSummary();
 

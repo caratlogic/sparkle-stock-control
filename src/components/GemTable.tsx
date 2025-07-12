@@ -27,6 +27,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ColumnCustomizer } from './ColumnCustomizer';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 
 interface GemTableProps {
   gems: Gem[];
@@ -47,6 +48,7 @@ export const GemTable = ({
 }: GemTableProps) => {
   const { isOwner, user } = useAuth();
   const { toast } = useToast();
+  const { fieldConfig } = useQRCodeSettings();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGemType, setFilterGemType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -603,8 +605,10 @@ export const GemTable = ({
                                   description: gem.description,
                                   origin: gem.origin,
                                   treatment: gem.treatment,
+                                  supplier: gem.supplier,
                                   dateAdded: gem.dateAdded
                                 }}
+                                fieldConfig={fieldConfig}
                                 size="small"
                                 showDownload={true}
                               />

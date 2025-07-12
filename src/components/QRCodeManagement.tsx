@@ -1,11 +1,11 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QRCodeSettings, QRCodeFieldConfig } from './QRCodeSettings';
+import { QRCodeSettings } from './QRCodeSettings';
 import { BulkQRCodeGenerator } from './BulkQRCodeGenerator';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { Gem } from '../types/gem';
 import { useToast } from '@/hooks/use-toast';
+import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 import { QrCode } from 'lucide-react';
 
 interface QRCodeManagementProps {
@@ -14,22 +14,7 @@ interface QRCodeManagementProps {
 
 export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
   const { toast } = useToast();
-  
-  // Default configuration
-  const [fieldConfig, setFieldConfig] = useState<QRCodeFieldConfig>({
-    stockId: true,
-    gemType: true,
-    carat: true,
-    color: true,
-    cut: true,
-    measurements: false,
-    certificateNumber: true,
-    price: false,
-    treatment: false,
-    origin: false,
-    supplier: false,
-    description: false
-  });
+  const { fieldConfig, updateFieldConfig } = useQRCodeSettings();
 
   const handleSaveTemplate = (templateName: string) => {
     // Save custom template to localStorage
@@ -83,7 +68,7 @@ export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
             <TabsContent value="settings" className="space-y-4">
               <QRCodeSettings
                 config={fieldConfig}
-                onConfigChange={setFieldConfig}
+                onConfigChange={updateFieldConfig}
                 onSaveTemplate={handleSaveTemplate}
               />
             </TabsContent>
