@@ -13,6 +13,7 @@ import { CreditNotesDashboard } from './CreditNotesDashboard';
 import { QRCodeManagement } from './QRCodeManagement';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
+import { HelpSection } from './HelpSection';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
@@ -24,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Gem } from '../types/gem';
 import { Customer } from '../types/customer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, HelpCircle } from 'lucide-react';
 export const Dashboard = () => {
   const {
     gems,
@@ -81,6 +82,7 @@ export const Dashboard = () => {
   const [invoiceCustomer, setInvoiceCustomer] = useState<Customer | null>(null);
   const [consignmentCustomer, setConsignmentCustomer] = useState<Customer | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
     try {
@@ -188,10 +190,16 @@ export const Dashboard = () => {
           <h1 className="text-3xl font-bold text-slate-800">Business Dashboard</h1>
           <p className="text-slate-600 mt-1">Manage your diamond inventory and business operations</p>
         </div>
-        <Button onClick={handleRefreshAll} disabled={isRefreshing} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Refreshing...' : 'Refresh All'}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowHelp(true)} variant="outline" className="flex items-center gap-2">
+            <HelpCircle className="w-4 h-4" />
+            Help
+          </Button>
+          <Button onClick={handleRefreshAll} disabled={isRefreshing} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh All'}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -303,5 +311,9 @@ export const Dashboard = () => {
           <QRCodeManagement gems={gems} />
         </TabsContent>
       </Tabs>
+
+      {showHelp && (
+        <HelpSection onClose={() => setShowHelp(false)} />
+      )}
     </div>;
 };

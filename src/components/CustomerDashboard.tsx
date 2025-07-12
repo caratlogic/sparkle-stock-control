@@ -173,7 +173,12 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
 
   // Calculate metrics
   const totalCustomers = customers.length;
-  const totalRevenue = customers.reduce((sum, customer) => sum + customer.totalPurchases, 0);
+  const totalRevenue = customers.reduce((sum, customer) => {
+    console.log(`Customer ${customer.name}: totalPurchases = ${customer.totalPurchases}`);
+    return sum + (customer.totalPurchases || 0);
+  }, 0);
+  console.log(`Total revenue calculated: ${totalRevenue}`);
+  
   const activeCustomers = customers.filter(c => c.lastPurchaseDate && 
     new Date(c.lastPurchaseDate) > new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
   ).length;

@@ -102,11 +102,16 @@ export const PaymentDashboard = () => {
         .reduce((total, payment) => total + payment.amount, 0);
       const remaining = invoice.total - totalPaid;
       
-      // Check if invoice is overdue
+      // Check if invoice is overdue - check status first, then due date
       const dueDate = new Date(invoice.dateDue);
-      const isOverdue = invoice.status === 'overdue' || (dueDate < new Date() && remaining > 0);
+      const today = new Date();
+      const isOverdue = invoice.status === 'overdue' || 
+        (invoice.status === 'sent' && dueDate < today && remaining > 0);
+      
+      console.log(`Invoice ${invoice.invoiceNumber}: status=${invoice.status}, dueDate=${invoice.dateDue}, remaining=${remaining}, isOverdue=${isOverdue}`);
       
       if (isOverdue && invoice.status !== 'cancelled' && invoice.status !== 'paid' && remaining > 0) {
+        console.log(`Adding ${remaining} to overdue payments`);
         return sum + remaining;
       }
       return sum;
