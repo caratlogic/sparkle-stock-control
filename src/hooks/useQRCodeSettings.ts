@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
-import { QRCodeFieldConfig } from '../components/QRCodeSettings';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
-const QR_CODE_SETTINGS_KEY = 'qr-code-field-config';
+export interface QRCodeFieldConfig {
+  [key: string]: boolean;
+}
 
 export const useQRCodeSettings = () => {
+  const { user } = useAuth();
   const [fieldConfig, setFieldConfig] = useState<QRCodeFieldConfig>({
     stockId: true,
     gemType: true,
@@ -19,22 +23,61 @@ export const useQRCodeSettings = () => {
     description: false
   });
 
-  // Load settings from localStorage on mount
+  // Load settings from database on mount
   useEffect(() => {
-    const savedConfig = localStorage.getItem(QR_CODE_SETTINGS_KEY);
-    if (savedConfig) {
-      try {
-        setFieldConfig(JSON.parse(savedConfig));
-      } catch (error) {
-        console.error('Error loading QR code settings:', error);
-      }
+    if (user?.email) {
+      loadSettings();
     }
-  }, []);
+  }, [user?.email]);
 
-  // Save settings to localStorage whenever they change
+  const loadSettings = async () => {
+    if (!user?.email) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('qr_code_settings')
+        .select('field_config')
+        .eq('user_email', user.email)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading QR code settings:', error);
+        return;
+      }
+
+      if (data?.field_config) {
+        setFieldConfig(data.field_config as QRCodeFieldConfig);
+      }
+    } catch (error) {
+      console.error('Error loading QR code settings:', error);
+    }
+  };
+
+  const saveSettings = async (newConfig: QRCodeFieldConfig) => {
+    if (!user?.email) return;
+
+    try {
+      const { error } = await supabase
+        .from('qr_code_settings')
+        .upsert({
+          user_email: user.email,
+          field_config: newConfig
+        });
+
+      if (error) {
+        console.error('Error saving QR code settings:', error);
+        return;
+      }
+
+      setFieldConfig(newConfig);
+    } catch (error) {
+      console.error('Error saving QR code settings:', error);
+    }
+  };
+
   const updateFieldConfig = (newConfig: QRCodeFieldConfig) => {
     setFieldConfig(newConfig);
-    localStorage.setItem(QR_CODE_SETTINGS_KEY, JSON.stringify(newConfig));
+    saveSettings(newConfig);
   };
 
   return {

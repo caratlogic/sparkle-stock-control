@@ -1,7 +1,7 @@
 import QRCode from 'qrcode';
 import JSZip from 'jszip';
 import { Gem } from '../types/gem';
-import { QRCodeFieldConfig } from '../components/QRCodeSettings';
+import { QRCodeFieldConfig } from '../hooks/useQRCodeSettings';
 
 export interface QRCodeData {
   stockId: string;

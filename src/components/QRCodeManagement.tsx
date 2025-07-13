@@ -67,9 +67,8 @@ export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
             
             <TabsContent value="settings" className="space-y-4">
               <QRCodeSettings
-                config={fieldConfig}
+                fieldConfig={fieldConfig}
                 onConfigChange={updateFieldConfig}
-                onSaveTemplate={handleSaveTemplate}
               />
             </TabsContent>
             

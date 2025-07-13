@@ -14,6 +14,7 @@ import { QRCodeManagement } from './QRCodeManagement';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { HelpSection } from './HelpSection';
+import { ThemeSwitcher } from './ThemeSwitcher';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
@@ -191,6 +192,7 @@ export const Dashboard = () => {
           <p className="text-slate-600 mt-1">Manage your diamond inventory and business operations</p>
         </div>
         <div className="flex gap-2">
+          <ThemeSwitcher />
           <Button onClick={() => setShowHelp(true)} variant="outline" className="flex items-center gap-2">
             <HelpCircle className="w-4 h-4" />
             Help

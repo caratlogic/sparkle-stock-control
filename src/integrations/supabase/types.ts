@@ -656,6 +656,30 @@ export type Database = {
           },
         ]
       }
+      qr_code_settings: {
+        Row: {
+          created_at: string | null
+          field_config: Json
+          id: string
+          updated_at: string | null
+          user_email: string
+        }
+        Insert: {
+          created_at?: string | null
+          field_config?: Json
+          id?: string
+          updated_at?: string | null
+          user_email: string
+        }
+        Update: {
+          created_at?: string | null
+          field_config?: Json
+          id?: string
+          updated_at?: string | null
+          user_email?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

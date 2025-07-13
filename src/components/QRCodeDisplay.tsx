@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, QrCode } from 'lucide-react';
 import { generateCustomQRCode, downloadCustomQRCode, QRCodeData } from '../utils/qrCodeGenerator';
-import { QRCodeFieldConfig } from './QRCodeSettings';
+import { QRCodeFieldConfig } from '../hooks/useQRCodeSettings';
 import { useToast } from '@/hooks/use-toast';
 
 interface QRCodeDisplayProps {

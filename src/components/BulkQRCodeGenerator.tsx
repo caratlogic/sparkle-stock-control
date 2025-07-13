@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Package } from 'lucide-react';
 import { Gem } from '../types/gem';
-import { QRCodeFieldConfig } from './QRCodeSettings';
+import { QRCodeFieldConfig } from '../hooks/useQRCodeSettings';
 import { generateCustomQRCode, downloadAllQRCodes } from '../utils/qrCodeGenerator';
 
 interface BulkQRCodeGeneratorProps {
