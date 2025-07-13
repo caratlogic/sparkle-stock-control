@@ -17,7 +17,9 @@ import {
   Handshake,
   Plus,
   Eye,
-  X
+  X,
+  Mail,
+  Upload
 } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { GemDetailView } from './GemDetailView';
@@ -28,6 +30,10 @@ import { ColumnCustomizer } from './ColumnCustomizer';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
+import { GemSelectionEmail } from './GemSelectionEmail';
+import { QuotationCreation } from './QuotationCreation';
+import { BulkGemUpload } from './BulkGemUpload';
+import { useCustomers } from '../hooks/useCustomers';
 
 interface GemTableProps {
   gems: Gem[];
@@ -64,6 +70,11 @@ export const GemTable = ({
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const [showColumnCustomizer, setShowColumnCustomizer] = useState(false);
   const [customColumnLabels, setCustomColumnLabels] = useState<Record<string, string>>({});
+  const [showGemSelection, setShowGemSelection] = useState(false);
+  const [showQuotation, setShowQuotation] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+  
+  const { customers } = useCustomers();
 
   // Default column configuration with custom labels support
   const getDefaultColumns = (): ColumnConfig[] => [
@@ -288,6 +299,30 @@ export const GemTable = ({
                 Add Gem
               </Button>
             )}
+            
+            <Button 
+              onClick={() => setShowGemSelection(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Email Selected
+            </Button>
+
+            <Button 
+              onClick={() => setShowQuotation(true)}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Create Quotation
+            </Button>
+
+            <Button 
+              onClick={() => setShowBulkUpload(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Bulk Upload
+            </Button>
             
             <ColumnSelector
               columns={columns}
@@ -707,6 +742,30 @@ export const GemTable = ({
         columns={customizableColumns}
         onSave={handleColumnCustomizationSave}
         userEmail={user?.email || ''}
+      />
+
+      <GemSelectionEmail
+        gems={filteredGems}
+        customers={customers}
+        isOpen={showGemSelection}
+        onClose={() => setShowGemSelection(false)}
+      />
+
+      <QuotationCreation
+        gems={filteredGems}
+        customers={customers}
+        isOpen={showQuotation}
+        onClose={() => setShowQuotation(false)}
+      />
+
+      <BulkGemUpload
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
+        onSuccess={() => {
+          setShowBulkUpload(false);
+          // Trigger a refresh if parent has a refresh method
+          window.location.reload();
+        }}
       />
     </Card>
   );
