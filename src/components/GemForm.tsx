@@ -10,6 +10,7 @@ import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTI
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { QRCodeDisplay } from './QRCodeDisplay';
+import { ImageUploader } from './ImageUploader';
 
 interface GemFormProps {
   gem?: Gem | null;
@@ -359,32 +360,10 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="imageUrl" className="flex items-center space-x-2">
-                    <Image className="w-4 h-4" />
-                    <span>Product Image URL (Optional)</span>
-                  </Label>
-                  <Input
-                    id="imageUrl"
-                    placeholder="https://example.com/product-image.jpg"
-                    value={formData.imageUrl}
-                    onChange={(e) => handleChange('imageUrl', e.target.value)}
-                    className="bg-slate-50 border-slate-200"
-                  />
-                  {formData.imageUrl && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.imageUrl} 
-                        alt="Product preview" 
-                        className="w-20 h-20 object-cover rounded border"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+                <ImageUploader
+                  onImageUpload={(url) => handleChange('imageUrl', url)}
+                  currentImage={formData.imageUrl}
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes (Optional)</Label>

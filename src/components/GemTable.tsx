@@ -34,6 +34,8 @@ import { GemSelectionEmail } from './GemSelectionEmail';
 import { QuotationCreation } from './QuotationCreation';
 import { BulkGemUpload } from './BulkGemUpload';
 import { useCustomers } from '../hooks/useCustomers';
+import { MultiCriteriaSearch } from './MultiCriteriaSearch';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 interface GemTableProps {
   gems: Gem[];
@@ -73,6 +75,8 @@ export const GemTable = ({
   const [showGemSelection, setShowGemSelection] = useState(false);
   const [showQuotation, setShowQuotation] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [searchCriteria, setSearchCriteria] = useState<any[]>([]);
   
   const { customers } = useCustomers();
 
@@ -100,8 +104,9 @@ export const GemTable = ({
     { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 19 },
     { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 20 },
     { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 21 },
-    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 22 },
-    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 23 },
+    { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 22 },
+    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 23 },
+    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 24 },
   ];
 
   const [columns, setColumns] = useState<ColumnConfig[]>(getDefaultColumns());
@@ -196,6 +201,31 @@ export const GemTable = ({
     setPriceRange({ min: '', max: '' });
   };
 
+  // Apply advanced search criteria
+  const applyAdvancedSearch = (gem: Gem, criteria: any[]) => {
+    return criteria.every(criterion => {
+      const fieldValue = gem[criterion.field as keyof Gem];
+      const searchValue = criterion.value.toLowerCase();
+      
+      switch (criterion.operator) {
+        case 'contains':
+          return String(fieldValue).toLowerCase().includes(searchValue);
+        case 'equals':
+          return String(fieldValue).toLowerCase() === searchValue;
+        case 'starts_with':
+          return String(fieldValue).toLowerCase().startsWith(searchValue);
+        case 'ends_with':
+          return String(fieldValue).toLowerCase().endsWith(searchValue);
+        case 'greater_than':
+          return Number(fieldValue) > Number(criterion.value);
+        case 'less_than':
+          return Number(fieldValue) < Number(criterion.value);
+        default:
+          return true;
+      }
+    });
+  };
+
   // Filter and sort gems
   const filteredGems = gems
     .filter((gem) => {
@@ -218,9 +248,11 @@ export const GemTable = ({
       
       const matchesPriceRange = (!priceRange.min || gem.price >= parseFloat(priceRange.min)) &&
                                (!priceRange.max || gem.price <= parseFloat(priceRange.max));
+
+      const matchesAdvancedSearch = searchCriteria.length === 0 || applyAdvancedSearch(gem, searchCriteria);
       
       return matchesSearch && matchesGemType && matchesStatus && matchesCut && 
-             matchesColor && matchesTreatment && matchesCaratRange && matchesPriceRange;
+             matchesColor && matchesTreatment && matchesCaratRange && matchesPriceRange && matchesAdvancedSearch;
     })
     .sort((a, b) => {
       const aValue = a[sortField];
@@ -323,6 +355,14 @@ export const GemTable = ({
               <Upload className="w-4 h-4 mr-2" />
               Bulk Upload
             </Button>
+
+            <Button 
+              onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+              variant={showAdvancedSearch ? "default" : "outline"}
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Advanced Search
+            </Button>
             
             <ColumnSelector
               columns={columns}
@@ -342,8 +382,28 @@ export const GemTable = ({
               <Download className="w-4 h-4 mr-2" />
               Export CSV
             </Button>
+
+            <ThemeSwitcher />
           </div>
         </div>
+
+        {/* Advanced Search */}
+        {showAdvancedSearch && (
+          <MultiCriteriaSearch
+            onSearch={setSearchCriteria}
+            fields={[
+              { key: 'stockId', label: 'Stock ID', type: 'text' },
+              { key: 'gemType', label: 'Gem Type', type: 'select', options: uniqueGemTypes },
+              { key: 'carat', label: 'Carat', type: 'number' },
+              { key: 'cut', label: 'Cut', type: 'select', options: uniqueCuts },
+              { key: 'color', label: 'Color', type: 'select', options: uniqueColors },
+              { key: 'price', label: 'Price', type: 'number' },
+              { key: 'certificateNumber', label: 'Certificate Number', type: 'text' },
+              { key: 'origin', label: 'Origin', type: 'text' },
+              { key: 'supplier', label: 'Supplier', type: 'text' }
+            ]}
+          />
+        )}
 
         {/* Search and Filters Section */}
         <div className="space-y-4">
@@ -623,35 +683,37 @@ export const GemTable = ({
                             </span>
                           );
 
-                        case 'qrcode':
-                          return (
-                            <div className="flex items-center space-x-2">
-                              <QRCodeDisplay 
-                                gemData={{
-                                  stockId: gem.stockId,
-                                  gemType: gem.gemType,
-                                  carat: gem.carat,
-                                  color: gem.color,
-                                  cut: gem.cut,
-                                  measurements: gem.measurements || '',
-                                  certificateNumber: gem.certificateNumber,
-                                  price: gem.price,
-                                  pricePerCarat: gem.price / gem.carat,
-                                  description: gem.description,
-                                  origin: gem.origin,
-                                  treatment: gem.treatment,
-                                  supplier: gem.supplier,
-                                  dateAdded: gem.dateAdded
-                                }}
-                                fieldConfig={fieldConfig}
-                                size="small"
-                                showDownload={true}
-                              />
-                            </div>
-                          );
-                         
-                         case 'dateAdded':
-                           return <div className="text-sm text-slate-600">{gem.dateAdded}</div>;
+                         case 'certificateNumber':
+                           return <div className="text-sm text-slate-600 font-mono">{gem.certificateNumber}</div>;
+                         case 'qrcode':
+                           return (
+                             <div className="flex items-center space-x-2">
+                               <QRCodeDisplay 
+                                 gemData={{
+                                   stockId: gem.stockId,
+                                   gemType: gem.gemType,
+                                   carat: gem.carat,
+                                   color: gem.color,
+                                   cut: gem.cut,
+                                   measurements: gem.measurements || '',
+                                   certificateNumber: gem.certificateNumber,
+                                   price: gem.price,
+                                   pricePerCarat: gem.price / gem.carat,
+                                   description: gem.description,
+                                   origin: gem.origin,
+                                   treatment: gem.treatment,
+                                   supplier: gem.supplier,
+                                   dateAdded: gem.dateAdded
+                                 }}
+                                 fieldConfig={fieldConfig}
+                                 size="small"
+                                 showDownload={true}
+                               />
+                             </div>
+                           );
+                          
+                          case 'dateAdded':
+                            return <div className="text-sm text-slate-600">{gem.dateAdded}</div>;
                         case 'actions':
                           return (
                             <div className="flex space-x-2">

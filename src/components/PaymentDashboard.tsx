@@ -259,20 +259,14 @@ export const PaymentDashboard = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                // View invoice logic here
-                                console.log('View invoice:', invoice.id);
-                              }}
+                              onClick={() => handleViewInvoice(invoice.id)}
                             >
                               View
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                setSelectedInvoice(invoice);
-                                setShowInvoiceDialog(true);
-                              }}
+                              onClick={() => handleViewInvoice(invoice.id)}
                             >
                               Add Payment
                             </Button>
