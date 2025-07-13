@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, User, DollarSign, Printer } from 'lucide-react';
 import { Invoice } from '../../types/customer';
+import { useInvoicePayments } from '../../hooks/useInvoicePayments';
+import { InvoicePaymentDialog } from '../InvoicePaymentDialog';
 
 interface InvoiceViewDialogProps {
   invoice: Invoice | null;
@@ -11,10 +13,16 @@ interface InvoiceViewDialogProps {
 }
 
 export const InvoiceViewDialog = ({ invoice, open, onClose }: InvoiceViewDialogProps) => {
+  const { addPayment } = useInvoicePayments();
+  
   if (!invoice) return null;
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleAddPayment = async (payment: any) => {
+    return await addPayment(payment);
   };
 
   return (
@@ -168,6 +176,14 @@ export const InvoiceViewDialog = ({ invoice, open, onClose }: InvoiceViewDialogP
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Payment Dialog Integration */}
+        <div className="border-t pt-4">
+          <InvoicePaymentDialog 
+            invoice={invoice} 
+            onAddPayment={handleAddPayment} 
+          />
         </div>
       </DialogContent>
     </Dialog>

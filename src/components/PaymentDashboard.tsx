@@ -269,7 +269,10 @@ export const PaymentDashboard = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setShowAddPayment(true)}
+                              onClick={() => {
+                                setSelectedInvoice(invoice);
+                                setShowInvoiceDialog(true);
+                              }}
                             >
                               Add Payment
                             </Button>
