@@ -50,7 +50,7 @@ export const LoginForm = () => {
           <div className="w-16 h-16 bg-diamond-gradient rounded-full flex items-center justify-center mx-auto mb-4">
             <Diamond className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold text-slate-800">Gems & Diamond  Inventory Management </CardTitle>
+          <CardTitle className="text-2xl font-bold text-slate-800">Gems & Diamond  Inventory Management System</CardTitle>
           <p className="text-slate-600">Sign in to your account</p>
         </CardHeader>
         <CardContent>
