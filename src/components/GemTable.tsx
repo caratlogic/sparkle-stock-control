@@ -77,36 +77,38 @@ export const GemTable = ({
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchCriteria, setSearchCriteria] = useState<any[]>([]);
+  const [selectedGems, setSelectedGems] = useState<Set<string>>(new Set());
   
   const { customers } = useCustomers();
 
   // Default column configuration with custom labels support
   const getDefaultColumns = (): ColumnConfig[] => [
-    { key: 'image', label: customColumnLabels['image'] || 'Image', visible: true, order: 0 },
-    { key: 'stockId', label: customColumnLabels['stockId'] || 'Stock ID', visible: true, mandatory: true, order: 1 },
-    { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', visible: true, order: 2 },
-    { key: 'carat', label: customColumnLabels['carat'] || 'Total Carat', visible: true, order: 3 },
-    { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 4 },
-    { key: 'price', label: customColumnLabels['price'] || 'Selling Price', visible: true, order: 5 },
-    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Price/Carat', visible: true, order: 6 },
-    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', visible: isOwner, order: 7 },
-    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 8 },
-    { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 9 },
-    { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 10 },
-    { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 11 },
-    { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', visible: false, order: 12 },
-    { key: 'purchaseDate', label: customColumnLabels['purchaseDate'] || 'Purchase Date', visible: false, order: 13 },
-    { key: 'origin', label: customColumnLabels['origin'] || 'Origin', visible: false, order: 14 },
-    { key: 'inStock', label: customColumnLabels['inStock'] || 'In Stock', visible: true, order: 15 },
-    { key: 'reserved', label: customColumnLabels['reserved'] || 'Reserved', visible: true, order: 16 },
-    { key: 'sold', label: customColumnLabels['sold'] || 'Sold', visible: true, order: 17 },
-    { key: 'status', label: customColumnLabels['status'] || 'Status', visible: true, order: 18 },
-    { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 19 },
-    { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 20 },
-    { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 21 },
-    { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 22 },
-    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 23 },
-    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 24 },
+    { key: 'select', label: 'Select', visible: true, mandatory: true, order: 0 },
+    { key: 'image', label: customColumnLabels['image'] || 'Image', visible: true, order: 1 },
+    { key: 'stockId', label: customColumnLabels['stockId'] || 'Stock ID', visible: true, mandatory: true, order: 2 },
+    { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', visible: true, order: 3 },
+    { key: 'carat', label: customColumnLabels['carat'] || 'Total Carat', visible: true, order: 4 },
+    { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 5 },
+    { key: 'price', label: customColumnLabels['price'] || 'Selling Price', visible: true, order: 6 },
+    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Price/Carat', visible: true, order: 7 },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', visible: isOwner, order: 8 },
+    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 9 },
+    { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 10 },
+    { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 11 },
+    { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 12 },
+    { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', visible: false, order: 13 },
+    { key: 'purchaseDate', label: customColumnLabels['purchaseDate'] || 'Purchase Date', visible: false, order: 14 },
+    { key: 'origin', label: customColumnLabels['origin'] || 'Origin', visible: false, order: 15 },
+    { key: 'inStock', label: customColumnLabels['inStock'] || 'In Stock', visible: true, order: 16 },
+    { key: 'reserved', label: customColumnLabels['reserved'] || 'Reserved', visible: true, order: 17 },
+    { key: 'sold', label: customColumnLabels['sold'] || 'Sold', visible: true, order: 18 },
+    { key: 'status', label: customColumnLabels['status'] || 'Status', visible: true, order: 19 },
+    { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 20 },
+    { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 21 },
+    { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 22 },
+    { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 23 },
+    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 24 },
+    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 25 },
   ];
 
   const [columns, setColumns] = useState<ColumnConfig[]>(getDefaultColumns());
@@ -312,9 +314,30 @@ export const GemTable = ({
     window.URL.revokeObjectURL(url);
   };
 
-  const hasActiveFilters = filterGemType !== 'all' || filterStatus !== 'all' || filterCut !== 'all' || 
+   const hasActiveFilters = filterGemType !== 'all' || filterStatus !== 'all' || filterCut !== 'all' || 
                           filterColor !== 'all' || filterTreatment !== 'all' || caratRange.min || caratRange.max || 
                           priceRange.min || priceRange.max || searchTerm;
+
+  // Selection handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedGems(new Set(filteredGems.map(gem => gem.id)));
+    } else {
+      setSelectedGems(new Set());
+    }
+  };
+
+  const handleSelectGem = (gemId: string, checked: boolean) => {
+    const newSelected = new Set(selectedGems);
+    if (checked) {
+      newSelected.add(gemId);
+    } else {
+      newSelected.delete(gemId);
+    }
+    setSelectedGems(newSelected);
+  };
+
+  const selectedGemsData = filteredGems.filter(gem => selectedGems.has(gem.id));
 
   return (
     <Card>
@@ -335,17 +358,19 @@ export const GemTable = ({
             <Button 
               onClick={() => setShowGemSelection(true)}
               className="bg-blue-600 hover:bg-blue-700"
+              disabled={selectedGems.size === 0}
             >
               <Mail className="w-4 h-4 mr-2" />
-              Email Selected
+              Email Selected ({selectedGems.size})
             </Button>
 
             <Button 
               onClick={() => setShowQuotation(true)}
               className="bg-purple-600 hover:bg-purple-700"
+              disabled={selectedGems.size === 0}
             >
               <FileText className="w-4 h-4 mr-2" />
-              Create Quotation
+              Create Quotation ({selectedGems.size})
             </Button>
 
             <Button 
@@ -554,7 +579,14 @@ export const GemTable = ({
                         : undefined
                     }
                   >
-                    {['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key) ? (
+                    {column.key === 'select' ? (
+                      <input
+                        type="checkbox"
+                        checked={selectedGems.size === filteredGems.length && filteredGems.length > 0}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className="rounded border-gray-300"
+                      />
+                    ) : ['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key) ? (
                       <div className="flex items-center space-x-1">
                         <span>{column.label}</span>
                         <ArrowUpDown className="w-4 h-4" />
@@ -572,6 +604,15 @@ export const GemTable = ({
                   {visibleColumns.map((column) => {
                     const renderCell = () => {
                       switch (column.key) {
+                        case 'select':
+                          return (
+                            <input
+                              type="checkbox"
+                              checked={selectedGems.has(gem.id)}
+                              onChange={(e) => handleSelectGem(gem.id, e.target.checked)}
+                              className="rounded border-gray-300"
+                            />
+                          );
                         case 'image':
                           return (
                             <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center">
@@ -807,14 +848,14 @@ export const GemTable = ({
       />
 
       <GemSelectionEmail
-        gems={filteredGems}
+        gems={selectedGemsData}
         customers={customers}
         isOpen={showGemSelection}
         onClose={() => setShowGemSelection(false)}
       />
 
       <QuotationCreation
-        gems={filteredGems}
+        gems={selectedGemsData}
         customers={customers}
         isOpen={showQuotation}
         onClose={() => setShowQuotation(false)}
