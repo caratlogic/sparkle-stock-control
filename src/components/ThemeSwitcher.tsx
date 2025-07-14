@@ -14,10 +14,9 @@ export const ThemeSwitcher = () => {
       setTheme(savedTheme);
       applyTheme(savedTheme);
     } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme('system');
-      applyTheme('system');
+      // Default to light theme
+      setTheme('light');
+      applyTheme('light');
     }
   }, []);
 
