@@ -123,10 +123,11 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
       features: [
         'Professional invoice creation with automated numbering and tax calculations',
         'Consignment management with flexible terms and return tracking',
+        'Quotation system for price proposals with professional formatting and email delivery',
         'Multi-item transactions with quantity controls and bulk pricing',
         'Payment recording with multiple methods (cash, bank, card, check)',
         'Automated workflow: Draft → Sent → Paid/Overdue status progression',
-        'Professional PDF generation for invoices and consignment agreements',
+        'Professional PDF generation for invoices, quotations, and consignment agreements',
         'Email integration for direct document delivery to customers',
         'Advanced filtering by customer, date range, status, amount, item type',
         'Seamless consignment-to-invoice conversion when items sell',
@@ -310,6 +311,17 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
         'Record payments as they are received',
         'Automatic status updates (Draft → Sent → Paid)',
         'Generate delivery documentation'
+      ]
+    },
+    {
+      title: 'Quotation Workflow',
+      steps: [
+        'Select gems from inventory for quotation',
+        'Choose customer and set quotation details',
+        'Customize pricing, discounts, and terms',
+        'Generate professional quotation with company branding',
+        'Send quotation via email to customer',
+        'Track quotation status and follow up'
       ]
     },
     {

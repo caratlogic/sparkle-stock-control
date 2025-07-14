@@ -855,8 +855,9 @@ export const GemTable = ({
       />
 
       <QuotationCreation
-        gems={selectedGemsData}
+        gems={gems}
         customers={customers}
+        preSelectedGems={selectedGemsData}
         isOpen={showQuotation}
         onClose={() => setShowQuotation(false)}
       />

@@ -13,6 +13,7 @@ interface CustomerTableProps {
   onDelete: (id: string) => void;
   onCreateInvoice?: (customer: Customer) => void;
   onCreateConsignment?: (customer: Customer) => void;
+  onCreateQuotation?: (customer: Customer) => void;
   onUpdateDiscount: (customerId: string, discount: number) => void;
   onCommunicate?: (customer: Customer) => void;
   onView?: (customer: Customer) => void;
@@ -24,6 +25,7 @@ export const CustomerTable = ({
   onDelete,
   onCreateInvoice,
   onCreateConsignment,
+  onCreateQuotation,
   onUpdateDiscount,
   onCommunicate,
   onView,
@@ -248,6 +250,10 @@ export const CustomerTable = ({
                           {onCreateConsignment && <DropdownMenuItem onClick={() => onCreateConsignment(customer)}>
                               <Receipt className="mr-2 h-4 w-4" />
                               Create Consignment
+                            </DropdownMenuItem>}
+                          {onCreateQuotation && <DropdownMenuItem onClick={() => onCreateQuotation(customer)}>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Create Quotation
                             </DropdownMenuItem>}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => setDeleteCustomerId(customer.id)} className="text-red-600">

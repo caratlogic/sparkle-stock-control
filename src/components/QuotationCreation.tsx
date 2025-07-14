@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,12 +25,26 @@ interface QuotationCreationProps {
   customers: Customer[];
   isOpen: boolean;
   onClose: () => void;
+  preSelectedGems?: Gem[];
 }
 
-export const QuotationCreation = ({ gems, customers, isOpen, onClose }: QuotationCreationProps) => {
+export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelectedGems = [] }: QuotationCreationProps) => {
   const { toast } = useToast();
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
+
+  // Auto-populate with pre-selected gems on open
+  useEffect(() => {
+    if (isOpen && preSelectedGems.length > 0) {
+      const newItems = preSelectedGems.map(gem => ({
+        gem,
+        quantity: 1,
+        unitPrice: gem.price,
+        discount: 0
+      }));
+      setQuotationItems(newItems);
+    }
+  }, [isOpen, preSelectedGems]);
   const [quotationDetails, setQuotationDetails] = useState({
     validUntil: '',
     terms: 'Payment due within 30 days. Prices quoted are subject to availability and may change without notice.',
@@ -224,6 +238,39 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose }: Quotatio
       });
 
       if (response.error) throw response.error;
+
+      // Log communication
+      // Save quotation to database
+      const quotationNumber = `QUO-${Date.now()}`;
+      const { data: quotationData, error: quotationError } = await supabase
+        .from('quotations')
+        .insert({
+          quotation_number: quotationNumber,
+          customer_id: selectedCustomer,
+          subtotal: calculateSubtotal(),
+          discount_percentage: quotationDetails.discount,
+          total: calculateTotal(),
+          terms: quotationDetails.terms,
+          notes: quotationDetails.notes,
+          valid_until: quotationDetails.validUntil || null,
+          status: 'sent'
+        })
+        .select()
+        .single();
+
+      if (quotationError) throw quotationError;
+
+      // Save quotation items
+      const quotationItemsData = quotationItems.map(item => ({
+        quotation_id: quotationData.id,
+        gem_id: item.gem.id,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        discount: item.discount,
+        total_price: (item.quantity * item.unitPrice) * (1 - item.discount / 100)
+      }));
+
+      await supabase.from('quotation_items').insert(quotationItemsData);
 
       // Log communication
       await supabase.from('customer_communications').insert({

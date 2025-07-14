@@ -19,12 +19,14 @@ interface CustomerDetailPageProps {
   onBack: () => void;
   onCreateInvoice: (customer: Customer) => void;
   onCreateConsignment: (customer: Customer) => void;
+  onCreateQuotation?: (customer: Customer) => void;
 }
 export const CustomerDetailPage = ({
   customer,
   onBack,
   onCreateInvoice,
-  onCreateConsignment
+  onCreateConsignment,
+  onCreateQuotation
 }: CustomerDetailPageProps) => {
   const {
     invoices
@@ -181,6 +183,12 @@ export const CustomerDetailPage = ({
             <Receipt className="w-4 h-4" />
             Create Consignment
           </Button>
+          {onCreateQuotation && (
+            <Button variant="outline" onClick={() => onCreateQuotation(customer)} className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Create Quotation
+            </Button>
+          )}
         </div>
       </div>
 

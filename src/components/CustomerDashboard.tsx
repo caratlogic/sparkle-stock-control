@@ -12,22 +12,28 @@ import { CustomerForm } from './CustomerForm';
 import { CustomerTable } from './CustomerTable';
 import { CustomerCommunications } from './CustomerCommunications';
 import { CustomerDetailPage } from './CustomerDetailPage';
+import { QuotationCreation } from './QuotationCreation';
+import { useGems } from '../hooks/useGems';
 import { useToast } from '@/hooks/use-toast';
 
 interface CustomerDashboardProps {
   onCreateInvoice?: (customer: Customer) => void;
   onCreateConsignment?: (customer: Customer) => void;
+  onCreateQuotation?: (customer: Customer) => void;
   onViewCustomer?: (customer: Customer) => void;
 }
 
-export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onViewCustomer }: CustomerDashboardProps) => {
+export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onCreateQuotation, onViewCustomer }: CustomerDashboardProps) => {
   const { customers, loading, refetch } = useCustomers();
+  const { gems } = useGems();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomerForComms, setSelectedCustomerForComms] = useState<Customer | null>(null);
   const [selectedCustomerForDetail, setSelectedCustomerForDetail] = useState<Customer | null>(null);
+  const [showQuotationCreation, setShowQuotationCreation] = useState(false);
+  const [selectedCustomerForQuotation, setSelectedCustomerForQuotation] = useState<Customer | null>(null);
 
   const handleAddCustomer = async (customer: Omit<Customer, 'id' | 'customerId' | 'dateAdded' | 'totalPurchases'>) => {
     try {
@@ -212,6 +218,11 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
           setSelectedCustomerForDetail(null);
           if (onCreateConsignment) onCreateConsignment(customer);
         }}
+        onCreateQuotation={(customer) => {
+          setSelectedCustomerForDetail(null);
+          setSelectedCustomerForQuotation(customer);
+          setShowQuotationCreation(true);
+        }}
       />
     );
   }
@@ -327,6 +338,10 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
             onDelete={handleDeleteCustomer}
             onCreateInvoice={onCreateInvoice}
             onCreateConsignment={onCreateConsignment}
+            onCreateQuotation={(customer) => {
+              setSelectedCustomerForQuotation(customer);
+              setShowQuotationCreation(true);
+            }}
             onUpdateDiscount={handleUpdateDiscount}
             onCommunicate={(customer) => setSelectedCustomerForComms(customer)}
             onView={(customer) => setSelectedCustomerForDetail(customer)}
@@ -334,6 +349,18 @@ export const CustomerDashboard = ({ onCreateInvoice, onCreateConsignment, onView
           />
         </CardContent>
       </Card>
+
+      {showQuotationCreation && selectedCustomerForQuotation && (
+        <QuotationCreation
+          gems={gems}
+          customers={[selectedCustomerForQuotation]}
+          isOpen={showQuotationCreation}
+          onClose={() => {
+            setShowQuotationCreation(false);
+            setSelectedCustomerForQuotation(null);
+          }}
+        />
+      )}
     </div>
   );
 };
