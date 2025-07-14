@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sidebar } from './Sidebar';
+import { MobileSidebar } from './MobileSidebar';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { GemTable } from './GemTable';
 import { GemForm } from './GemForm';
@@ -84,6 +85,7 @@ export const Dashboard = () => {
   const [consignmentCustomer, setConsignmentCustomer] = useState<Customer | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
     try {
@@ -185,137 +187,140 @@ export const Dashboard = () => {
         <div className="text-lg">Loading dashboard...</div>
       </div>;
   }
-  return <div className="w-full min-h-screen space-y-6 animate-fade-in px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Business Dashboard</h1>
-          <p className="text-slate-600 mt-1">Manage your diamond inventory and business operations</p>
-        </div>
-        <div className="flex gap-2">
-          <ThemeSwitcher />
-          <Button onClick={() => setShowHelp(true)} variant="outline" className="flex items-center gap-2">
-            <HelpCircle className="w-4 h-4" />
-            Help
-          </Button>
-          <Button onClick={handleRefreshAll} disabled={isRefreshing} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh All'}
-          </Button>
-        </div>
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="w-full overflow-x-auto">
-          <TabsList className="inline-flex h-12 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground min-w-max">
-            <TabsTrigger value="analytics" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="inventory" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Inventory
-            </TabsTrigger>
-            <TabsTrigger value="customers" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Customers
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Transactions
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Payments
-            </TabsTrigger>
-            <TabsTrigger value="reminders" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Reminders
-            </TabsTrigger>
-            <TabsTrigger value="communications" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Communications
-            </TabsTrigger>
-            <TabsTrigger value="credit-notes" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              Credit Notes
-            </TabsTrigger>
-            <TabsTrigger value="qr-codes" className="whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md transition-all data-[state=active]:bg-card data-[state=active]:text-card-foreground data-[state=active]:shadow-sm hover:bg-accent">
-              QR Codes
-            </TabsTrigger>
-          </TabsList>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center space-x-4">
+              {/* Mobile Sidebar Trigger */}
+              <MobileSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+              
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Business Dashboard</h1>
+                <p className="text-muted-foreground text-sm">Manage your diamond inventory and business operations</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <ThemeSwitcher />
+              <Button onClick={() => setShowHelp(true)} variant="outline" className="flex items-center gap-2">
+                <HelpCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Help</span>
+              </Button>
+              <Button onClick={handleRefreshAll} disabled={isRefreshing} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh All'}</span>
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <TabsContent value="analytics" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Business Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AnalyticsDashboard gems={gems} customers={customers} invoices={invoices} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Content Area */}
+        <div className="flex-1 overflow-auto">
+          <div className="p-6 space-y-6 animate-fade-in">
+            {activeTab === 'analytics' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Business Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AnalyticsDashboard gems={gems} customers={customers} invoices={invoices} />
+                </CardContent>
+              </Card>
+            )}
 
-        <TabsContent value="inventory" className="space-y-6">
-          <GemTable gems={gems} onEdit={gem => {
-          setEditingGem(gem);
-          setShowGemForm(true);
-        }} onDelete={handleDeleteGem} onAdd={() => setShowGemForm(true)} onCreateInvoice={handleCreateInvoice} onCreateConsignment={handleCreateConsignment} />
-        </TabsContent>
+            {activeTab === 'inventory' && (
+              <GemTable 
+                gems={gems} 
+                onEdit={gem => {
+                  setEditingGem(gem);
+                  setShowGemForm(true);
+                }} 
+                onDelete={handleDeleteGem} 
+                onAdd={() => setShowGemForm(true)} 
+                onCreateInvoice={handleCreateInvoice} 
+                onCreateConsignment={handleCreateConsignment} 
+              />
+            )}
 
-        <TabsContent value="customers" className="space-y-6">
-          <CustomerDashboard onCreateInvoice={customer => {
-          setInvoiceCustomer(customer);
-          setActiveTab('invoice-creation');
-        }} onCreateConsignment={customer => {
-          setConsignmentCustomer(customer);
-          setActiveTab('consignment-creation');
-        }} />
-        </TabsContent>
+            {activeTab === 'customers' && (
+              <CustomerDashboard 
+                onCreateInvoice={customer => {
+                  setInvoiceCustomer(customer);
+                  setActiveTab('invoice-creation');
+                }} 
+                onCreateConsignment={customer => {
+                  setConsignmentCustomer(customer);
+                  setActiveTab('consignment-creation');
+                }} 
+              />
+            )}
 
-        <TabsContent value="transactions" className="space-y-6">
-          <TransactionDashboard />
-        </TabsContent>
+            {activeTab === 'transactions' && <TransactionDashboard />}
 
-        <TabsContent value="payments" className="space-y-6">
-          <PaymentDashboard />
-        </TabsContent>
+            {activeTab === 'payments' && <PaymentDashboard />}
 
-        <TabsContent value="reminders" className="space-y-6">
-          <ReminderDashboard />
-        </TabsContent>
+            {activeTab === 'reminders' && <ReminderDashboard />}
 
-        <TabsContent value="communications" className="space-y-6">
-          <CommunicationsDashboard />
-        </TabsContent>
+            {activeTab === 'communications' && <CommunicationsDashboard />}
 
-        <TabsContent value="invoice-creation" className="space-y-6">
-          <InvoiceCreation preselectedGem={invoiceGem} preselectedCustomer={invoiceCustomer} onCancel={() => {
-          setInvoiceGem(null);
-          setInvoiceCustomer(null);
-          setActiveTab('transactions');
-        }} onSave={() => {
-          setInvoiceGem(null);
-          setInvoiceCustomer(null);
-          setActiveTab('transactions');
-        }} />
-        </TabsContent>
+            {activeTab === 'invoice-creation' && (
+              <InvoiceCreation 
+                preselectedGem={invoiceGem} 
+                preselectedCustomer={invoiceCustomer} 
+                onCancel={() => {
+                  setInvoiceGem(null);
+                  setInvoiceCustomer(null);
+                  setActiveTab('transactions');
+                }} 
+                onSave={() => {
+                  setInvoiceGem(null);
+                  setInvoiceCustomer(null);
+                  setActiveTab('transactions');
+                }} 
+              />
+            )}
 
-        <TabsContent value="consignment-creation" className="space-y-6">
-          <ConsignmentCreation preselectedGem={consignmentGem} preselectedCustomer={consignmentCustomer} onCancel={() => {
-          setConsignmentGem(null);
-          setConsignmentCustomer(null);
-          setActiveTab('transactions');
-        }} onSave={() => {
-          setConsignmentGem(null);
-          setConsignmentCustomer(null);
-          setActiveTab('transactions');
-        }} />
-        </TabsContent>
+            {activeTab === 'consignment-creation' && (
+              <ConsignmentCreation 
+                preselectedGem={consignmentGem} 
+                preselectedCustomer={consignmentCustomer} 
+                onCancel={() => {
+                  setConsignmentGem(null);
+                  setConsignmentCustomer(null);
+                  setActiveTab('transactions');
+                }} 
+                onSave={() => {
+                  setConsignmentGem(null);
+                  setConsignmentCustomer(null);
+                  setActiveTab('transactions');
+                }} 
+              />
+            )}
 
-        <TabsContent value="credit-notes" className="space-y-6">
-          <CreditNotesDashboard />
-        </TabsContent>
+            {activeTab === 'credit-notes' && <CreditNotesDashboard />}
 
-        <TabsContent value="qr-codes" className="space-y-6">
-          <QRCodeManagement gems={gems} />
-        </TabsContent>
-      </Tabs>
+            {activeTab === 'qr-codes' && <QRCodeManagement gems={gems} />}
+          </div>
+        </div>
+      </div>
 
       {showHelp && (
         <HelpSection onClose={() => setShowHelp(false)} />
       )}
-    </div>;
+    </div>
+  );
 };

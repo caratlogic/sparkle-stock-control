@@ -46,7 +46,10 @@ export const useQRCodeSettings = () => {
       }
 
       if (data?.field_config) {
+        console.log('Loaded QR code settings from database:', data.field_config);
         setFieldConfig(data.field_config as QRCodeFieldConfig);
+      } else {
+        console.log('No QR code settings found in database, using defaults');
       }
     } catch (error) {
       console.error('Error loading QR code settings:', error);
@@ -76,6 +79,7 @@ export const useQRCodeSettings = () => {
   };
 
   const updateFieldConfig = (newConfig: QRCodeFieldConfig) => {
+    console.log('Updating QR code field config:', newConfig);
     setFieldConfig(newConfig);
     saveSettings(newConfig);
   };
