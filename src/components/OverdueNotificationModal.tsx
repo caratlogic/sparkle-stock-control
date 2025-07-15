@@ -23,24 +23,24 @@ export const OverdueNotificationModal = ({ isOpen, onClose }: OverdueNotificatio
     if (!isOpen) return;
 
     const now = new Date();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
-    // Find overdue invoices (more than 1 month old)
+    // Find overdue invoices (more than 14 days old)
     const overdue = invoices.filter(invoice => {
       const invoiceDate = new Date(invoice.dateCreated);
       return (
         (invoice.status === 'sent' || invoice.status === 'overdue') &&
-        invoiceDate < oneMonthAgo
+        invoiceDate < fourteenDaysAgo
       );
     });
 
-    // Find overdue consignments (past return date by more than 1 month)
+    // Find overdue consignments (past return date by more than 14 days)
     const overdueConsigns = consignments.filter(consignment => {
       const returnDate = new Date(consignment.returnDate);
       return (
         consignment.status === 'pending' &&
-        returnDate < oneMonthAgo
+        returnDate < fourteenDaysAgo
       );
     });
 
@@ -77,7 +77,7 @@ export const OverdueNotificationModal = ({ isOpen, onClose }: OverdueNotificatio
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               You have {overdueInvoices.length + overdueConsignments.length} overdue items requiring immediate attention.
-              These items are more than 1 month overdue.
+              These items are more than 14 days overdue.
             </AlertDescription>
           </Alert>
 

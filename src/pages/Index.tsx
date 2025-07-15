@@ -19,24 +19,24 @@ const Index = () => {
   useEffect(() => {
     const checkOverdueItems = () => {
       const now = new Date();
-      const tenDaysAgo = new Date();
-      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
-      // Check for overdue invoices (more than 10 days old)
+      // Check for overdue invoices (more than 14 days old)
       const overdueInvoices = invoices.filter(invoice => {
         const invoiceDate = new Date(invoice.dateCreated);
         return (
           (invoice.status === 'sent' || invoice.status === 'overdue') &&
-          invoiceDate < tenDaysAgo
+          invoiceDate < fourteenDaysAgo
         );
       });
 
-      // Check for overdue consignments (past return date by more than 10 days)
+      // Check for overdue consignments (past return date by more than 14 days)
       const overdueConsignments = consignments.filter(consignment => {
         const returnDate = new Date(consignment.returnDate);
         return (
           consignment.status === 'pending' &&
-          returnDate < tenDaysAgo
+          returnDate < fourteenDaysAgo
         );
       });
 

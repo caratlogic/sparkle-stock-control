@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,16 +8,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useCustomers } from '../../hooks/useCustomers';
 import { useInvoices } from '../../hooks/useInvoices';
-import { InvoicePayment } from '../../types/customer';
+import { InvoicePayment, Invoice } from '../../types/customer';
 
 interface AddPaymentDialogProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
   onAddPayment: (payment: Omit<InvoicePayment, 'id' | 'createdAt'>) => Promise<any>;
+  preselectedInvoice?: Invoice | null;
 }
 
-export const AddPaymentDialog = ({ open, onClose, onSuccess, onAddPayment }: AddPaymentDialogProps) => {
+export const AddPaymentDialog = ({ open, onClose, onSuccess, onAddPayment, preselectedInvoice }: AddPaymentDialogProps) => {
   const [formData, setFormData] = useState({
     invoiceId: '',
     amount: '',
@@ -28,6 +29,29 @@ export const AddPaymentDialog = ({ open, onClose, onSuccess, onAddPayment }: Add
 
   const { customers } = useCustomers();
   const { invoices } = useInvoices();
+
+  // Update form when dialog opens or preselectedInvoice changes
+  useEffect(() => {
+    if (open) {
+      if (preselectedInvoice) {
+        setFormData({
+          invoiceId: preselectedInvoice.id,
+          amount: preselectedInvoice.total.toString(),
+          paymentMethod: '',
+          paymentDate: new Date().toISOString().split('T')[0],
+          notes: ''
+        });
+      } else {
+        setFormData({
+          invoiceId: '',
+          amount: '',
+          paymentMethod: '',
+          paymentDate: new Date().toISOString().split('T')[0],
+          notes: ''
+        });
+      }
+    }
+  }, [open, preselectedInvoice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

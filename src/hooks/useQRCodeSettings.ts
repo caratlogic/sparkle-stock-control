@@ -23,9 +23,19 @@ export const useQRCodeSettings = () => {
     description: false
   });
 
-  // Load settings from database on mount
+  // Load settings from localStorage and database on mount
   useEffect(() => {
     if (user?.email) {
+      // Load from localStorage first for immediate availability
+      const localSettings = localStorage.getItem(`qrCodeSettings_${user.email}`);
+      if (localSettings) {
+        try {
+          const parsed = JSON.parse(localSettings);
+          setFieldConfig(parsed);
+        } catch (error) {
+          console.error('Error parsing local QR settings:', error);
+        }
+      }
       loadSettings();
     }
   }, [user?.email]);
@@ -82,6 +92,11 @@ export const useQRCodeSettings = () => {
     console.log('Updating QR code field config:', newConfig);
     setFieldConfig(newConfig);
     saveSettings(newConfig);
+    
+    // Also save to localStorage for immediate persistence
+    if (user?.email) {
+      localStorage.setItem(`qrCodeSettings_${user.email}`, JSON.stringify(newConfig));
+    }
   };
 
   return {

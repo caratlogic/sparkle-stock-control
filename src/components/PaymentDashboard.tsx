@@ -266,7 +266,10 @@ export const PaymentDashboard = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleViewInvoice(invoice.id)}
+                              onClick={() => {
+                                setSelectedInvoice(invoice);
+                                setShowAddPayment(true);
+                              }}
                             >
                               Add Payment
                             </Button>
@@ -415,12 +418,17 @@ export const PaymentDashboard = () => {
 
       <AddPaymentDialog
         open={showAddPayment}
-        onClose={() => setShowAddPayment(false)}
+        onClose={() => {
+          setShowAddPayment(false);
+          setSelectedInvoice(null);
+        }}
         onSuccess={() => {
           setShowAddPayment(false);
+          setSelectedInvoice(null);
           memoizedRefetch();
         }}
         onAddPayment={handleAddPayment}
+        preselectedInvoice={selectedInvoice}
       />
 
       <PaymentExportDialog
