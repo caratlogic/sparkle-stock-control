@@ -179,10 +179,15 @@ export const PaymentDashboard = () => {
   };
 
   const handleViewInvoice = (invoiceId: string) => {
+    console.log('Attempting to view invoice:', invoiceId);
     const invoice = invoices.find(inv => inv.id === invoiceId);
+    console.log('Found invoice:', invoice);
     if (invoice) {
       setSelectedInvoice(invoice);
       setShowInvoiceDialog(true);
+      console.log('Set invoice dialog to show');
+    } else {
+      console.error('Invoice not found for ID:', invoiceId);
     }
   };
 
@@ -214,8 +219,8 @@ export const PaymentDashboard = () => {
       <div className="w-full space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-slate-800">Overdue Payment Invoices</h2>
-            <p className="text-slate-600">Invoices with no payments received (more than 1 week old)</p>
+            <h2 className="text-3xl font-bold text-foreground">Overdue Payment Invoices</h2>
+            <p className="text-muted-foreground">Invoices with no payments received (more than 1 week old)</p>
           </div>
           <Button 
             onClick={() => setShowOverduePayments(false)} 
@@ -244,7 +249,7 @@ export const PaymentDashboard = () => {
                     const customer = customers.find(c => c.id === invoice.customerId);
                     const daysDiff = Math.floor((new Date().getTime() - new Date(invoice.dateCreated).getTime()) / (1000 * 3600 * 24));
                     return (
-                      <tr key={invoice.id} className="border-b hover:bg-slate-50">
+                      <tr key={invoice.id} className="border-b hover:bg-muted/50">
                         <td className="p-4 font-medium">{invoice.invoiceNumber}</td>
                         <td className="p-4">{customer?.name || 'Unknown Customer'}</td>
                         <td className="p-4">{new Date(invoice.dateCreated).toLocaleDateString()}</td>
@@ -267,8 +272,10 @@ export const PaymentDashboard = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => {
+                                console.log('Add payment clicked for invoice:', invoice);
                                 setSelectedInvoice(invoice);
                                 setShowAddPayment(true);
+                                console.log('Set showAddPayment to true');
                               }}
                             >
                               Add Payment

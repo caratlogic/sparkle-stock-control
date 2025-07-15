@@ -43,7 +43,7 @@ export const QRCodeSettings = ({ fieldConfig, onConfigChange }: QRCodeSettingsPr
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-slate-600 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Select which fields to include in generated QR codes. These settings will be saved permanently for your account.
         </p>
         
@@ -60,7 +60,7 @@ export const QRCodeSettings = ({ fieldConfig, onConfigChange }: QRCodeSettingsPr
               />
               <Label 
                 htmlFor={field} 
-                className={`text-sm ${field === 'stockId' ? 'text-slate-500' : 'text-slate-700'}`}
+                className={`text-sm ${field === 'stockId' ? 'text-muted-foreground' : 'text-foreground'}`}
               >
                 {label} {field === 'stockId' && '(Always included)'}
               </Label>
@@ -73,19 +73,28 @@ export const QRCodeSettings = ({ fieldConfig, onConfigChange }: QRCodeSettingsPr
             <span className="text-sm font-medium">
               Selected Fields: {Object.values(fieldConfig).filter(Boolean).length}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const allEnabled = Object.keys(fieldLabels).reduce((acc, field) => {
-                  acc[field as keyof QRCodeFieldConfig] = true;
-                  return acc;
-                }, {} as QRCodeFieldConfig);
-                onConfigChange(allEnabled);
-              }}
-            >
-              Select All
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const allEnabled = Object.keys(fieldLabels).reduce((acc, field) => {
+                    acc[field as keyof QRCodeFieldConfig] = true;
+                    return acc;
+                  }, {} as QRCodeFieldConfig);
+                  onConfigChange(allEnabled);
+                }}
+              >
+                Select All
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => onConfigChange(fieldConfig)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Save Settings
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
