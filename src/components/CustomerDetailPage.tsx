@@ -74,7 +74,24 @@ export const CustomerDetailPage = ({
   const partialRevenue = activeInvoices.filter(inv => inv.status === 'partial').reduce((sum, inv) => sum + inv.total, 0);
   const sentRevenue = activeInvoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
   const paidRevenue = activeInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
-  const overdueRevenue = activeInvoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.total, 0);
+  
+  // Calculate overdue invoices based on due date (more than 14 days old and not fully paid)
+  const overdueInvoices = activeInvoices.filter(inv => {
+    if (inv.status === 'paid') return false;
+    const dueDate = new Date(inv.dateDue);
+    const today = new Date();
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff > 14;
+  });
+  
+  const overdueRevenue = overdueInvoices.reduce((sum, inv) => {
+    // Calculate remaining balance for overdue amount
+    const invoicePayments = customerInvoicePayments
+      .filter(payment => payment.invoiceId === inv.id)
+      .reduce((total, payment) => total + payment.amount, 0);
+    const remainingBalance = inv.total - invoicePayments;
+    return sum + Math.max(0, remainingBalance);
+  }, 0);
   const totalRevenue = partialRevenue + sentRevenue + paidRevenue + overdueRevenue;
   const totalCreditNotes = customerCreditNotes.length;
   const totalCreditAmount = customerCreditNotes.reduce((sum, note) => sum + note.amount, 0);
