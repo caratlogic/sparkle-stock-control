@@ -270,7 +270,7 @@ export const PaymentDashboard = () => {
                     <th className="text-left p-4 font-medium">Invoice #</th>
                     <th className="text-left p-4 font-medium">Customer</th>
                     <th className="text-left p-4 font-medium">Date Created</th>
-                    <th className="text-left p-4 font-medium">Amount Due</th>
+                    <th className="text-left p-4 font-medium">Total Amount</th>
                     <th className="text-left p-4 font-medium">Days Overdue</th>
                     <th className="text-left p-4 font-medium">Actions</th>
                   </tr>
@@ -288,7 +288,7 @@ export const PaymentDashboard = () => {
                         <td className="p-4 font-medium">{invoice.invoiceNumber}</td>
                         <td className="p-4">{customer?.name || 'Unknown Customer'}</td>
                         <td className="p-4">{new Date(invoice.dateCreated).toLocaleDateString()}</td>
-                        <td className="p-4 font-bold text-red-600">${remainingBalance.toLocaleString()}</td>
+                        <td className="p-4 font-bold text-red-600">${invoice.total.toLocaleString()}</td>
                         <td className="p-4">
                           <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">
                             {daysDiff} days

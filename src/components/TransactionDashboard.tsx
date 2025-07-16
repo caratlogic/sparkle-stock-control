@@ -425,20 +425,22 @@ export const TransactionDashboard = () => {
                   <TableHead>Invoice #</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Total</TableHead>
+                  <TableHead>Amount Due</TableHead>
                   <TableHead>Days Overdue</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {overdueInvoices.map((invoice) => {
+                  const totalPaid = getTotalPaidAmount(invoice.id);
+                  const remainingAmount = Math.max(0, invoice.total - totalPaid);
                   const daysDiff = Math.floor((new Date().getTime() - new Date(invoice.dateCreated).getTime()) / (1000 * 3600 * 24));
                   return (
                     <TableRow key={invoice.id}>
                       <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                       <TableCell>{getCustomerName(invoice.customerId)}</TableCell>
                       <TableCell>{new Date(invoice.dateCreated).toLocaleDateString()}</TableCell>
-                      <TableCell>${invoice.total.toLocaleString()}</TableCell>
+                      <TableCell>${remainingAmount.toLocaleString()}</TableCell>
                       <TableCell>
                         <Badge variant="destructive">{daysDiff} days</Badge>
                       </TableCell>
