@@ -67,7 +67,7 @@ export const GemTable = ({
   const [filterTreatment, setFilterTreatment] = useState('all');
   const [caratRange, setCaratRange] = useState({ min: '', max: '' });
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [sortField, setSortField] = useState<keyof Gem>('dateAdded');
+  const [sortField, setSortField] = useState<keyof Gem | 'pricePerCarat'>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedGem, setSelectedGem] = useState<Gem | null>(null);
   const [transactionHistoryGem, setTransactionHistoryGem] = useState<Gem | null>(null);
@@ -91,11 +91,10 @@ export const GemTable = ({
     { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', visible: true, order: 3 },
     { key: 'carat', label: customColumnLabels['carat'] || 'Total Carat', visible: true, order: 4 },
     { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 5 },
-    { key: 'price', label: customColumnLabels['price'] || 'Selling Price', visible: true, order: 6 },
-    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Price/Carat', visible: true, order: 7 },
-    { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price / Carat', visible: true, order: 8 },
-    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', visible: isOwner, order: 9 },
-    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 10 },
+    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', visible: true, order: 6 },
+    { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price / Carat', visible: true, order: 7 },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', visible: isOwner, order: 8 },
+    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 9 },
     { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 10 },
     { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 11 },
     { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 12 },
@@ -162,8 +161,7 @@ export const GemTable = ({
   const customizableColumns = [
     { key: 'stockId', label: customColumnLabels['stockId'] || 'Stock ID', defaultLabel: 'Stock ID' },
     { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', defaultLabel: 'Gem Type' },
-    { key: 'price', label: customColumnLabels['price'] || 'Selling Price', defaultLabel: 'Selling Price' },
-    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Price/Carat', defaultLabel: 'Price/Carat' },
+    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', defaultLabel: 'Selling Price/Carat' },
     { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', defaultLabel: 'Cost Price' },
     { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', defaultLabel: 'Cost/Carat' },
     { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', defaultLabel: 'Treatment' },
@@ -251,8 +249,8 @@ export const GemTable = ({
       const matchesCaratRange = (!caratRange.min || gem.carat >= parseFloat(caratRange.min)) &&
                                (!caratRange.max || gem.carat <= parseFloat(caratRange.max));
       
-      const matchesPriceRange = (!priceRange.min || gem.price >= parseFloat(priceRange.min)) &&
-                               (!priceRange.max || gem.price <= parseFloat(priceRange.max));
+      const matchesPriceRange = (!priceRange.min || (gem.price / gem.carat) >= parseFloat(priceRange.min)) &&
+                               (!priceRange.max || (gem.price / gem.carat) <= parseFloat(priceRange.max));
 
       const matchesAdvancedSearch = searchCriteria.length === 0 || applyAdvancedSearch(gem, searchCriteria);
       
@@ -260,8 +258,15 @@ export const GemTable = ({
              matchesColor && matchesTreatment && matchesCaratRange && matchesPriceRange && matchesAdvancedSearch;
     })
     .sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
+      let aValue, bValue;
+      
+      if (sortField === 'pricePerCarat') {
+        aValue = a.price / a.carat;
+        bValue = b.price / b.carat;
+      } else {
+        aValue = a[sortField];
+        bValue = b[sortField];
+      }
       
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         return sortDirection === 'asc' 
@@ -276,7 +281,7 @@ export const GemTable = ({
       return 0;
     });
 
-  const handleSort = (field: keyof Gem) => {
+  const handleSort = (field: keyof Gem | 'pricePerCarat') => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -286,7 +291,7 @@ export const GemTable = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Price', ...(isOwner ? ['Cost Price'] : []), 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Purchase Date', 'Origin', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Selling Price/Carat', ...(isOwner ? ['Cost Price'] : []), 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Purchase Date', 'Origin', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -295,7 +300,7 @@ export const GemTable = ({
         gem.carat,
         gem.cut,
         gem.color,
-        gem.price,
+        (gem.price / gem.carat).toFixed(2),
         ...(isOwner ? [gem.costPrice] : []),
         gem.treatment || '',
         gem.colorComment || '',
@@ -451,7 +456,6 @@ export const GemTable = ({
               { key: 'carat', label: 'Carat', type: 'number' },
               { key: 'cut', label: 'Cut', type: 'select', options: uniqueCuts },
               { key: 'color', label: 'Color', type: 'select', options: uniqueColors },
-              { key: 'price', label: 'Price', type: 'number' },
               { key: 'certificateNumber', label: 'Certificate Number', type: 'text' },
               { key: 'origin', label: 'Origin', type: 'text' },
               { key: 'supplier', label: 'Supplier', type: 'text' }
@@ -568,7 +572,7 @@ export const GemTable = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600 whitespace-nowrap">Price ($):</span>
+              <span className="text-sm text-slate-600 whitespace-nowrap">Price/Carat ($):</span>
               <Input
                 type="number"
                 placeholder="Min"
@@ -598,13 +602,13 @@ export const GemTable = ({
                   <th 
                     key={column.key}
                     className={`text-left py-3 px-4 font-medium text-slate-600 ${
-                      ['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key)
+                      ['stockId', 'carat', 'pricePerCarat', 'costPrice', 'dateAdded'].includes(column.key)
                         ? 'cursor-pointer hover:text-slate-800 transition-colors'
                         : ''
                     }`}
                     onClick={
-                      ['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key)
-                        ? () => handleSort(column.key as keyof Gem)
+                        ['stockId', 'carat', 'pricePerCarat', 'costPrice', 'dateAdded'].includes(column.key)
+                        ? () => handleSort(column.key as keyof Gem | 'pricePerCarat')
                         : undefined
                     }
                   >
@@ -615,7 +619,7 @@ export const GemTable = ({
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         className="rounded border-gray-300"
                       />
-                    ) : ['stockId', 'carat', 'price', 'costPrice', 'dateAdded'].includes(column.key) ? (
+                    ) : ['stockId', 'carat', 'pricePerCarat', 'costPrice', 'dateAdded'].includes(column.key) ? (
                       <div className="flex items-center space-x-1">
                         <span>{column.label}</span>
                         <ArrowUpDown className="w-4 h-4" />
@@ -681,10 +685,8 @@ export const GemTable = ({
                               <div>{gem.color}</div>
                             </div>
                           );
-                        case 'price':
-                          return <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>;
-                        case 'pricePerCarat':
-                          return <div className="text-sm text-slate-600">${(gem.price / gem.carat).toFixed(0)}/ct</div>;
+                         case 'pricePerCarat':
+                           return <div className="font-semibold text-slate-800">${(gem.price / gem.carat).toFixed(0)}/ct</div>;
                          case 'retailPrice':
                            return <div className="font-semibold text-purple-600">${((gem.retailPrice || gem.price) / gem.carat).toFixed(0)}/ct</div>;
                         case 'costPrice':
