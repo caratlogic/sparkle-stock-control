@@ -313,6 +313,12 @@ export const TransactionDashboard = () => {
     return invoiceDate < twoWeeksAgo && totalPaid < inv.total && inv.status !== 'cancelled';
   });
 
+  // Calculate total overdue payment amount
+  const totalOverdueAmount = overdueInvoices.reduce((sum, inv) => {
+    const paidAmount = getTotalPaidAmount(inv.id);
+    return sum + Math.max(0, inv.total - paidAmount);
+  }, 0);
+
   // Calculate overdue consignments (past return date)
   const today = new Date();
   const overdueConsignments = allConsignments.filter(cons => {
@@ -492,7 +498,7 @@ export const TransactionDashboard = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-slate-600 text-xl font-extrabold">
@@ -534,6 +540,20 @@ export const TransactionDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">${totalOutstanding.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          onClick={() => setShowOverdueInvoices(true)}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Overdue Payments</CardTitle>
+            <Calendar className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">${totalOverdueAmount.toLocaleString()}</div>
+            <p className="text-xs text-slate-600 mt-1">{overdueInvoices.length} invoice(s) 2+ weeks old</p>
           </CardContent>
         </Card>
 
@@ -688,8 +708,8 @@ export const TransactionDashboard = () => {
                             ${outstanding.toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
-                              {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                            <Badge variant={paymentStatus.variant}>
+                              {paymentStatus.status}
                             </Badge>
                           </TableCell>
                           <TableCell>
