@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { MobileSidebar } from './MobileSidebar';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { GemTable } from './GemTable';
+import { WeeklyStatsBox } from './WeeklyStatsBox';
 import { GemForm } from './GemForm';
 import { CustomerDashboard } from './CustomerDashboard';
 import { TransactionDashboard } from './TransactionDashboard';
@@ -243,17 +244,20 @@ export const Dashboard = () => {
             )}
 
             {activeTab === 'inventory' && (
-              <GemTable 
-                gems={gems} 
-                onEdit={gem => {
-                  setEditingGem(gem);
-                  setShowGemForm(true);
-                }} 
-                onDelete={handleDeleteGem} 
-                onAdd={() => setShowGemForm(true)} 
-                onCreateInvoice={handleCreateInvoice} 
-                onCreateConsignment={handleCreateConsignment} 
-              />
+              <div className="space-y-6">
+                <WeeklyStatsBox gems={gems} />
+                <GemTable 
+                  gems={gems} 
+                  onEdit={gem => {
+                    setEditingGem(gem);
+                    setShowGemForm(true);
+                  }} 
+                  onDelete={handleDeleteGem} 
+                  onAdd={() => setShowGemForm(true)} 
+                  onCreateInvoice={handleCreateInvoice} 
+                  onCreateConsignment={handleCreateConsignment} 
+                />
+              </div>
             )}
 
             {activeTab === 'customers' && (

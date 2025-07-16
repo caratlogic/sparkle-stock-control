@@ -19,7 +19,8 @@ import {
   Eye,
   X,
   Mail,
-  Upload
+  Upload,
+  Printer
 } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { GemDetailView } from './GemDetailView';
@@ -36,6 +37,7 @@ import { BulkGemUpload } from './BulkGemUpload';
 import { useCustomers } from '../hooks/useCustomers';
 import { MultiCriteriaSearch } from './MultiCriteriaSearch';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { downloadBarcode } from '../utils/barcodeGenerator';
 
 interface GemTableProps {
   gems: Gem[];
@@ -91,8 +93,9 @@ export const GemTable = ({
     { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 5 },
     { key: 'price', label: customColumnLabels['price'] || 'Selling Price', visible: true, order: 6 },
     { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Price/Carat', visible: true, order: 7 },
-    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', visible: isOwner, order: 8 },
-    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 9 },
+    { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price', visible: true, order: 8 },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', visible: isOwner, order: 9 },
+    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 10 },
     { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 10 },
     { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 11 },
     { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 12 },
@@ -339,6 +342,24 @@ export const GemTable = ({
 
   const selectedGemsData = filteredGems.filter(gem => selectedGems.has(gem.id));
 
+  const handlePrintBarcodes = () => {
+    selectedGemsData.forEach(gem => {
+      downloadBarcode(
+        gem.stockId,
+        gem.carat,
+        gem.measurements,
+        gem.certificateNumber,
+        gem.colorComment,
+        gem.origin,
+        gem.treatment
+      );
+    });
+    toast({
+      title: "Success",
+      description: `Downloaded ${selectedGemsData.length} barcode(s)`
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -379,6 +400,15 @@ export const GemTable = ({
             >
               <Upload className="w-4 h-4 mr-2" />
               Bulk Upload
+            </Button>
+
+            <Button 
+              onClick={handlePrintBarcodes}
+              className="bg-orange-600 hover:bg-orange-700"
+              disabled={selectedGems.size === 0}
+            >
+              <Printer className="w-4 h-4 mr-2" />
+              Print Barcodes ({selectedGems.size})
             </Button>
 
             <Button 
@@ -656,6 +686,8 @@ export const GemTable = ({
                           return <div className="font-semibold text-slate-800">${gem.price.toLocaleString()}</div>;
                         case 'pricePerCarat':
                           return <div className="text-sm text-slate-600">${(gem.price / gem.carat).toFixed(0)}/ct</div>;
+                        case 'retailPrice':
+                          return <div className="font-semibold text-purple-600">${(gem.retailPrice || gem.price).toLocaleString()}</div>;
                         case 'costPrice':
                           return isOwner ? <div className="font-medium text-emerald-600">${gem.costPrice.toLocaleString()}</div> : null;
                         case 'costPerCarat':

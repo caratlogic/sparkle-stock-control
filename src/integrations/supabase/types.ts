@@ -425,6 +425,7 @@ export type Database = {
           price_in_letters: string | null
           purchase_date: string | null
           reserved: number
+          retail_price: number | null
           shape: string | null
           shape_detail: string | null
           sold: number
@@ -461,6 +462,7 @@ export type Database = {
           price_in_letters?: string | null
           purchase_date?: string | null
           reserved?: number
+          retail_price?: number | null
           shape?: string | null
           shape_detail?: string | null
           sold?: number
@@ -497,6 +499,7 @@ export type Database = {
           price_in_letters?: string | null
           purchase_date?: string | null
           reserved?: number
+          retail_price?: number | null
           shape?: string | null
           shape_detail?: string | null
           sold?: number

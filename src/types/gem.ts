@@ -11,6 +11,7 @@ export interface Gem {
   description: string;
   measurements: string;
   price: number;
+  retailPrice?: number;
   costPrice: number;
   certificateNumber: string;
   status: 'In Stock' | 'Sold' | 'Reserved';
