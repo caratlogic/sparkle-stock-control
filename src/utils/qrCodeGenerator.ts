@@ -284,7 +284,7 @@ export const downloadQRCode = async (
 };
 
 // Function to convert gem data to QR code data format
-const gemToQRCodeData = (gem: Gem): QRCodeData => {
+export const gemToQRCodeData = (gem: Gem): QRCodeData => {
   return {
     stockId: gem.stockId,
     gemType: gem.gemType,
