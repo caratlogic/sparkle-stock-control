@@ -428,7 +428,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   }}
                   fieldConfig={fieldConfig}
                   size="medium"
-                  showDownload={true}
+                  showPrint={true}
                 />
               </CardContent>
             </Card>

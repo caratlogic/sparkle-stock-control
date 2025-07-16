@@ -83,7 +83,7 @@ export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
                       gemData={sampleQRData}
                       fieldConfig={fieldConfig}
                       size="large"
-                      showDownload={true}
+                      showPrint={true}
                     />
                   ) : (
                     <div className="text-center py-8">

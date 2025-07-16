@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, QrCode } from 'lucide-react';
-import { generateCustomQRCode, downloadCustomQRCode, QRCodeData } from '../utils/qrCodeGenerator';
+import { Printer, QrCode } from 'lucide-react';
+import { generateCustomQRCode, printCustomQRCode, QRCodeData } from '../utils/qrCodeGenerator';
 import { QRCodeFieldConfig } from '../hooks/useQRCodeSettings';
 import { useToast } from '@/hooks/use-toast';
 
@@ -9,18 +9,18 @@ interface QRCodeDisplayProps {
   gemData: QRCodeData;
   fieldConfig?: QRCodeFieldConfig;
   size?: 'small' | 'medium' | 'large';
-  showDownload?: boolean;
+  showPrint?: boolean;
 }
 
 export const QRCodeDisplay = ({ 
   gemData, 
   fieldConfig,
   size = 'medium', 
-  showDownload = false 
+  showPrint = false 
 }: QRCodeDisplayProps) => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [downloading, setDownloading] = useState(false);
+  const [printing, setPrinting] = useState(false);
   const { toast } = useToast();
 
   // Default field configuration if none provided
@@ -68,23 +68,23 @@ export const QRCodeDisplay = ({
     return () => clearTimeout(timeoutId);
   }, [gemData, config, toast]);
 
-  const handleDownload = async () => {
+  const handlePrint = async () => {
     try {
-      setDownloading(true);
-      await downloadCustomQRCode(gemData, config);
+      setPrinting(true);
+      await printCustomQRCode(gemData, config);
       toast({
         title: "Success",
-        description: "QR code downloaded successfully",
+        description: "QR code printed successfully",
       });
     } catch (error) {
-      console.error('Error downloading QR code:', error);
+      console.error('Error printing QR code:', error);
       toast({
         title: "Error",
-        description: "Failed to download QR code",
+        description: "Failed to print QR code",
         variant: "destructive",
       });
     } finally {
-      setDownloading(false);
+      setPrinting(false);
     }
   };
 
@@ -137,16 +137,16 @@ export const QRCodeDisplay = ({
           {gemData.stockId} - {gemData.carat}ct {gemData.gemType}
         </p>
       </div>
-      {showDownload && (
+      {showPrint && (
         <Button
           variant="outline"
           size="sm"
-          onClick={handleDownload}
-          disabled={downloading}
+          onClick={handlePrint}
+          disabled={printing}
           className="flex items-center space-x-1"
         >
-          <Download className="w-4 h-4" />
-          <span>{downloading ? 'Downloading...' : 'Download QR Code'}</span>
+          <Printer className="w-4 h-4" />
+          <span>{printing ? 'Printing...' : 'Print QR Code'}</span>
         </Button>
       )}
     </div>

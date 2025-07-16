@@ -37,7 +37,7 @@ import { BulkGemUpload } from './BulkGemUpload';
 import { useCustomers } from '../hooks/useCustomers';
 import { MultiCriteriaSearch } from './MultiCriteriaSearch';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { downloadAllQRCodes, gemToQRCodeData } from '../utils/qrCodeGenerator';
+import { downloadAllQRCodes, printAllQRCodes, gemToQRCodeData } from '../utils/qrCodeGenerator';
 
 interface GemTableProps {
   gems: Gem[];
@@ -110,7 +110,7 @@ export const GemTable = ({
     { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 22 },
     { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 23 },
     { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 24 },
-    { key: 'qrcode', label: '', visible: true, order: 25 },
+    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 25 },
   ];
 
   const [columns, setColumns] = useState<ColumnConfig[]>(getDefaultColumns());
@@ -349,16 +349,15 @@ export const GemTable = ({
 
   const handlePrintQRCodes = async () => {
     try {
-      const qrCodeData = selectedGemsData.map(gem => gemToQRCodeData(gem));
-      await downloadAllQRCodes(selectedGemsData, fieldConfig);
+      await printAllQRCodes(selectedGemsData, fieldConfig);
       toast({
         title: "Success",
-        description: `Downloaded ${selectedGemsData.length} QR code(s)`
+        description: `Printed ${selectedGemsData.length} QR code(s)`
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to generate QR codes",
+        description: "Failed to print QR codes",
         variant: "destructive"
       });
     }
@@ -781,7 +780,7 @@ export const GemTable = ({
                                  }}
                                  fieldConfig={fieldConfig}
                                  size="small"
-                                 showDownload={true}
+                                 showPrint={true}
                                />
                              </div>
                            );

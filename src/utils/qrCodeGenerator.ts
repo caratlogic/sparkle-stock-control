@@ -304,6 +304,422 @@ export const gemToQRCodeData = (gem: Gem): QRCodeData => {
 };
 
 // Bulk download function
+// Function to print QR code in proper printable format
+export const printCustomQRCode = async (
+  data: QRCodeData,
+  fieldConfig: QRCodeFieldConfig
+): Promise<void> => {
+  try {
+    // Create structured data for QR code based on field configuration
+    const qrData: any = {
+      type: 'GEM_INVENTORY',
+      stockId: data.stockId,
+    };
+
+    // Add fields based on configuration
+    if (fieldConfig.gemType) qrData.gemType = data.gemType;
+    if (fieldConfig.carat) qrData.carat = data.carat;
+    if (fieldConfig.color) qrData.color = data.color;
+    if (fieldConfig.cut) qrData.cut = data.cut;
+    if (fieldConfig.measurements) qrData.measurements = data.measurements;
+    if (fieldConfig.certificateNumber) qrData.certificateNumber = data.certificateNumber;
+    if (fieldConfig.price) {
+      qrData.price = data.price;
+      qrData.pricePerCarat = data.pricePerCarat;
+    }
+    if (fieldConfig.description) qrData.description = data.description;
+    if (fieldConfig.origin) qrData.origin = data.origin;
+    if (fieldConfig.treatment) qrData.treatment = data.treatment;
+    if (fieldConfig.supplier) qrData.supplier = data.supplier;
+
+    qrData.dateAdded = data.dateAdded;
+    qrData.url = `${window.location.origin}/gem/${data.stockId}`;
+
+    const jsonData = JSON.stringify(qrData);
+
+    // Generate QR code with higher resolution for printing
+    const qrCodeDataUrl = await QRCode.toDataURL(jsonData, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      },
+      errorCorrectionLevel: 'H' // High error correction for printing
+    });
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      throw new Error('Could not open print window');
+    }
+
+    // Build printable HTML with proper formatting and column names
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR Code - ${data.stockId}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              background: white;
+            }
+            .qr-container {
+              text-align: center;
+              border: 2px solid #333;
+              padding: 20px;
+              margin: 20px;
+              background: white;
+              page-break-inside: avoid;
+            }
+            .qr-code {
+              margin: 20px 0;
+            }
+            .qr-info {
+              margin-top: 15px;
+            }
+            .stock-id {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+              color: #333;
+            }
+            .gem-details {
+              font-size: 16px;
+              color: #666;
+              line-height: 1.4;
+            }
+            .field-row {
+              margin: 5px 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            .field-label {
+              font-weight: bold;
+              margin-right: 8px;
+            }
+            .field-value {
+              color: #333;
+            }
+            @media print {
+              body {
+                margin: 0;
+                padding: 20px;
+              }
+              .qr-container {
+                margin: 0;
+                border: 1px solid #333;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="qr-container">
+            <div class="qr-code">
+              <img src="${qrCodeDataUrl}" alt="QR Code for ${data.stockId}" style="width: 300px; height: 300px;" />
+            </div>
+            <div class="qr-info">
+              <div class="stock-id">${data.stockId}</div>
+              <div class="gem-details">
+                ${fieldConfig.gemType && fieldConfig.carat ? `
+                <div class="field-row">
+                  <span class="field-label">Gem Type & Carat:</span>
+                  <span class="field-value">${data.carat}ct ${data.gemType}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.gemType && !fieldConfig.carat ? `
+                <div class="field-row">
+                  <span class="field-label">Gem Type:</span>
+                  <span class="field-value">${data.gemType}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.carat && !fieldConfig.gemType ? `
+                <div class="field-row">
+                  <span class="field-label">Carat:</span>
+                  <span class="field-value">${data.carat}ct</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.color ? `
+                <div class="field-row">
+                  <span class="field-label">Color:</span>
+                  <span class="field-value">${data.color}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.cut && data.cut ? `
+                <div class="field-row">
+                  <span class="field-label">Cut:</span>
+                  <span class="field-value">${data.cut}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.measurements && data.measurements ? `
+                <div class="field-row">
+                  <span class="field-label">Measurements:</span>
+                  <span class="field-value">${data.measurements}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.certificateNumber ? `
+                <div class="field-row">
+                  <span class="field-label">Certificate Number:</span>
+                  <span class="field-value">${data.certificateNumber}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.treatment && data.treatment ? `
+                <div class="field-row">
+                  <span class="field-label">Treatment:</span>
+                  <span class="field-value">${data.treatment}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.origin && data.origin ? `
+                <div class="field-row">
+                  <span class="field-label">Origin:</span>
+                  <span class="field-value">${data.origin}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.supplier && data.supplier ? `
+                <div class="field-row">
+                  <span class="field-label">Supplier:</span>
+                  <span class="field-value">${data.supplier}</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.price ? `
+                <div class="field-row">
+                  <span class="field-label">Price:</span>
+                  <span class="field-value">$${data.price.toLocaleString()}</span>
+                </div>
+                <div class="field-row">
+                  <span class="field-label">Price/Carat:</span>
+                  <span class="field-value">$${data.pricePerCarat.toLocaleString()}/ct</span>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+
+    // Wait for image to load before printing
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    };
+
+  } catch (error) {
+    console.error('Error printing QR code:', error);
+    throw new Error('Failed to print QR code');
+  }
+};
+
+// Bulk print function for multiple QR codes
+export const printAllQRCodes = async (
+  gems: Gem[],
+  fieldConfig: QRCodeFieldConfig,
+  onProgress?: (current: number, total: number) => void
+): Promise<void> => {
+  try {
+    const total = gems.length;
+    const qrCodePages: string[] = [];
+
+    for (let i = 0; i < gems.length; i++) {
+      const gem = gems[i];
+      onProgress?.(i + 1, total);
+
+      // Convert gem to QR code data
+      const qrData = gemToQRCodeData(gem);
+
+      // Create structured data for QR code based on field configuration
+      const qrDataStructured: any = {
+        type: 'GEM_INVENTORY',
+        stockId: qrData.stockId,
+      };
+
+      // Add fields based on configuration
+      if (fieldConfig.gemType) qrDataStructured.gemType = qrData.gemType;
+      if (fieldConfig.carat) qrDataStructured.carat = qrData.carat;
+      if (fieldConfig.color) qrDataStructured.color = qrData.color;
+      if (fieldConfig.cut) qrDataStructured.cut = qrData.cut;
+      if (fieldConfig.measurements) qrDataStructured.measurements = qrData.measurements;
+      if (fieldConfig.certificateNumber) qrDataStructured.certificateNumber = qrData.certificateNumber;
+      if (fieldConfig.price) {
+        qrDataStructured.price = qrData.price;
+        qrDataStructured.pricePerCarat = qrData.pricePerCarat;
+      }
+      if (fieldConfig.description) qrDataStructured.description = qrData.description;
+      if (fieldConfig.origin) qrDataStructured.origin = qrData.origin;
+      if (fieldConfig.treatment) qrDataStructured.treatment = qrData.treatment;
+      if (fieldConfig.supplier) qrDataStructured.supplier = qrData.supplier;
+
+      qrDataStructured.dateAdded = qrData.dateAdded;
+      qrDataStructured.url = `${window.location.origin}/gem/${qrData.stockId}`;
+
+      const jsonData = JSON.stringify(qrDataStructured);
+
+      // Generate QR code
+      const qrCodeDataUrl = await QRCode.toDataURL(jsonData, {
+        width: 250,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'H'
+      });
+
+      // Create HTML for this QR code
+      const qrCodeHTML = `
+        <div class="qr-container">
+          <div class="qr-code">
+            <img src="${qrCodeDataUrl}" alt="QR Code for ${qrData.stockId}" style="width: 250px; height: 250px;" />
+          </div>
+          <div class="qr-info">
+            <div class="stock-id">${qrData.stockId}</div>
+            <div class="gem-details">
+              ${fieldConfig.gemType && fieldConfig.carat ? `
+              <div class="field-row">
+                <span class="field-label">Gem Type & Carat:</span>
+                <span class="field-value">${qrData.carat}ct ${qrData.gemType}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.color ? `
+              <div class="field-row">
+                <span class="field-label">Color:</span>
+                <span class="field-value">${qrData.color}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.certificateNumber ? `
+              <div class="field-row">
+                <span class="field-label">Certificate:</span>
+                <span class="field-value">${qrData.certificateNumber}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.price ? `
+              <div class="field-row">
+                <span class="field-label">Price:</span>
+                <span class="field-value">$${qrData.price.toLocaleString()}</span>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+
+      qrCodePages.push(qrCodeHTML);
+    }
+
+    // Create print window with all QR codes
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      throw new Error('Could not open print window');
+    }
+
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR Codes - Gem Inventory</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              background: white;
+            }
+            .print-container {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 20px;
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            .qr-container {
+              text-align: center;
+              border: 2px solid #333;
+              padding: 15px;
+              background: white;
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+            .qr-code {
+              margin: 10px 0;
+            }
+            .qr-info {
+              margin-top: 10px;
+            }
+            .stock-id {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 8px;
+              color: #333;
+            }
+            .gem-details {
+              font-size: 12px;
+              color: #666;
+              line-height: 1.3;
+            }
+            .field-row {
+              margin: 3px 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            .field-label {
+              font-weight: bold;
+              margin-right: 5px;
+            }
+            .field-value {
+              color: #333;
+            }
+            @media print {
+              body {
+                margin: 0;
+                padding: 10px;
+              }
+              .print-container {
+                gap: 15px;
+              }
+              .qr-container {
+                margin: 0;
+                border: 1px solid #333;
+                padding: 10px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${qrCodePages.join('')}
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+
+    // Wait for images to load before printing
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 1000);
+    };
+
+  } catch (error) {
+    console.error('Error printing QR codes:', error);
+    throw new Error('Failed to print QR codes');
+  }
+};
+
 export const downloadAllQRCodes = async (
   gems: Gem[],
   fieldConfig: QRCodeFieldConfig,

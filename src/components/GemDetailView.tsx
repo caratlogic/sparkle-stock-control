@@ -242,7 +242,7 @@ export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
               }}
               fieldConfig={fieldConfig}
               size="medium"
-              showDownload={true}
+              showPrint={true}
             />
           </div>
         </CardContent>
