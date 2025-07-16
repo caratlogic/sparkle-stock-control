@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2, CreditCard, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2, CreditCard, ArrowUpDown, ArrowUp, ArrowDown, Quote } from 'lucide-react';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
@@ -16,12 +16,14 @@ import { InvoiceDetailView } from './InvoiceDetailView';
 import { ConsignmentDetailView } from './ConsignmentDetailView';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
+import { QuotationCreation } from './QuotationCreation';
 import { CustomerFilter } from './ui/customer-filter';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Invoice } from '../types/customer';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useCreditNotes } from '../hooks/useCreditNotes';
+import { useQuotations } from '../hooks/useQuotations';
 export const TransactionDashboard = () => {
   const {
     invoices,
@@ -48,7 +50,13 @@ export const TransactionDashboard = () => {
   const {
     creditNotes
   } = useCreditNotes();
-  const [activeTab, setActiveTab] = useState<'invoices' | 'consignments'>('invoices');
+  const {
+    quotations,
+    loading: quotationsLoading,
+    updateQuotationStatus,
+    deleteQuotation
+  } = useQuotations();
+  const [activeTab, setActiveTab] = useState<'invoices' | 'consignments' | 'quotations'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [customerFilter, setCustomerFilter] = useState<string>('all');
@@ -57,12 +65,15 @@ export const TransactionDashboard = () => {
   const [selectedConsignmentForView, setSelectedConsignmentForView] = useState<any | null>(null);
   const [showInvoiceCreation, setShowInvoiceCreation] = useState(false);
   const [showConsignmentCreation, setShowConsignmentCreation] = useState(false);
+  const [showQuotationCreation, setShowQuotationCreation] = useState(false);
   const [showCreditNoteDialog, setShowCreditNoteDialog] = useState(false);
   const [selectedInvoiceForCredit, setSelectedInvoiceForCredit] = useState<Invoice | null>(null);
   const [invoiceSortColumn, setInvoiceSortColumn] = useState<string>('');
   const [invoiceSortDirection, setInvoiceSortDirection] = useState<'asc' | 'desc'>('asc');
   const [consignmentSortColumn, setConsignmentSortColumn] = useState<string>('');
   const [consignmentSortDirection, setConsignmentSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [quotationSortColumn, setQuotationSortColumn] = useState<string>('');
+  const [quotationSortDirection, setQuotationSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOverdueInvoices, setShowOverdueInvoices] = useState(false);
   const [showOverdueConsignments, setShowOverdueConsignments] = useState(false);
   useEffect(() => {
@@ -171,20 +182,28 @@ export const TransactionDashboard = () => {
       });
     }
   };
-  const handleSort = (column: string, type: 'invoice' | 'consignment') => {
+  const handleSort = (column: string, type: 'invoice' | 'consignment' | 'quotation') => {
     if (type === 'invoice') {
       const direction = invoiceSortColumn === column && invoiceSortDirection === 'asc' ? 'desc' : 'asc';
       setInvoiceSortColumn(column);
       setInvoiceSortDirection(direction);
-    } else {
+    } else if (type === 'consignment') {
       const direction = consignmentSortColumn === column && consignmentSortDirection === 'asc' ? 'desc' : 'asc';
       setConsignmentSortColumn(column);
       setConsignmentSortDirection(direction);
+    } else if (type === 'quotation') {
+      const direction = quotationSortColumn === column && quotationSortDirection === 'asc' ? 'desc' : 'asc';
+      setQuotationSortColumn(column);
+      setQuotationSortDirection(direction);
     }
   };
-  const getSortIcon = (column: string, type: 'invoice' | 'consignment') => {
-    const sortColumn = type === 'invoice' ? invoiceSortColumn : consignmentSortColumn;
-    const sortDirection = type === 'invoice' ? invoiceSortDirection : consignmentSortDirection;
+  const getSortIcon = (column: string, type: 'invoice' | 'consignment' | 'quotation') => {
+    const sortColumn = type === 'invoice' ? invoiceSortColumn : 
+                      type === 'consignment' ? consignmentSortColumn : 
+                      quotationSortColumn;
+    const sortDirection = type === 'invoice' ? invoiceSortDirection : 
+                         type === 'consignment' ? consignmentSortDirection : 
+                         quotationSortDirection;
     if (sortColumn !== column) return <ArrowUpDown className="w-4 h-4" />;
     return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
   };
@@ -270,11 +289,54 @@ export const TransactionDashboard = () => {
     return 0;
   });
 
+  // Filter quotations
+  const filteredQuotations = quotations.filter(quotation => {
+    const matchesSearch = quotation.quotationNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         getCustomerName(quotation.customerId).toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCustomer = customerFilter === 'all' || quotation.customerId === customerFilter;
+    const matchesStatus = statusFilter === 'all' || quotation.status.toLowerCase() === statusFilter.toLowerCase();
+    return matchesSearch && matchesCustomer && matchesStatus;
+  }).sort((a, b) => {
+    if (!quotationSortColumn) return 0;
+    let aValue: any, bValue: any;
+    
+    switch (quotationSortColumn) {
+      case 'quotationNumber':
+        aValue = a.quotationNumber;
+        bValue = b.quotationNumber;
+        break;
+      case 'customer':
+        aValue = getCustomerName(a.customerId);
+        bValue = getCustomerName(b.customerId);
+        break;
+      case 'dateCreated':
+        aValue = new Date(a.dateCreated);
+        bValue = new Date(b.dateCreated);
+        break;
+      case 'total':
+        aValue = a.total;
+        bValue = b.total;
+        break;
+      case 'status':
+        aValue = a.status;
+        bValue = b.status;
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return quotationSortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return quotationSortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   // Summary calculations
   const allInvoices = customerFilter === 'all' ? invoices : invoices.filter(inv => inv.customerId === customerFilter);
   const allConsignments = customerFilter === 'all' ? consignments : consignments.filter(cons => cons.customerId === customerFilter);
+  const allQuotations = customerFilter === 'all' ? quotations : quotations.filter(quot => quot.customerId === customerFilter);
   const totalInvoices = allInvoices.length;
   const totalConsignments = allConsignments.length;
+  const totalQuotations = allQuotations.length;
 
   // Calculate revenue from invoices (paid, partial, sent, overdue)
   const revenueInvoices = allInvoices.filter(inv => 
@@ -494,11 +556,15 @@ export const TransactionDashboard = () => {
             <Plus className="w-4 h-4 mr-2" />
             Create Consignment
           </Button>
+          <Button onClick={() => setShowQuotationCreation(true)} variant="outline">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Quotation
+          </Button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-slate-600 text-xl font-extrabold">
@@ -520,6 +586,16 @@ export const TransactionDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-slate-800">{totalInvoices}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Quotations</CardTitle>
+            <Quote className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-slate-800">{totalQuotations}</div>
           </CardContent>
         </Card>
 
@@ -598,6 +674,10 @@ export const TransactionDashboard = () => {
           <Package className="w-4 h-4 mr-2" />
           Consignments
         </Button>
+        <Button variant={activeTab === 'quotations' ? 'default' : 'ghost'} onClick={() => setActiveTab('quotations')} size="sm">
+          <Quote className="w-4 h-4 mr-2" />
+          Quotations
+        </Button>
       </div>
 
       {/* Filters */}
@@ -611,15 +691,26 @@ export const TransactionDashboard = () => {
         
         <CustomerFilter customers={customers} value={customerFilter} onValueChange={setCustomerFilter} placeholder="Filter by Customer" />
         
-        {activeTab === 'invoices' && <Select value={statusFilter} onValueChange={setStatusFilter}>
+        {(activeTab === 'invoices' || activeTab === 'quotations') && <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="unpaid">Unpaid</SelectItem>
-              <SelectItem value="partial">Partial</SelectItem>
+              {activeTab === 'invoices' ? (
+                <>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="unpaid">Unpaid</SelectItem>
+                  <SelectItem value="partial">Partial</SelectItem>
+                </>
+              ) : (
+                <>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="accepted">Accepted</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>}
       </div>
@@ -628,7 +719,7 @@ export const TransactionDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            {activeTab === 'invoices' ? 'Invoices' : 'Consignments'}
+            {activeTab === 'invoices' ? 'Invoices' : activeTab === 'consignments' ? 'Consignments' : 'Quotations'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -744,7 +835,7 @@ export const TransactionDashboard = () => {
               })}
                 </TableBody>
               </Table>
-            </div> : <div className="overflow-x-auto">
+            </div> : activeTab === 'consignments' ? <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50 border-b-2 border-slate-200">
@@ -828,6 +919,91 @@ export const TransactionDashboard = () => {
                       </TableRow>)}
                 </TableBody>
               </Table>
+            </div> : <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-slate-50 border-b-2 border-slate-200">
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('quotationNumber', 'quotation')}>
+                      <div className="flex items-center gap-2">
+                        Quotation #
+                        {getSortIcon('quotationNumber', 'quotation')}
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('customer', 'quotation')}>
+                      <div className="flex items-center gap-2">
+                        Customer
+                        {getSortIcon('customer', 'quotation')}
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('dateCreated', 'quotation')}>
+                      <div className="flex items-center gap-2">
+                        Date Created
+                        {getSortIcon('dateCreated', 'quotation')}
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('total', 'quotation')}>
+                      <div className="flex items-center gap-2">
+                        Total
+                        {getSortIcon('total', 'quotation')}
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-slate-800 cursor-pointer hover:bg-slate-100 py-4" onClick={() => handleSort('status', 'quotation')}>
+                      <div className="flex items-center gap-2">
+                        Status
+                        {getSortIcon('status', 'quotation')}
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-semibold text-slate-800 py-4">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {quotationsLoading ? <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        Loading quotations...
+                      </TableCell>
+                    </TableRow> : filteredQuotations.length === 0 ? <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-slate-500">
+                        No quotations found
+                      </TableCell>
+                    </TableRow> : filteredQuotations.map(quotation => <TableRow key={quotation.id}>
+                        <TableCell className="font-medium">
+                          {quotation.quotationNumber}
+                        </TableCell>
+                        <TableCell>{getCustomerName(quotation.customerId)}</TableCell>
+                        <TableCell>
+                          {new Date(quotation.dateCreated).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          ${quotation.total.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            quotation.status === 'accepted' ? 'default' : 
+                            quotation.status === 'rejected' ? 'destructive' : 
+                            quotation.status === 'expired' ? 'secondary' : 'outline'
+                          }>
+                            {quotation.status.charAt(0).toUpperCase() + quotation.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button variant="ghost" size="sm" title="View Quotation Details">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" title="Edit Quotation">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" title="Download Quotation">
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => deleteQuotation(quotation.id)} title="Delete Quotation" className="text-red-600 hover:text-red-700">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>)}
+                </TableBody>
+              </Table>
             </div>}
         </CardContent>
       </Card>
@@ -904,5 +1080,13 @@ export const TransactionDashboard = () => {
             </div>
           </DialogContent>
         </Dialog>}
+        
+        {/* Quotation Creation Dialog */}
+        <QuotationCreation
+          gems={[]}
+          customers={customers}
+          isOpen={showQuotationCreation}
+          onClose={() => setShowQuotationCreation(false)}
+        />
     </div>;
 };
