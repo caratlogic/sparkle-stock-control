@@ -208,7 +208,7 @@ export const GemTransactionHistory = ({ gem, open, onClose }: GemTransactionHist
                         <Badge 
                           variant={
                             invoice.status === 'paid' ? 'default' : 
-                            invoice.status === 'draft' ? 'secondary' : 'destructive'
+                            invoice.status === 'partial' ? 'secondary' : 'destructive'
                           }
                         >
                           {invoice.status}

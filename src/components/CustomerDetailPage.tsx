@@ -71,11 +71,11 @@ export const CustomerDetailPage = ({
 
   // Revenue breakdown by status (excluding cancelled invoices)
   const activeInvoices = customerInvoices.filter(inv => inv.status !== 'cancelled');
-  const draftRevenue = activeInvoices.filter(inv => inv.status === 'draft').reduce((sum, inv) => sum + inv.total, 0);
+  const partialRevenue = activeInvoices.filter(inv => inv.status === 'partial').reduce((sum, inv) => sum + inv.total, 0);
   const sentRevenue = activeInvoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
   const paidRevenue = activeInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
   const overdueRevenue = activeInvoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.total, 0);
-  const totalRevenue = draftRevenue + sentRevenue + paidRevenue + overdueRevenue;
+  const totalRevenue = partialRevenue + sentRevenue + paidRevenue + overdueRevenue;
   const totalCreditNotes = customerCreditNotes.length;
   const totalCreditAmount = customerCreditNotes.reduce((sum, note) => sum + note.amount, 0);
 
@@ -131,8 +131,8 @@ export const CustomerDetailPage = ({
         return 'bg-blue-100 text-blue-800';
       case 'overdue':
         return 'bg-red-100 text-red-800';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800';
+      case 'partial':
+        return 'bg-yellow-100 text-yellow-800';
       case 'active':
         return 'bg-green-100 text-green-800';
       case 'pending':
@@ -342,8 +342,8 @@ export const CustomerDetailPage = ({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Draft Invoice Amount</p>
-                <p className="text-lg font-bold text-slate-500">${draftRevenue.toLocaleString()}</p>
+                <p className="text-sm text-slate-600">Partial Invoice Amount</p>
+                <p className="text-lg font-bold text-slate-500">${partialRevenue.toLocaleString()}</p>
               </div>
               <FileText className="w-6 h-6 text-slate-500" />
             </div>

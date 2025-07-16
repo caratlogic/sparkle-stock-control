@@ -107,7 +107,7 @@ export const useInvoices = () => {
           tax_rate: invoiceData.taxRate,
           tax_amount: invoiceData.taxAmount,
           total: invoiceData.total,
-          status: invoiceData.status || 'draft',
+          status: invoiceData.status || 'sent',
           date_created: invoiceData.dateCreated,
           date_due: invoiceData.dateDue,
           notes: invoiceData.notes

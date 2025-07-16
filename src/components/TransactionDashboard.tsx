@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Invoice } from '../types/customer';
 import { generateInvoicePDF, generateConsignmentPDF } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { useCreditNotes } from '../hooks/useCreditNotes';
 export const TransactionDashboard = () => {
   const {
     invoices,
@@ -44,6 +45,9 @@ export const TransactionDashboard = () => {
   const {
     toast
   } = useToast();
+  const {
+    creditNotes
+  } = useCreditNotes();
   const [activeTab, setActiveTab] = useState<'invoices' | 'consignments'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -70,6 +74,16 @@ export const TransactionDashboard = () => {
   };
   const getInvoicePaymentStatus = (invoice: Invoice) => {
     const totalPaid = getTotalPaidAmount(invoice.id);
+    
+    // Use database status if it's partial or paid
+    if (invoice.status === 'partial' || invoice.status === 'paid') {
+      return {
+        status: invoice.status === 'partial' ? 'Partial' : 'Paid',
+        variant: invoice.status === 'partial' ? 'secondary' as const : 'default' as const
+      };
+    }
+    
+    // Check payment amounts for other statuses
     if (totalPaid === 0) return {
       status: 'Unpaid',
       variant: 'destructive' as const
@@ -268,27 +282,42 @@ export const TransactionDashboard = () => {
   const totalInvoices = allInvoices.length;
   const totalConsignments = allConsignments.length;
 
-  // Filter out cancelled invoices for revenue calculations
-  const activeInvoices = allInvoices.filter(inv => inv.status !== 'cancelled');
-  const totalInvoiceValue = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
-  const totalPaidValue = activeInvoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
-  console.log('🧮 Transaction Dashboard Calculations:');
-  console.log('Active invoices:', activeInvoices.length);
-  console.log('Total invoice value:', totalInvoiceValue);
-  console.log('Total paid value:', totalPaidValue);
+  // Calculate revenue from invoices (paid, partial, sent, overdue)
+  const revenueInvoices = allInvoices.filter(inv => 
+    ['paid', 'partial', 'sent', 'overdue'].includes(inv.status)
+  );
+  const totalRevenue = revenueInvoices.reduce((sum, inv) => sum + inv.total, 0);
   
-  const totalOutstanding = totalInvoiceValue - totalPaidValue;
+  // Calculate total paid (from all invoice payments for non-cancelled invoices)
+  const activeInvoices = allInvoices.filter(inv => inv.status !== 'cancelled');
+  const totalPaid = activeInvoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
+  
+  // Calculate outstanding (revenue minus total paid)
+  const totalOutstanding = totalRevenue - totalPaid;
+  
+  // Calculate credit notes total
+  const customerCreditNotes = customerFilter === 'all' 
+    ? creditNotes.filter(cn => cn.status === 'active')
+    : creditNotes.filter(cn => cn.customerId === customerFilter && cn.status === 'active');
+  const totalCreditNotes = customerCreditNotes.reduce((sum, cn) => sum + cn.amount, 0);
 
-  // Calculate overdue payments (more than 1 week old with no payment)
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  console.log('🧮 Transaction Dashboard Calculations:');
+  console.log('Revenue invoices:', revenueInvoices.length);
+  console.log('Total revenue:', totalRevenue);
+  console.log('Total paid:', totalPaid);
+  console.log('Total outstanding:', totalOutstanding);
+  console.log('Credit notes:', totalCreditNotes);
+
+
+  // Calculate overdue invoices for alerts (more than 14 days old)
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
   
   const overdueInvoices = allInvoices.filter(inv => {
-    const totalPaid = getTotalPaidAmount(inv.id);
     const invoiceDate = new Date(inv.dateCreated);
-    return totalPaid === 0 && invoiceDate < oneWeekAgo && inv.status !== 'cancelled';
+    const totalPaid = getTotalPaidAmount(inv.id);
+    return invoiceDate < twoWeeksAgo && totalPaid < inv.total && inv.status !== 'cancelled';
   });
-  const overduePaymentAmount = overdueInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
   // Calculate overdue consignments (past return date)
   const today = new Date();
@@ -296,14 +325,6 @@ export const TransactionDashboard = () => {
     const returnDate = new Date(cons.returnDate);
     return returnDate < today && cons.status === 'pending';
   });
-
-  // Customer-specific calculations when customer filter is applied
-  const customerSpecificInvoices = customerFilter === 'all' ? activeInvoices : activeInvoices.filter(inv => inv.customerId === customerFilter);
-  const customerDraftRevenue = customerSpecificInvoices.filter(inv => inv.status === 'draft').reduce((sum, inv) => sum + inv.total, 0);
-  const customerSentRevenue = customerSpecificInvoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
-  const customerPaidRevenue = customerSpecificInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
-  const customerOverdueRevenue = customerSpecificInvoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.total, 0);
-  const customerTotalRevenue = customerDraftRevenue + customerSentRevenue + customerPaidRevenue + customerOverdueRevenue;
 
   // If viewing invoice details, show the detail view
   if (selectedInvoiceForView) {
@@ -487,7 +508,7 @@ export const TransactionDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              ${customerFilter === 'all' ? totalInvoiceValue.toLocaleString() : customerTotalRevenue.toLocaleString()}
+              ${totalRevenue.toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -508,7 +529,7 @@ export const TransactionDashboard = () => {
             <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${totalPaidValue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-600">${totalPaid.toLocaleString()}</div>
           </CardContent>
         </Card>
 
@@ -531,7 +552,7 @@ export const TransactionDashboard = () => {
             <Calendar className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">${overduePaymentAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-orange-600">${overdueInvoices.reduce((sum, inv) => sum + (inv.total - getTotalPaidAmount(inv.id)), 0).toLocaleString()}</div>
             <p className="text-xs text-slate-600 mt-1">{overdueInvoices.length} invoice(s)</p>
           </CardContent>
         </Card>
@@ -551,48 +572,21 @@ export const TransactionDashboard = () => {
         </Card>
       </div>
 
-      {/* Revenue Breakdown Cards (shown when customer is selected) */}
-      {customerFilter !== 'all' && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Draft Invoice Amount</CardTitle>
-              <FileText className="h-4 w-4 text-slate-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold text-slate-500">${customerDraftRevenue.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Sent Invoice Amount</CardTitle>
-              <FileText className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold text-blue-600">${customerSentRevenue.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Paid Invoice Amount</CardTitle>
-              <FileText className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold text-green-600">${customerPaidRevenue.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Overdue Invoice Amount</CardTitle>
-              <FileText className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold text-red-600">${customerOverdueRevenue.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-        </div>}
+      {/* Credit Notes Card */}
+      {totalCreditNotes > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">
+              {customerFilter === 'all' ? 'Total Credit Notes' : 'Customer Credit Notes'}
+            </CardTitle>
+            <CreditCard className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">${totalCreditNotes.toLocaleString()}</div>
+            <p className="text-xs text-slate-600 mt-1">{customerCreditNotes.length} credit note(s)</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tabs */}
       <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg w-fit">
@@ -722,13 +716,13 @@ export const TransactionDashboard = () => {
                                   </Badge>
                                 </SelectValue>
                               </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="sent">Sent</SelectItem>
-                                <SelectItem value="paid">Paid</SelectItem>
-                                <SelectItem value="overdue">Overdue</SelectItem>
-                                <SelectItem value="cancelled">Cancelled</SelectItem>
-                              </SelectContent>
+                               <SelectContent>
+                                 <SelectItem value="sent">Sent</SelectItem>
+                                 <SelectItem value="partial">Partial</SelectItem>
+                                 <SelectItem value="paid">Paid</SelectItem>
+                                 <SelectItem value="overdue">Overdue</SelectItem>
+                                 <SelectItem value="cancelled">Cancelled</SelectItem>
+                               </SelectContent>
                             </Select>
                           </TableCell>
                           <TableCell>
