@@ -132,23 +132,10 @@ export const QRCodeDisplay = ({
         alt={`QR Code for ${gemData.stockId}`}
         className={`${getSize()} border border-slate-200 rounded`}
       />
-      <div className="text-center space-y-2">
+      <div className="text-center">
         <p className="text-xs text-slate-600">
           {gemData.stockId} - {gemData.carat}ct {gemData.gemType}
         </p>
-        <div className="bg-slate-50 rounded-lg p-3 max-w-sm">
-          <p className="text-xs font-medium text-slate-700 mb-2">QR Code includes:</p>
-          <div className="flex flex-wrap gap-1">
-            {getIncludedFields().map((field) => (
-              <span
-                key={field}
-                className="inline-block px-2 py-1 text-xs bg-primary/10 text-primary rounded"
-              >
-                {field}
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
       {showDownload && (
         <Button
