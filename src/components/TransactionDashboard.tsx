@@ -425,6 +425,7 @@ export const TransactionDashboard = () => {
                   <TableHead>Invoice #</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead>Total Amount</TableHead>
                   <TableHead>Amount Due</TableHead>
                   <TableHead>Days Overdue</TableHead>
                   <TableHead>Actions</TableHead>
@@ -440,6 +441,7 @@ export const TransactionDashboard = () => {
                       <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                       <TableCell>{getCustomerName(invoice.customerId)}</TableCell>
                       <TableCell>{new Date(invoice.dateCreated).toLocaleDateString()}</TableCell>
+                      <TableCell>${invoice.total.toLocaleString()}</TableCell>
                       <TableCell>${remainingAmount.toLocaleString()}</TableCell>
                       <TableCell>
                         <Badge variant="destructive">{daysDiff} days</Badge>
