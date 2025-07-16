@@ -75,15 +75,7 @@ export const TransactionDashboard = () => {
   const getInvoicePaymentStatus = (invoice: Invoice) => {
     const totalPaid = getTotalPaidAmount(invoice.id);
     
-    // Use database status if it's partial or paid
-    if (invoice.status === 'partial' || invoice.status === 'paid') {
-      return {
-        status: invoice.status === 'partial' ? 'Partial' : 'Paid',
-        variant: invoice.status === 'partial' ? 'secondary' as const : 'default' as const
-      };
-    }
-    
-    // Check payment amounts for other statuses
+    // Calculate status based on actual payment amounts for consistency
     if (totalPaid === 0) return {
       status: 'Unpaid',
       variant: 'destructive' as const
