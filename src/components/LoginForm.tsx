@@ -81,7 +81,8 @@ export const LoginForm = () => {
           </form>
 
           <div className="mt-6 pt-4 border-t border-slate-200">
-            <p className="text-sm text-slate-600 text-center mb-3">Demo Accounts:</p>
+            <p className="text-sm text-slate-600 text-center mb-3">Demo Accounts:
+Please contact kevalai24@gmail.com</p>
             <div className="space-y-2 text-xs text-slate-500">
               <div className="flex justify-between">
                 <span>Owner:</span>
