@@ -498,7 +498,7 @@ export const TransactionDashboard = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-slate-600 text-xl font-extrabold">
@@ -540,20 +540,6 @@ export const TransactionDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">${totalOutstanding.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="cursor-pointer hover:bg-slate-50 transition-colors"
-          onClick={() => setShowOverdueInvoices(true)}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Overdue Payment</CardTitle>
-            <Calendar className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">${overdueInvoices.reduce((sum, inv) => sum + (inv.total - getTotalPaidAmount(inv.id)), 0).toLocaleString()}</div>
-            <p className="text-xs text-slate-600 mt-1">{overdueInvoices.length} invoice(s)</p>
           </CardContent>
         </Card>
 
@@ -672,7 +658,7 @@ export const TransactionDashboard = () => {
                         {getSortIcon('outstanding', 'invoice')}
                       </div>
                     </TableHead>
-                    <TableHead className="font-semibold text-slate-800 py-4">Status</TableHead>
+                    <TableHead className="font-semibold text-slate-800 py-4">Invoice Status</TableHead>
                     <TableHead className="font-semibold text-slate-800 py-4">Payment Status</TableHead>
                     <TableHead className="font-semibold text-slate-800 py-4">Actions</TableHead>
                   </TableRow>
@@ -708,22 +694,9 @@ export const TransactionDashboard = () => {
                             ${outstanding.toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            <Select value={invoice.status} onValueChange={newStatus => handleUpdateInvoiceStatus(invoice.id, newStatus)}>
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue>
-                                  <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
-                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                                  </Badge>
-                                </SelectValue>
-                              </SelectTrigger>
-                               <SelectContent>
-                                 <SelectItem value="sent">Sent</SelectItem>
-                                 <SelectItem value="partial">Partial</SelectItem>
-                                 <SelectItem value="paid">Paid</SelectItem>
-                                 <SelectItem value="overdue">Overdue</SelectItem>
-                                 <SelectItem value="cancelled">Cancelled</SelectItem>
-                               </SelectContent>
-                            </Select>
+                            <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
+                              {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge variant={paymentStatus.variant}>
