@@ -271,7 +271,12 @@ export const TransactionDashboard = () => {
   // Filter out cancelled invoices for revenue calculations
   const activeInvoices = allInvoices.filter(inv => inv.status !== 'cancelled');
   const totalInvoiceValue = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
-  const totalPaidValue = allInvoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
+  const totalPaidValue = activeInvoices.reduce((sum, inv) => sum + getTotalPaidAmount(inv.id), 0);
+  console.log('🧮 Transaction Dashboard Calculations:');
+  console.log('Active invoices:', activeInvoices.length);
+  console.log('Total invoice value:', totalInvoiceValue);
+  console.log('Total paid value:', totalPaidValue);
+  
   const totalOutstanding = totalInvoiceValue - totalPaidValue;
 
   // Calculate overdue payments (more than 1 week old with no payment)

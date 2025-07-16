@@ -73,12 +73,26 @@ export const PaymentDashboard = () => {
 
   // Calculate summary from transformed payments
   const calculateSummary = useCallback((): PaymentSummary => {
-    console.log('💰 Calculating payment summary...');
-    console.log('Invoice payments:', invoicePayments.length);
+    console.log('💰 Payment Dashboard Calculations:');
+    console.log('Invoice payments count:', invoicePayments.length);
+    console.log('All invoice payments:', invoicePayments.map(p => ({id: p.id, amount: p.amount, invoiceId: p.invoiceId})));
     console.log('Total invoices:', invoices.length);
     
-    const totalReceived = invoicePayments.reduce((sum, p) => sum + p.amount, 0);
-    console.log('Total received:', totalReceived);
+    // Calculate total received only from payments for active (non-cancelled) invoices
+    const activeInvoices = invoices.filter(inv => inv.status !== 'cancelled');
+    const totalReceived = invoicePayments
+      .filter(p => {
+        const invoice = invoices.find(inv => inv.id === p.invoiceId);
+        return invoice && invoice.status !== 'cancelled';
+      })
+      .reduce((sum, p) => sum + p.amount, 0);
+    console.log('Total received (Payment Dashboard - active invoices only):', totalReceived);
+    console.log('Active invoices count:', activeInvoices.length);
+    console.log('Excluded cancelled invoice payments:', 
+      invoicePayments.filter(p => {
+        const invoice = invoices.find(inv => inv.id === p.invoiceId);
+        return invoice && invoice.status === 'cancelled';
+      }).length);
     
     // Calculate pending payments from invoices that haven't been fully paid
     const pendingPayments = invoices.reduce((sum, invoice) => {
