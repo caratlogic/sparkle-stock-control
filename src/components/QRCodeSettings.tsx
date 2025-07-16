@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, Check } from 'lucide-react';
 import { QRCodeFieldConfig } from '../hooks/useQRCodeSettings';
+import { useToast } from '@/hooks/use-toast';
 
 interface QRCodeSettingsProps {
   fieldConfig: QRCodeFieldConfig;
@@ -12,6 +13,10 @@ interface QRCodeSettingsProps {
 }
 
 export const QRCodeSettings = ({ fieldConfig, onConfigChange }: QRCodeSettingsProps) => {
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   const fieldLabels = {
     stockId: 'Stock ID',
     gemType: 'Gem Type',
@@ -32,6 +37,35 @@ export const QRCodeSettings = ({ fieldConfig, onConfigChange }: QRCodeSettingsPr
       ...fieldConfig,
       [field]: checked
     });
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveSuccess(false);
+    
+    try {
+      // Trigger the save operation
+      onConfigChange(fieldConfig);
+      
+      // Show success feedback
+      setSaveSuccess(true);
+      toast({
+        title: "Settings Saved",
+        description: "Your QR code field configuration has been saved successfully.",
+      });
+      
+      // Reset success state after 2 seconds
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (error) {
+      console.error('Error saving QR code settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save QR code settings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -89,10 +123,23 @@ export const QRCodeSettings = ({ fieldConfig, onConfigChange }: QRCodeSettingsPr
               </Button>
               <Button
                 size="sm"
-                onClick={() => onConfigChange(fieldConfig)}
+                onClick={handleSave}
+                disabled={isSaving}
                 className="bg-primary hover:bg-primary/90"
               >
-                Save Settings
+                {isSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : saveSuccess ? (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Saved!
+                  </>
+                ) : (
+                  'Save Settings'
+                )}
               </Button>
             </div>
           </div>
