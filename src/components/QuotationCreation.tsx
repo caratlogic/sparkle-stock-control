@@ -52,6 +52,7 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
     discount: 0
   });
   const [sending, setSending] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const availableGems = gems.filter(gem => 
     gem.status === 'In Stock' && 
@@ -211,6 +212,74 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
     `;
   };
 
+  const saveQuotationToDatabase = async (status: string) => {
+    const quotationNumber = `QUO-${Date.now()}`;
+    const { data: quotationData, error: quotationError } = await supabase
+      .from('quotations')
+      .insert({
+        quotation_number: quotationNumber,
+        customer_id: selectedCustomer,
+        subtotal: calculateSubtotal(),
+        discount_percentage: quotationDetails.discount,
+        total: calculateTotal(),
+        terms: quotationDetails.terms,
+        notes: quotationDetails.notes,
+        valid_until: quotationDetails.validUntil || null,
+        status
+      })
+      .select()
+      .single();
+
+    if (quotationError) throw quotationError;
+
+    // Save quotation items
+    const quotationItemsData = quotationItems.map(item => ({
+      quotation_id: quotationData.id,
+      gem_id: item.gem.id,
+      quantity: item.caratQuantity,
+      unit_price: item.pricePerCarat,
+      discount: item.discount,
+      total_price: (item.caratQuantity * item.pricePerCarat) * (1 - item.discount / 100)
+    }));
+
+    await supabase.from('quotation_items').insert(quotationItemsData);
+    
+    return quotationData;
+  };
+
+  const handleCreateQuotation = async () => {
+    if (!selectedCustomer || quotationItems.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a customer and add at least one gem",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await saveQuotationToDatabase('draft');
+      
+      const customerData = customers.find(c => c.id === selectedCustomer);
+      toast({
+        title: "Quotation Created Successfully",
+        description: `Quotation created for ${customerData?.name}`,
+      });
+
+      onClose();
+    } catch (error) {
+      console.error('Error creating quotation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create quotation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleSendQuotation = async () => {
     if (!selectedCustomer || quotationItems.length === 0) {
       toast({
@@ -239,38 +308,8 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
 
       if (response.error) throw response.error;
 
-      // Log communication
-      // Save quotation to database
-      const quotationNumber = `QUO-${Date.now()}`;
-      const { data: quotationData, error: quotationError } = await supabase
-        .from('quotations')
-        .insert({
-          quotation_number: quotationNumber,
-          customer_id: selectedCustomer,
-          subtotal: calculateSubtotal(),
-          discount_percentage: quotationDetails.discount,
-          total: calculateTotal(),
-          terms: quotationDetails.terms,
-          notes: quotationDetails.notes,
-          valid_until: quotationDetails.validUntil || null,
-          status: 'sent'
-        })
-        .select()
-        .single();
-
-      if (quotationError) throw quotationError;
-
-      // Save quotation items
-      const quotationItemsData = quotationItems.map(item => ({
-        quotation_id: quotationData.id,
-        gem_id: item.gem.id,
-        quantity: item.caratQuantity,
-        unit_price: item.pricePerCarat,
-        discount: item.discount,
-        total_price: (item.caratQuantity * item.pricePerCarat) * (1 - item.discount / 100)
-      }));
-
-      await supabase.from('quotation_items').insert(quotationItemsData);
+      // Save quotation to database with 'sent' status
+      await saveQuotationToDatabase('sent');
 
       // Log communication
       await supabase.from('customer_communications').insert({
@@ -492,8 +531,25 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
               Cancel
             </Button>
             <Button
+              onClick={handleCreateQuotation}
+              disabled={!selectedCustomer || quotationItems.length === 0 || creating || sending}
+              variant="outline"
+            >
+              {creating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Create Quotation
+                </>
+              )}
+            </Button>
+            <Button
               onClick={handleSendQuotation}
-              disabled={!selectedCustomer || quotationItems.length === 0 || sending}
+              disabled={!selectedCustomer || quotationItems.length === 0 || sending || creating}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {sending ? (

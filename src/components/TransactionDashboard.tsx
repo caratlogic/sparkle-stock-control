@@ -10,6 +10,7 @@ import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useCustomers } from '../hooks/useCustomers';
+import { useGems } from '../hooks/useGems';
 import { InvoicePaymentDialog } from './InvoicePaymentDialog';
 import { ConsignmentToInvoiceDialog } from './ConsignmentToInvoiceDialog';
 import { InvoiceDetailView } from './InvoiceDetailView';
@@ -44,6 +45,7 @@ export const TransactionDashboard = () => {
   const {
     customers
   } = useCustomers();
+  const { gems } = useGems();
   const {
     toast
   } = useToast();
@@ -1083,7 +1085,7 @@ export const TransactionDashboard = () => {
         
         {/* Quotation Creation Dialog */}
         <QuotationCreation
-          gems={[]}
+          gems={gems}
           customers={customers}
           isOpen={showQuotationCreation}
           onClose={() => setShowQuotationCreation(false)}
