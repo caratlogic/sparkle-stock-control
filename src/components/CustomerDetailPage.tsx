@@ -95,7 +95,9 @@ export const CustomerDetailPage = ({
     const remainingBalance = inv.total - invoicePayments;
     return sum + Math.max(0, remainingBalance);
   }, 0);
-  const totalRevenue = partialRevenue + sentRevenue + paidRevenue + overdueRevenue;
+  
+  // Total revenue should be the sum of all active invoice amounts (not double counting overdue)
+  const totalRevenue = activeInvoices.reduce((sum, inv) => sum + inv.total, 0);
   const totalCreditNotes = customerCreditNotes.length;
   const totalCreditAmount = customerCreditNotes.reduce((sum, note) => sum + note.amount, 0);
 
