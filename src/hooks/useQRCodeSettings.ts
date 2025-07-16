@@ -3,7 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface QRCodeFieldConfig {
-  [key: string]: boolean;
+  stockId: boolean;
+  gemType: boolean;
+  carat: boolean;
+  color: boolean;
+  cut: boolean;
+  measurements: boolean;
+  certificateNumber: boolean;
+  sellingPrice: boolean;
+  costPrice: boolean;
+  treatment: boolean;
+  origin: boolean;
+  supplier: boolean;
+  description: boolean;
 }
 
 export const useQRCodeSettings = () => {
@@ -16,7 +28,8 @@ export const useQRCodeSettings = () => {
     cut: true,
     measurements: false,
     certificateNumber: true,
-    price: false,
+    sellingPrice: false,
+    costPrice: false,
     treatment: false,
     origin: false,
     supplier: false,
@@ -57,7 +70,7 @@ export const useQRCodeSettings = () => {
 
       if (data?.field_config) {
         console.log('Loaded QR code settings from database:', data.field_config);
-        setFieldConfig(data.field_config as QRCodeFieldConfig);
+        setFieldConfig(data.field_config as unknown as QRCodeFieldConfig);
       } else {
         console.log('No QR code settings found in database, using defaults');
       }
@@ -74,7 +87,7 @@ export const useQRCodeSettings = () => {
         .from('qr_code_settings')
         .upsert({
           user_email: user.email,
-          field_config: newConfig
+          field_config: newConfig as unknown as any
         });
 
       if (error) {

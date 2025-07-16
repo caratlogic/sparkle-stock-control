@@ -41,6 +41,8 @@ export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
     certificateNumber: sampleGem.certificateNumber,
     price: sampleGem.price,
     pricePerCarat: sampleGem.price / sampleGem.carat,
+    costPrice: sampleGem.costPrice || 0,
+    costPricePerCarat: (sampleGem.costPrice || 0) / sampleGem.carat,
     description: sampleGem.description || '',
     origin: sampleGem.origin || '',
     treatment: sampleGem.treatment || '',

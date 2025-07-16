@@ -234,6 +234,8 @@ export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
                 certificateNumber: gem.certificateNumber,
                 price: gem.price,
                 pricePerCarat: gem.price / gem.carat,
+                costPrice: gem.costPrice || 0,
+                costPricePerCarat: (gem.costPrice || 0) / gem.carat,
                 description: gem.description,
                 origin: gem.origin,
                 treatment: gem.treatment,

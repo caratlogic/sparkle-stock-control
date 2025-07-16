@@ -761,23 +761,25 @@ export const GemTable = ({
                          case 'qrcode':
                            return (
                              <div className="flex items-center space-x-2">
-                               <QRCodeDisplay 
-                                 gemData={{
-                                   stockId: gem.stockId,
-                                   gemType: gem.gemType,
-                                   carat: gem.carat,
-                                   color: gem.color,
-                                   cut: gem.cut,
-                                   measurements: gem.measurements || '',
-                                   certificateNumber: gem.certificateNumber,
-                                   price: gem.price,
-                                   pricePerCarat: gem.price / gem.carat,
-                                   description: gem.description,
-                                   origin: gem.origin,
-                                   treatment: gem.treatment,
-                                   supplier: gem.supplier,
-                                   dateAdded: gem.dateAdded
-                                 }}
+                                <QRCodeDisplay 
+                                  gemData={{
+                                    stockId: gem.stockId,
+                                    gemType: gem.gemType,
+                                    carat: gem.carat,
+                                    color: gem.color,
+                                    cut: gem.cut,
+                                    measurements: gem.measurements || '',
+                                    certificateNumber: gem.certificateNumber,
+                                    price: gem.price,
+                                    pricePerCarat: gem.price / gem.carat,
+                                    costPrice: gem.costPrice || 0,
+                                    costPricePerCarat: (gem.costPrice || 0) / gem.carat,
+                                    description: gem.description,
+                                    origin: gem.origin,
+                                    treatment: gem.treatment,
+                                    supplier: gem.supplier,
+                                    dateAdded: gem.dateAdded
+                                  }}
                                  fieldConfig={fieldConfig}
                                  size="small"
                                  showPrint={true}

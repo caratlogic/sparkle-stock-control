@@ -32,7 +32,8 @@ export const QRCodeDisplay = ({
     cut: true,
     measurements: true,
     certificateNumber: true,
-    price: true,
+    sellingPrice: true,
+    costPrice: false,
     treatment: true,
     origin: true,
     supplier: false,
@@ -117,7 +118,8 @@ export const QRCodeDisplay = ({
     if (config.cut) fields.push('Cut');
     if (config.measurements) fields.push('Measurements');
     if (config.certificateNumber) fields.push('Certificate Number');
-    if (config.price) fields.push('Price');
+    if (config.sellingPrice) fields.push('Selling Price/Carat');
+    if (config.costPrice) fields.push('Cost Price/Carat');
     if (config.treatment) fields.push('Treatment');
     if (config.origin) fields.push('Origin');
     if (config.supplier) fields.push('Supplier');

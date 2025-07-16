@@ -13,6 +13,8 @@ export interface QRCodeData {
   certificateNumber: string;
   price: number;
   pricePerCarat: number;
+  costPrice: number;
+  costPricePerCarat: number;
   description?: string;
   origin?: string;
   treatment?: string;
@@ -38,9 +40,13 @@ export const generateCustomQRCode = async (
     if (fieldConfig.cut) qrData.cut = data.cut;
     if (fieldConfig.measurements) qrData.measurements = data.measurements;
     if (fieldConfig.certificateNumber) qrData.certificateNumber = data.certificateNumber;
-    if (fieldConfig.price) {
+    if (fieldConfig.sellingPrice) {
       qrData.price = data.price;
       qrData.pricePerCarat = data.pricePerCarat;
+    }
+    if (fieldConfig.costPrice) {
+      qrData.costPrice = data.costPrice;
+      qrData.costPricePerCarat = data.costPricePerCarat;
     }
     if (fieldConfig.description) qrData.description = data.description;
     if (fieldConfig.origin) qrData.origin = data.origin;
@@ -84,7 +90,8 @@ export const generateQRCode = async (
     cut: true,
     measurements: true,
     certificateNumber: true,
-    price: true,
+    sellingPrice: true,
+    costPrice: false,
     treatment: true,
     origin: true,
     supplier: false,
@@ -113,9 +120,13 @@ export const downloadCustomQRCode = async (
     if (fieldConfig.cut) qrData.cut = data.cut;
     if (fieldConfig.measurements) qrData.measurements = data.measurements;
     if (fieldConfig.certificateNumber) qrData.certificateNumber = data.certificateNumber;
-    if (fieldConfig.price) {
+    if (fieldConfig.sellingPrice) {
       qrData.price = data.price;
       qrData.pricePerCarat = data.pricePerCarat;
+    }
+    if (fieldConfig.costPrice) {
+      qrData.costPrice = data.costPrice;
+      qrData.costPricePerCarat = data.costPricePerCarat;
     }
     if (fieldConfig.description) qrData.description = data.description;
     if (fieldConfig.origin) qrData.origin = data.origin;
@@ -234,8 +245,13 @@ export const downloadCustomQRCode = async (
       currentY += lineHeight;
     }
 
-    if (fieldConfig.price) {
-      ctx.fillText(`$${data.price.toLocaleString()}`, printWidth / 2, currentY);
+    if (fieldConfig.sellingPrice) {
+      ctx.fillText(`Selling: $${data.price.toLocaleString()} ($${data.pricePerCarat.toLocaleString()}/ct)`, printWidth / 2, currentY);
+      currentY += lineHeight;
+    }
+
+    if (fieldConfig.costPrice) {
+      ctx.fillText(`Cost: $${data.costPrice.toLocaleString()} ($${data.costPricePerCarat.toLocaleString()}/ct)`, printWidth / 2, currentY);
       currentY += lineHeight;
     }
 
@@ -273,7 +289,8 @@ export const downloadQRCode = async (
     cut: true,
     measurements: true,
     certificateNumber: true,
-    price: true,
+    sellingPrice: true,
+    costPrice: false,
     treatment: true,
     origin: true,
     supplier: false,
@@ -295,6 +312,8 @@ export const gemToQRCodeData = (gem: Gem): QRCodeData => {
     certificateNumber: gem.certificateNumber,
     price: gem.price,
     pricePerCarat: gem.price / gem.carat,
+    costPrice: gem.costPrice || 0,
+    costPricePerCarat: (gem.costPrice || 0) / gem.carat,
     description: gem.description || '',
     origin: gem.origin || '',
     treatment: gem.treatment || '',
@@ -323,9 +342,13 @@ export const printCustomQRCode = async (
     if (fieldConfig.cut) qrData.cut = data.cut;
     if (fieldConfig.measurements) qrData.measurements = data.measurements;
     if (fieldConfig.certificateNumber) qrData.certificateNumber = data.certificateNumber;
-    if (fieldConfig.price) {
+    if (fieldConfig.sellingPrice) {
       qrData.price = data.price;
       qrData.pricePerCarat = data.pricePerCarat;
+    }
+    if (fieldConfig.costPrice) {
+      qrData.costPrice = data.costPrice;
+      qrData.costPricePerCarat = data.costPricePerCarat;
     }
     if (fieldConfig.description) qrData.description = data.description;
     if (fieldConfig.origin) qrData.origin = data.origin;
@@ -487,14 +510,24 @@ export const printCustomQRCode = async (
                   <span class="field-value">${data.supplier}</span>
                 </div>
                 ` : ''}
-                ${fieldConfig.price ? `
+                ${fieldConfig.sellingPrice ? `
                 <div class="field-row">
-                  <span class="field-label">Price:</span>
+                  <span class="field-label">Selling Price:</span>
                   <span class="field-value">$${data.price.toLocaleString()}</span>
                 </div>
                 <div class="field-row">
-                  <span class="field-label">Price/Carat:</span>
+                  <span class="field-label">Selling Price/Carat:</span>
                   <span class="field-value">$${data.pricePerCarat.toLocaleString()}/ct</span>
+                </div>
+                ` : ''}
+                ${fieldConfig.costPrice ? `
+                <div class="field-row">
+                  <span class="field-label">Cost Price:</span>
+                  <span class="field-value">$${data.costPrice.toLocaleString()}</span>
+                </div>
+                <div class="field-row">
+                  <span class="field-label">Cost Price/Carat:</span>
+                  <span class="field-value">$${data.costPricePerCarat.toLocaleString()}/ct</span>
                 </div>
                 ` : ''}
               </div>
@@ -551,9 +584,13 @@ export const printAllQRCodes = async (
       if (fieldConfig.cut) qrDataStructured.cut = qrData.cut;
       if (fieldConfig.measurements) qrDataStructured.measurements = qrData.measurements;
       if (fieldConfig.certificateNumber) qrDataStructured.certificateNumber = qrData.certificateNumber;
-      if (fieldConfig.price) {
+      if (fieldConfig.sellingPrice) {
         qrDataStructured.price = qrData.price;
         qrDataStructured.pricePerCarat = qrData.pricePerCarat;
+      }
+      if (fieldConfig.costPrice) {
+        qrDataStructured.costPrice = qrData.costPrice;
+        qrDataStructured.costPricePerCarat = qrData.costPricePerCarat;
       }
       if (fieldConfig.description) qrDataStructured.description = qrData.description;
       if (fieldConfig.origin) qrDataStructured.origin = qrData.origin;
@@ -603,10 +640,16 @@ export const printAllQRCodes = async (
                 <span class="field-value">${qrData.certificateNumber}</span>
               </div>
               ` : ''}
-              ${fieldConfig.price ? `
+              ${fieldConfig.sellingPrice ? `
               <div class="field-row">
-                <span class="field-label">Price:</span>
+                <span class="field-label">Selling Price:</span>
                 <span class="field-value">$${qrData.price.toLocaleString()}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.costPrice ? `
+              <div class="field-row">
+                <span class="field-label">Cost Price:</span>
+                <span class="field-value">$${qrData.costPrice.toLocaleString()}</span>
               </div>
               ` : ''}
             </div>
