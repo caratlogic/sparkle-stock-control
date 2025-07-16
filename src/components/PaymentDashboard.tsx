@@ -119,7 +119,7 @@ export const PaymentDashboard = () => {
       return sum;
     }, 0);
 
-    // Calculate overdue payments (invoices overdue by 2 weeks or more)
+    // Calculate overdue payments (invoices overdue by 2 weeks or more - matching Transaction Dashboard logic)
     const twoWeeksAgo = new Date();
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     
@@ -129,18 +129,12 @@ export const PaymentDashboard = () => {
         .reduce((total, payment) => total + payment.amount, 0);
       const remaining = invoice.total - totalPaid;
       
-      // Check if invoice is overdue by 2 weeks (based on due date OR creation date if past due)
-      const dueDate = new Date(invoice.dateDue);
-      const creationDate = new Date(invoice.dateCreated);
-      const currentDate = new Date();
+      // Match Transaction Dashboard logic exactly: 
+      // Invoice created more than 14 days ago AND has remaining balance AND not cancelled
+      const invoiceDate = new Date(invoice.dateCreated);
+      const isOverdueBy2Weeks = invoiceDate < twoWeeksAgo && remaining > 0;
       
-      // An invoice is overdue if:
-      // 1. The due date has passed AND there's remaining balance, OR
-      // 2. The invoice is more than 14 days old from creation date AND has no payments
-      const isDueDatePassed = dueDate < currentDate && remaining > 0;
-      const isOldUnpaidInvoice = creationDate < twoWeeksAgo && totalPaid === 0;
-      
-      if ((isDueDatePassed || isOldUnpaidInvoice) && invoice.status !== 'cancelled' && invoice.status !== 'paid') {
+      if (isOverdueBy2Weeks && invoice.status !== 'cancelled') {
         return sum + remaining;
       }
       return sum;
