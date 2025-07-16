@@ -15,8 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 
 interface QuotationItem {
   gem: Gem;
-  quantity: number;
-  unitPrice: number;
+  caratQuantity: number;
+  pricePerCarat: number;
   discount: number;
 }
 
@@ -38,8 +38,8 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
     if (isOpen && preSelectedGems.length > 0) {
       const newItems = preSelectedGems.map(gem => ({
         gem,
-        quantity: 1,
-        unitPrice: gem.price,
+        caratQuantity: gem.carat,
+        pricePerCarat: gem.price / gem.carat,
         discount: 0
       }));
       setQuotationItems(newItems);
@@ -63,8 +63,8 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
     if (gem) {
       setQuotationItems(prev => [...prev, {
         gem,
-        quantity: 1,
-        unitPrice: gem.price,
+        caratQuantity: gem.carat,
+        pricePerCarat: gem.price / gem.carat,
         discount: 0
       }]);
     }
@@ -82,7 +82,7 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
 
   const calculateSubtotal = () => {
     return quotationItems.reduce((sum, item) => {
-      const itemTotal = item.quantity * item.unitPrice;
+      const itemTotal = item.caratQuantity * item.pricePerCarat;
       const discountAmount = itemTotal * (item.discount / 100);
       return sum + (itemTotal - discountAmount);
     }, 0);
@@ -100,7 +100,7 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
     const currentDate = new Date().toLocaleDateString();
 
     const itemRows = quotationItems.map((item, index) => {
-      const itemTotal = item.quantity * item.unitPrice;
+      const itemTotal = item.caratQuantity * item.pricePerCarat;
       const discountAmount = itemTotal * (item.discount / 100);
       const netAmount = itemTotal - discountAmount;
 
@@ -113,8 +113,8 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
             ${item.gem.cut} ${item.gem.color}<br>
             ${item.gem.measurements}
           </td>
-          <td style="padding: 12px; text-align: center;">${item.quantity}</td>
-          <td style="padding: 12px; text-align: right;">$${item.unitPrice.toLocaleString()}</td>
+          <td style="padding: 12px; text-align: center;">${item.caratQuantity}ct</td>
+          <td style="padding: 12px; text-align: right;">$${item.pricePerCarat.toLocaleString()}</td>
           <td style="padding: 12px; text-align: right;">${item.discount}%</td>
           <td style="padding: 12px; text-align: right;">$${netAmount.toLocaleString()}</td>
         </tr>
@@ -160,8 +160,8 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
             <tr style="background-color: #f9fafb;">
               <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">#</th>
               <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Item Description</th>
-              <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb;">Qty</th>
-              <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Unit Price</th>
+              <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb;">Carat</th>
+              <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Price/Carat</th>
               <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Discount</th>
               <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Amount</th>
             </tr>
@@ -264,10 +264,10 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
       const quotationItemsData = quotationItems.map(item => ({
         quotation_id: quotationData.id,
         gem_id: item.gem.id,
-        quantity: item.quantity,
-        unit_price: item.unitPrice,
+        quantity: item.caratQuantity,
+        unit_price: item.pricePerCarat,
         discount: item.discount,
-        total_price: (item.quantity * item.unitPrice) * (1 - item.discount / 100)
+        total_price: (item.caratQuantity * item.pricePerCarat) * (1 - item.discount / 100)
       }));
 
       await supabase.from('quotation_items').insert(quotationItemsData);
@@ -377,21 +377,22 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
                           </div>
                         </div>
                         <div>
-                          <Label className="text-xs">Qty</Label>
+                          <Label className="text-xs">Carat</Label>
                           <Input
                             type="number"
-                            min="1"
-                            value={item.quantity}
-                            onChange={(e) => updateQuotationItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                            min="0.01"
+                            step="0.01"
+                            value={item.caratQuantity}
+                            onChange={(e) => updateQuotationItem(index, 'caratQuantity', parseFloat(e.target.value) || 0.01)}
                             className="h-8"
                           />
                         </div>
                         <div>
-                          <Label className="text-xs">Unit Price</Label>
+                          <Label className="text-xs">Price/Carat</Label>
                           <Input
                             type="number"
-                            value={item.unitPrice}
-                            onChange={(e) => updateQuotationItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                            value={item.pricePerCarat}
+                            onChange={(e) => updateQuotationItem(index, 'pricePerCarat', parseFloat(e.target.value) || 0)}
                             className="h-8"
                           />
                         </div>
