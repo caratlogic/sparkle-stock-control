@@ -230,8 +230,10 @@ export const TransactionDashboard = () => {
         bValue = getTotalPaidAmount(b.id);
         break;
       case 'outstanding':
-        aValue = a.total - getTotalPaidAmount(a.id);
-        bValue = b.total - getTotalPaidAmount(b.id);
+        const aPaymentStatus = getInvoicePaymentStatus(a);
+        const bPaymentStatus = getInvoicePaymentStatus(b);
+        aValue = aPaymentStatus.status === 'Paid' ? 0 : Math.max(0, a.total - getTotalPaidAmount(a.id));
+        bValue = bPaymentStatus.status === 'Paid' ? 0 : Math.max(0, b.total - getTotalPaidAmount(b.id));
         break;
       default:
         return 0;
@@ -674,8 +676,8 @@ export const TransactionDashboard = () => {
                       </TableCell>
                     </TableRow> : filteredInvoices.map(invoice => {
                 const paidAmount = getTotalPaidAmount(invoice.id);
-                const outstanding = invoice.total - paidAmount;
                 const paymentStatus = getInvoicePaymentStatus(invoice);
+                const outstanding = paymentStatus.status === 'Paid' ? 0 : Math.max(0, invoice.total - paidAmount);
                 return <TableRow key={invoice.id}>
                           <TableCell className="font-medium">
                             {invoice.invoiceNumber}
