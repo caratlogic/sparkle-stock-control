@@ -225,18 +225,21 @@ export const PaymentDashboard = () => {
     alert('Consignment viewing not yet implemented - would show consignment details');
   };
 
-  // Get overdue invoices for display
+  // Get overdue invoices for display - matching the overdue payment calculation logic
   const getOverdueInvoices = () => {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
     
     return invoices.filter(invoice => {
       const totalPaid = invoicePayments
         .filter(p => p.invoiceId === invoice.id)
         .reduce((total, payment) => total + payment.amount, 0);
+      const remaining = invoice.total - totalPaid;
       const invoiceDate = new Date(invoice.dateCreated);
       
-      return totalPaid === 0 && invoiceDate < oneWeekAgo && invoice.status !== 'cancelled';
+      // Match the overdue payment calculation logic exactly:
+      // Invoice created more than 14 days ago AND has remaining balance AND not cancelled
+      return invoiceDate < twoWeeksAgo && remaining > 0 && invoice.status !== 'cancelled';
     });
   };
 
@@ -248,7 +251,7 @@ export const PaymentDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold text-foreground">Overdue Payment Invoices</h2>
-            <p className="text-muted-foreground">Invoices with no payments received (more than 1 week old)</p>
+            <p className="text-muted-foreground">Invoices with outstanding balances (more than 2 weeks old)</p>
           </div>
           <Button 
             onClick={() => setShowOverduePayments(false)} 
@@ -275,13 +278,17 @@ export const PaymentDashboard = () => {
                 <tbody>
                   {overdueInvoices.map((invoice) => {
                     const customer = customers.find(c => c.id === invoice.customerId);
+                    const totalPaid = invoicePayments
+                      .filter(p => p.invoiceId === invoice.id)
+                      .reduce((total, payment) => total + payment.amount, 0);
+                    const remainingBalance = invoice.total - totalPaid;
                     const daysDiff = Math.floor((new Date().getTime() - new Date(invoice.dateCreated).getTime()) / (1000 * 3600 * 24));
                     return (
                       <tr key={invoice.id} className="border-b hover:bg-muted/50">
                         <td className="p-4 font-medium">{invoice.invoiceNumber}</td>
                         <td className="p-4">{customer?.name || 'Unknown Customer'}</td>
                         <td className="p-4">{new Date(invoice.dateCreated).toLocaleDateString()}</td>
-                        <td className="p-4 font-bold text-red-600">${invoice.total.toLocaleString()}</td>
+                        <td className="p-4 font-bold text-red-600">${remainingBalance.toLocaleString()}</td>
                         <td className="p-4">
                           <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">
                             {daysDiff} days
