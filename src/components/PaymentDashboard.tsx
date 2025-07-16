@@ -15,6 +15,7 @@ import { CreditNoteForm } from './CreditNoteForm';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useInvoices } from '../hooks/useInvoices';
 import { useCustomers } from '../hooks/useCustomers';
+import { useCreditNotes } from '../hooks/useCreditNotes';
 import { PaymentFilter, Payment, PaymentSummary } from '../types/payment';
 import { InvoicePayment, Invoice } from '../types/customer';
 
@@ -37,6 +38,7 @@ export const PaymentDashboard = () => {
   const { payments: invoicePayments, loading: paymentsLoading, fetchPayments, addPayment } = useInvoicePayments();
   const { invoices } = useInvoices();
   const { customers } = useCustomers();
+  const { creditNotes } = useCreditNotes();
 
   // Transform invoice payments to Payment format
   const transformedPayments: Payment[] = invoicePayments.map((payment: InvoicePayment) => {
@@ -71,31 +73,40 @@ export const PaymentDashboard = () => {
     };
   });
 
-  // Calculate summary from transformed payments
+  // Calculate summary from transformed payments with customer filtering
   const calculateSummary = useCallback((): PaymentSummary => {
     console.log('💰 Payment Dashboard Calculations:');
+    console.log('Customer filter:', customerFilter);
     console.log('Invoice payments count:', invoicePayments.length);
-    console.log('All invoice payments:', invoicePayments.map(p => ({id: p.id, amount: p.amount, invoiceId: p.invoiceId})));
     console.log('Total invoices:', invoices.length);
+    console.log('Credit notes count:', creditNotes.length);
+    
+    // Filter data by customer if specific customer is selected
+    const filteredInvoices = customerFilter === 'all' 
+      ? invoices 
+      : invoices.filter(inv => inv.customerId === customerFilter);
+    
+    const filteredPayments = customerFilter === 'all'
+      ? invoicePayments
+      : invoicePayments.filter(p => {
+          const invoice = invoices.find(inv => inv.id === p.invoiceId);
+          return invoice && invoice.customerId === customerFilter;
+        });
+
+    const filteredCreditNotes = customerFilter === 'all'
+      ? creditNotes
+      : creditNotes.filter(cn => cn.customerId === customerFilter);
     
     // Calculate total received only from payments for active (non-cancelled) invoices
-    const activeInvoices = invoices.filter(inv => inv.status !== 'cancelled');
-    const totalReceived = invoicePayments
+    const totalReceived = filteredPayments
       .filter(p => {
         const invoice = invoices.find(inv => inv.id === p.invoiceId);
         return invoice && invoice.status !== 'cancelled';
       })
       .reduce((sum, p) => sum + p.amount, 0);
-    console.log('Total received (Payment Dashboard - active invoices only):', totalReceived);
-    console.log('Active invoices count:', activeInvoices.length);
-    console.log('Excluded cancelled invoice payments:', 
-      invoicePayments.filter(p => {
-        const invoice = invoices.find(inv => inv.id === p.invoiceId);
-        return invoice && invoice.status === 'cancelled';
-      }).length);
     
     // Calculate pending payments from invoices that haven't been fully paid
-    const pendingPayments = invoices.reduce((sum, invoice) => {
+    const pendingPayments = filteredInvoices.reduce((sum, invoice) => {
       const paidAmount = invoicePayments
         .filter(p => p.invoiceId === invoice.id)
         .reduce((total, payment) => total + payment.amount, 0);
@@ -107,41 +118,43 @@ export const PaymentDashboard = () => {
       }
       return sum;
     }, 0);
-    console.log('Pending payments:', pendingPayments);
 
-    // Calculate overdue payments (invoices past due date or marked as overdue)
-    const overduePayments = invoices.reduce((sum, invoice) => {
+    // Calculate overdue payments (invoices overdue by 2 weeks or more)
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    
+    const overduePayments = filteredInvoices.reduce((sum, invoice) => {
       const totalPaid = invoicePayments
         .filter(p => p.invoiceId === invoice.id)
         .reduce((total, payment) => total + payment.amount, 0);
       const remaining = invoice.total - totalPaid;
       
-      // Check if invoice is overdue - check status first, then due date
+      // Check if invoice is overdue by 2 weeks
       const dueDate = new Date(invoice.dateDue);
-      const today = new Date();
-      const isOverdue = invoice.status === 'overdue' || 
-        (invoice.status === 'sent' && dueDate < today && remaining > 0);
+      const isOverdueBy2Weeks = dueDate < twoWeeksAgo && remaining > 0;
       
-      console.log(`Invoice ${invoice.invoiceNumber}: status=${invoice.status}, dueDate=${invoice.dateDue}, remaining=${remaining}, isOverdue=${isOverdue}`);
-      
-      if (isOverdue && invoice.status !== 'cancelled' && invoice.status !== 'paid' && remaining > 0) {
-        console.log(`Adding ${remaining} to overdue payments`);
+      if (isOverdueBy2Weeks && invoice.status !== 'cancelled' && invoice.status !== 'paid') {
         return sum + remaining;
       }
       return sum;
     }, 0);
-    console.log('Overdue payments:', overduePayments);
+
+    // Calculate total credit notes
+    const totalCreditNotes = filteredCreditNotes
+      .filter(cn => cn.status === 'active')
+      .reduce((sum, cn) => sum + cn.amount, 0);
 
     const summary = {
       totalReceived,
       pendingPayments,
       overduePayments,
-      totalRefunds: 0 // Would be calculated from refund records
+      totalRefunds: totalCreditNotes // Use credit notes as refunds/credits
     };
     
     console.log('Final payment summary:', summary);
+    console.log('Customer filter applied:', customerFilter !== 'all' ? customers.find(c => c.id === customerFilter)?.name : 'All Customers');
     return summary;
-  }, [invoicePayments, invoices]);
+  }, [invoicePayments, invoices, creditNotes, customerFilter, customers]);
 
   const summary = calculateSummary();
 
@@ -351,6 +364,8 @@ export const PaymentDashboard = () => {
         summary={summary} 
         loading={paymentsLoading} 
         onOverdueClick={() => setShowOverduePayments(true)}
+        customerFilter={customerFilter}
+        customers={customers}
       />
 
       {showReceivables && (
