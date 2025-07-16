@@ -340,9 +340,9 @@ export const TransactionDashboard = () => {
   const totalConsignments = allConsignments.length;
   const totalQuotations = allQuotations.length;
 
-  // Calculate revenue from invoices (paid, partial, sent, overdue)
+  // Calculate revenue from invoices (only sent, overdue, paid, partial - exclude draft and cancelled)
   const revenueInvoices = allInvoices.filter(inv => 
-    ['paid', 'partial', 'sent', 'overdue'].includes(inv.status)
+    ['sent', 'overdue', 'paid', 'partial'].includes(inv.status)
   );
   const totalRevenue = revenueInvoices.reduce((sum, inv) => sum + inv.total, 0);
   

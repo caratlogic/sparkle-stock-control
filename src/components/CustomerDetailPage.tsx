@@ -98,7 +98,7 @@ export const CustomerDetailPage = ({
   
   // Total revenue should only include invoices with revenue-generating statuses (same as TransactionDashboard)
   const revenueGeneratingInvoices = customerInvoices.filter(inv => 
-    ['paid', 'partial', 'sent', 'overdue'].includes(inv.status)
+    ['sent', 'overdue', 'paid', 'partial'].includes(inv.status)
   );
   const totalRevenue = revenueGeneratingInvoices.reduce((sum, inv) => sum + inv.total, 0);
   const totalCreditNotes = customerCreditNotes.length;

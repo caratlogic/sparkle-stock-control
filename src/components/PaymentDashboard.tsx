@@ -112,8 +112,8 @@ export const PaymentDashboard = () => {
         .reduce((total, payment) => total + payment.amount, 0);
       const remaining = invoice.total - paidAmount;
       
-      // Only count unpaid/partial invoices as pending (excluding cancelled and fully paid)
-      if (invoice.status !== 'cancelled' && invoice.status !== 'paid' && remaining > 0) {
+      // Only count sent/overdue/partial invoices as pending (excluding cancelled, draft, and fully paid)
+      if (['sent', 'overdue', 'partial'].includes(invoice.status) && remaining > 0) {
         return sum + remaining;
       }
       return sum;
