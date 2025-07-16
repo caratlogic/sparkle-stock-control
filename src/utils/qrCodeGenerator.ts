@@ -627,11 +627,33 @@ export const printAllQRCodes = async (
                 <span class="field-label">Gem Type & Carat:</span>
                 <span class="field-value">${qrData.carat}ct ${qrData.gemType}</span>
               </div>
+              ` : fieldConfig.gemType ? `
+              <div class="field-row">
+                <span class="field-label">Gem Type:</span>
+                <span class="field-value">${qrData.gemType}</span>
+              </div>
+              ` : fieldConfig.carat ? `
+              <div class="field-row">
+                <span class="field-label">Carat:</span>
+                <span class="field-value">${qrData.carat}ct</span>
+              </div>
               ` : ''}
               ${fieldConfig.color ? `
               <div class="field-row">
                 <span class="field-label">Color:</span>
                 <span class="field-value">${qrData.color}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.cut && qrData.cut ? `
+              <div class="field-row">
+                <span class="field-label">Cut/Shape:</span>
+                <span class="field-value">${qrData.cut}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.measurements && qrData.measurements ? `
+              <div class="field-row">
+                <span class="field-label">Measurements:</span>
+                <span class="field-value">${qrData.measurements}</span>
               </div>
               ` : ''}
               ${fieldConfig.certificateNumber ? `
@@ -642,14 +664,38 @@ export const printAllQRCodes = async (
               ` : ''}
               ${fieldConfig.sellingPrice ? `
               <div class="field-row">
-                <span class="field-label">Selling Price:</span>
-                <span class="field-value">$${qrData.price.toLocaleString()}</span>
+                <span class="field-label">Selling Price/Carat:</span>
+                <span class="field-value">$${qrData.pricePerCarat.toLocaleString()}/ct</span>
               </div>
               ` : ''}
               ${fieldConfig.costPrice ? `
               <div class="field-row">
-                <span class="field-label">Cost Price:</span>
-                <span class="field-value">$${qrData.costPrice.toLocaleString()}</span>
+                <span class="field-label">Cost Price/Carat:</span>
+                <span class="field-value">$${qrData.costPricePerCarat.toLocaleString()}/ct</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.treatment && qrData.treatment ? `
+              <div class="field-row">
+                <span class="field-label">Treatment:</span>
+                <span class="field-value">${qrData.treatment}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.origin && qrData.origin ? `
+              <div class="field-row">
+                <span class="field-label">Origin:</span>
+                <span class="field-value">${qrData.origin}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.supplier && qrData.supplier ? `
+              <div class="field-row">
+                <span class="field-label">Supplier:</span>
+                <span class="field-value">${qrData.supplier}</span>
+              </div>
+              ` : ''}
+              ${fieldConfig.description && qrData.description ? `
+              <div class="field-row">
+                <span class="field-label">Description:</span>
+                <span class="field-value">${qrData.description}</span>
               </div>
               ` : ''}
             </div>
