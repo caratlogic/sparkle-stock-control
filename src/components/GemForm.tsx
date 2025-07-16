@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { ImageUploader } from './ImageUploader';
+import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 
 interface GemFormProps {
   gem?: Gem | null;
@@ -20,6 +21,7 @@ interface GemFormProps {
 
 export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const { isOwner } = useAuth();
+  const { fieldConfig } = useQRCodeSettings();
   const [formData, setFormData] = useState({
     gemType: 'Diamond',
     carat: '',
@@ -421,8 +423,10 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     description: gem.description,
                     origin: gem.origin,
                     treatment: gem.treatment,
+                    supplier: gem.supplier,
                     dateAdded: gem.dateAdded
                   }}
+                  fieldConfig={fieldConfig}
                   size="medium"
                   showDownload={true}
                 />
