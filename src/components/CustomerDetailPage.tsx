@@ -75,13 +75,16 @@ export const CustomerDetailPage = ({
   const sentRevenue = activeInvoices.filter(inv => inv.status === 'sent').reduce((sum, inv) => sum + inv.total, 0);
   const paidRevenue = activeInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.total, 0);
   
-  // Calculate overdue invoices based on due date (more than 14 days old and not fully paid)
+  // Calculate overdue invoices based on creation date (more than 14 days old and not fully paid)
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  
   const overdueInvoices = activeInvoices.filter(inv => {
-    if (inv.status === 'paid') return false;
-    const dueDate = new Date(inv.dateDue);
-    const today = new Date();
-    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-    return daysDiff > 14;
+    const invoiceDate = new Date(inv.dateCreated);
+    const totalPaid = customerInvoicePayments
+      .filter(payment => payment.invoiceId === inv.id)
+      .reduce((total, payment) => total + payment.amount, 0);
+    return invoiceDate < twoWeeksAgo && totalPaid < inv.total && inv.status !== 'cancelled';
   });
   
   const overdueRevenue = overdueInvoices.reduce((sum, inv) => {
