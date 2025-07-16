@@ -108,7 +108,6 @@ export const GemTable = ({
     { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 22 },
     { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 23 },
     { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 24 },
-    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 25 },
   ];
 
   const [columns, setColumns] = useState<ColumnConfig[]>(getDefaultColumns());
@@ -726,32 +725,6 @@ export const GemTable = ({
 
                          case 'certificateNumber':
                            return <div className="text-sm text-slate-600 font-mono">{gem.certificateNumber}</div>;
-                         case 'qrcode':
-                           return (
-                             <div className="flex items-center space-x-2">
-                               <QRCodeDisplay 
-                                 gemData={{
-                                   stockId: gem.stockId,
-                                   gemType: gem.gemType,
-                                   carat: gem.carat,
-                                   color: gem.color,
-                                   cut: gem.cut,
-                                   measurements: gem.measurements || '',
-                                   certificateNumber: gem.certificateNumber,
-                                   price: gem.price,
-                                   pricePerCarat: gem.price / gem.carat,
-                                   description: gem.description,
-                                   origin: gem.origin,
-                                   treatment: gem.treatment,
-                                   supplier: gem.supplier,
-                                   dateAdded: gem.dateAdded
-                                 }}
-                                 fieldConfig={fieldConfig}
-                                 size="small"
-                                 showDownload={true}
-                               />
-                             </div>
-                           );
                           
                           case 'dateAdded':
                             return <div className="text-sm text-slate-600">{gem.dateAdded}</div>;

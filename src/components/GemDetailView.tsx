@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Share2, Mail, User, Camera } from 'lucide-react';
+import { ArrowLeft, Share2, Mail, User, Camera, QrCode } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { useCustomers } from '../hooks/useCustomers';
 import { useToast } from '@/hooks/use-toast';
+import { QRCodeDisplay } from './QRCodeDisplay';
+import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 
 interface GemDetailViewProps {
   gem: Gem;
@@ -17,6 +19,7 @@ interface GemDetailViewProps {
 export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
   const { customers } = useCustomers();
   const { toast } = useToast();
+  const { fieldConfig } = useQRCodeSettings();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
 
@@ -209,6 +212,41 @@ export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* QR Code Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <QrCode className="w-5 h-5" />
+            QR Code
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center">
+            <QRCodeDisplay 
+              gemData={{
+                stockId: gem.stockId,
+                gemType: gem.gemType,
+                carat: gem.carat,
+                color: gem.color,
+                cut: gem.cut,
+                measurements: gem.measurements || '',
+                certificateNumber: gem.certificateNumber,
+                price: gem.price,
+                pricePerCarat: gem.price / gem.carat,
+                description: gem.description,
+                origin: gem.origin,
+                treatment: gem.treatment,
+                supplier: gem.supplier,
+                dateAdded: gem.dateAdded
+              }}
+              fieldConfig={fieldConfig}
+              size="medium"
+              showDownload={true}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Customer Sharing Section */}
       <Card>
