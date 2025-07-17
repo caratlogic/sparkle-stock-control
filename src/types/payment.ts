@@ -16,6 +16,7 @@ export interface Payment {
 }
 
 export interface PaymentSummary {
+  totalRevenue: number;
   totalReceived: number;
   pendingPayments: number;
   overduePayments: number;

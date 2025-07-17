@@ -51,6 +51,7 @@ const samplePayments: Payment[] = [
 export const usePayments = (filters?: PaymentFilter) => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [summary, setSummary] = useState<PaymentSummary>({
+    totalRevenue: 0,
     totalReceived: 0,
     pendingPayments: 0,
     overduePayments: 0,
@@ -99,6 +100,7 @@ export const usePayments = (filters?: PaymentFilter) => {
       .reduce((sum, p) => sum + p.amount, 0);
     
     setSummary({
+      totalRevenue: totalReceived + pendingPayments + overduePayments, // Add up all amounts for total revenue
       totalReceived,
       pendingPayments,
       overduePayments,

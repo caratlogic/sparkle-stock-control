@@ -97,6 +97,12 @@ export const PaymentDashboard = () => {
       ? creditNotes
       : creditNotes.filter(cn => cn.customerId === customerFilter);
     
+    // Calculate total revenue from invoices (same as Transaction Dashboard for consistency)
+    const revenueInvoices = filteredInvoices.filter(inv => 
+      ['sent', 'overdue', 'paid', 'partial'].includes(inv.status)
+    );
+    const totalRevenue = revenueInvoices.reduce((sum, inv) => sum + inv.total, 0);
+    
     // Calculate total received only from payments for active (non-cancelled) invoices
     const totalReceived = filteredPayments
       .filter(p => {
@@ -146,6 +152,7 @@ export const PaymentDashboard = () => {
       .reduce((sum, cn) => sum + cn.amount, 0);
 
     const summary = {
+      totalRevenue, // Add total revenue for consistency with other dashboards
       totalReceived,
       pendingPayments,
       overduePayments,
@@ -153,6 +160,7 @@ export const PaymentDashboard = () => {
     };
     
     console.log('Final payment summary:', summary);
+    console.log('Total Revenue (matching other dashboards):', totalRevenue);
     console.log('Customer filter applied:', customerFilter !== 'all' ? customers.find(c => c.id === customerFilter)?.name : 'All Customers');
     return summary;
   }, [invoicePayments, invoices, creditNotes, customerFilter, customers]);

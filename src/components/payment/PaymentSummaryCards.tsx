@@ -22,12 +22,22 @@ export const PaymentSummaryCards = ({ summary, loading, onOverdueClick, customer
   const isAllCustomers = !customerFilter || customerFilter === 'all';
   const cards = [
     {
+      title: `Total Revenue${customerSuffix}`,
+      value: summary.totalRevenue,
+      icon: DollarSign,
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+      format: 'currency',
+      description: 'Revenue from all invoices'
+    },
+    {
       title: `Total Amount Received${customerSuffix}`,
       value: summary.totalReceived,
       icon: DollarSign,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
-      format: 'currency'
+      format: 'currency',
+      description: 'Payments actually received'
     },
     {
       title: `Pending Payments${customerSuffix}`,
@@ -35,7 +45,8 @@ export const PaymentSummaryCards = ({ summary, loading, onOverdueClick, customer
       icon: Clock,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
-      format: 'currency'
+      format: 'currency',
+      description: 'Outstanding invoice amounts'
     },
     {
       title: `Overdue Payments (2+ weeks)${customerSuffix}`,
@@ -43,7 +54,8 @@ export const PaymentSummaryCards = ({ summary, loading, onOverdueClick, customer
       icon: AlertTriangle,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
-      format: 'currency'
+      format: 'currency',
+      description: 'Overdue by 2+ weeks'
     },
     {
       title: `Credit Notes${customerSuffix}`,
@@ -51,7 +63,8 @@ export const PaymentSummaryCards = ({ summary, loading, onOverdueClick, customer
       icon: RefreshCw,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-      format: 'currency'
+      format: 'currency',
+      description: 'Active credit notes'
     }
   ];
 
@@ -66,7 +79,7 @@ export const PaymentSummaryCards = ({ summary, loading, onOverdueClick, customer
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       {cards.map((card, index) => {
         const isOverdueCard = card.title.includes('Overdue Payments');
         return (
@@ -81,6 +94,11 @@ export const PaymentSummaryCards = ({ summary, loading, onOverdueClick, customer
                 {isAllCustomers && (
                   <div className="text-xs text-slate-500 mt-1 font-normal">
                     All Customers
+                  </div>
+                )}
+                {card.description && (
+                  <div className="text-xs text-slate-400 mt-1 font-normal">
+                    {card.description}
                   </div>
                 )}
               </CardTitle>
