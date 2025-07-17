@@ -393,6 +393,9 @@ export const TransactionDashboard = () => {
 
   // Calculate returned consignments
   const returnedConsignments = allConsignments.filter(cons => cons.status === 'returned');
+  
+  // Calculate consignments converted to invoices (purchased status)
+  const convertedConsignments = allConsignments.filter(cons => cons.status === 'purchased');
 
   // If viewing invoice details, show the detail view
   if (selectedInvoiceForView) {
@@ -736,6 +739,34 @@ export const TransactionDashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">{overdueConsignments.length}</div>
             <p className="text-xs text-slate-600 mt-1">Not returned</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Additional Consignment Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card 
+          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          onClick={() => setShowReturnedConsignments(true)}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Returned Consignments</CardTitle>
+            <RotateCcw className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{returnedConsignments.length}</div>
+            <p className="text-xs text-slate-600 mt-1">Items returned to stock</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Converted to Invoices</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{convertedConsignments.length}</div>
+            <p className="text-xs text-slate-600 mt-1">Consignments purchased</p>
           </CardContent>
         </Card>
       </div>
