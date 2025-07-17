@@ -99,6 +99,8 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
         'Tax information management (Tax ID, VAT numbers for business customers)',
         'KYC (Know Your Customer) status tracking for compliance',
         'Purchase history with total lifetime value and frequency analysis',
+        'Enhanced revenue calculation: consistent total purchases across all dashboards',
+        'Real-time synchronization of customer financial data',
         'Payment tracking: outstanding balances, overdue amounts, payment patterns',
         'Communication history: emails, calls, meetings, follow-up notes',
         'Customer status management (Active/Inactive with business rule validation)',
@@ -122,7 +124,13 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
       purpose: 'Complete transaction lifecycle management for invoices and consignments with automated workflows',
       features: [
         'Professional invoice creation with automated numbering and tax calculations',
-        'Consignment management with flexible terms and return tracking',
+        'Advanced consignment management with flexible terms and comprehensive tracking',
+        'Consignment return functionality: safely return items to inventory instead of deletion',
+        'Returned consignments dashboard: track all consignments that have been returned',
+        'Seamless consignment-to-invoice conversion for purchased items',
+        'Consignment status tracking: Pending → Returned or Purchased',
+        'Enhanced transaction dashboard with detailed statistics and counts',
+        'Real-time tracking of returned consignments and conversion rates',
         'Quotation system for price proposals with professional formatting and email delivery',
         'Multi-item transactions with quantity controls and bulk pricing',
         'Payment recording with multiple methods (cash, bank, card, check)',
@@ -130,7 +138,6 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
         'Professional PDF generation for invoices, quotations, and consignment agreements',
         'Email integration for direct document delivery to customers',
         'Advanced filtering by customer, date range, status, amount, item type',
-        'Seamless consignment-to-invoice conversion when items sell',
         'Credit note generation for returns, exchanges, and adjustments',
         'Comprehensive audit trail with timestamps and user tracking',
         'Bulk operations for efficiency (bulk emails, status updates)',
@@ -139,6 +146,8 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
       alerts: [
         'Invoice due date reminders (configurable lead times)',
         'Consignment return date notifications',
+        'Returned consignment processing confirmations',
+        'Consignment-to-invoice conversion notifications',
         'Payment confirmation alerts',
         'Overdue payment escalation workflows'
       ]
@@ -325,13 +334,16 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
       ]
     },
     {
-      title: 'Consignment Management',
+      title: 'Enhanced Consignment Management',
       steps: [
         'Create consignment agreement with return date',
         'Reserve gems in inventory (status changes to Reserved)',
         'Track return date and send reminders',
-        'Convert to invoice if items sell',
-        'Return unsold items and update inventory'
+        'Choose between two completion options:',
+        '  • Convert to invoice if customer purchases items',
+        '  • Return consignment to move items back to stock',
+        'View returned consignments in dedicated dashboard',
+        'Monitor consignment conversion rates and statistics'
       ]
     },
     {
