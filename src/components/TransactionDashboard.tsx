@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2, CreditCard, ArrowUpDown, ArrowUp, ArrowDown, Quote } from 'lucide-react';
+import { Plus, Search, FileText, Package, DollarSign, Calendar, Eye, Edit, Download, ShoppingCart, Trash2, CreditCard, ArrowUpDown, ArrowUp, ArrowDown, Quote, RotateCcw } from 'lucide-react';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
@@ -78,6 +78,7 @@ export const TransactionDashboard = () => {
   const [quotationSortDirection, setQuotationSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showOverdueInvoices, setShowOverdueInvoices] = useState(false);
   const [showOverdueConsignments, setShowOverdueConsignments] = useState(false);
+  const [showReturnedConsignments, setShowReturnedConsignments] = useState(false);
   useEffect(() => {
     fetchPayments();
   }, []);
@@ -152,18 +153,18 @@ export const TransactionDashboard = () => {
   const handleConsignmentToInvoice = async (consignmentId: string) => {
     setSelectedConsignmentForInvoice(consignmentId);
   };
-  const handleDeleteConsignment = async (consignmentId: string) => {
-    if (window.confirm('Are you sure you want to delete this consignment? This will adjust the gem quantities back to In Stock.')) {
-      const result = await deleteConsignment(consignmentId);
+  const handleReturnConsignment = async (consignmentId: string) => {
+    if (window.confirm('Are you sure you want to return this consignment? This will move the gems back to In Stock.')) {
+      const result = await updateConsignmentStatus(consignmentId, 'returned');
       if (result.success) {
         toast({
           title: "Success",
-          description: "Consignment deleted successfully"
+          description: "Consignment returned successfully"
         });
       } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to delete consignment",
+          description: result.error || "Failed to return consignment",
           variant: "destructive"
         });
       }
@@ -390,6 +391,9 @@ export const TransactionDashboard = () => {
     return returnDate < today && cons.status === 'pending';
   });
 
+  // Calculate returned consignments
+  const returnedConsignments = allConsignments.filter(cons => cons.status === 'returned');
+
   // If viewing invoice details, show the detail view
   if (selectedInvoiceForView) {
     return <InvoiceDetailView invoice={selectedInvoiceForView} onBack={() => setSelectedInvoiceForView(null)} />;
@@ -471,6 +475,88 @@ export const TransactionDashboard = () => {
             </Table>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // If showing returned consignments list
+  if (showReturnedConsignments) {
+    return (
+      <div className="w-full space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">Returned Consignments</h2>
+            <p className="text-slate-600">Consignments that have been returned to inventory</p>
+          </div>
+          <Button 
+            onClick={() => setShowReturnedConsignments(false)} 
+            variant="outline"
+          >
+            ← Back to Dashboard
+          </Button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50 border-b-2 border-slate-200">
+                <TableHead className="font-semibold text-slate-800 py-4">Consignment #</TableHead>
+                <TableHead className="font-semibold text-slate-800 py-4">Customer</TableHead>
+                <TableHead className="font-semibold text-slate-800 py-4">Date Created</TableHead>
+                <TableHead className="font-semibold text-slate-800 py-4">Return Date</TableHead>
+                <TableHead className="font-semibold text-slate-800 py-4">Total Value</TableHead>
+                <TableHead className="font-semibold text-slate-800 py-4">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {returnedConsignments.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-slate-500">
+                    No returned consignments found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                returnedConsignments.map((consignment) => (
+                  <TableRow key={consignment.id}>
+                    <TableCell className="font-medium">
+                      {consignment.consignmentNumber}
+                    </TableCell>
+                    <TableCell>{getCustomerName(consignment.customerId)}</TableCell>
+                    <TableCell>
+                      {new Date(consignment.dateCreated).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(consignment.returnDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      ${consignment.items.reduce((sum, item) => sum + item.totalPrice, 0).toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setSelectedConsignmentForView(consignment)} 
+                          title="View Consignment Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDownloadConsignment(consignment)} 
+                          title="Download Consignment"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     );
   }
@@ -914,12 +1000,16 @@ export const TransactionDashboard = () => {
                             <Button variant="ghost" size="sm" onClick={() => handleDownloadConsignment(consignment)} title="Download Consignment">
                               <Download className="w-4 h-4" />
                             </Button>
-                            {consignment.status === 'pending' && <Button variant="ghost" size="sm" onClick={() => handleConsignmentToInvoice(consignment.id)} title="Convert to Invoice">
-                                <ShoppingCart className="w-4 h-4" />
-                              </Button>}
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteConsignment(consignment.id)} title="Delete Consignment" className="text-red-600 hover:text-red-700">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            {consignment.status === 'pending' && (
+                              <>
+                                <Button variant="ghost" size="sm" onClick={() => handleConsignmentToInvoice(consignment.id)} title="Convert to Invoice">
+                                  <ShoppingCart className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => handleReturnConsignment(consignment.id)} title="Return Consignment" className="text-orange-600 hover:text-orange-700">
+                                  <RotateCcw className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>)}
