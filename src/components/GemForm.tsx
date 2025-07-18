@@ -79,6 +79,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       price: parseFloat(formData.price),
       costPrice: parseFloat(formData.costPrice) || 0,
       inStock: parseInt(formData.inStock) || 0,
+      purchaseDate: formData.purchaseDate || null, // Convert empty string to null
       ...(gem && { 
         id: gem.id, 
         stockId: gem.stockId, 
