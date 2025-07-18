@@ -55,15 +55,15 @@ export const STATUS_OPTIONS = [
 ] as const;
 
 export const TREATMENT_OPTIONS = [
-  'H', 'NH', 'NO', 'MI'
+  'none', 'H', 'NH', 'NO', 'MI'
 ] as const;
 
 export const COLOR_COMMENT_OPTIONS = [
-  'RB', 'I', 'CF', 'VD', 'PB'
+  'none', 'RB', 'I', 'CF', 'VD', 'PB'
 ] as const;
 
 export const CERTIFICATE_TYPE_OPTIONS = [
-  'GRA', 'GRS', 'SSEF', 'GUB', 'GIA', 'AGL', 'CGL', 'CD', 'IGI', 'HRD'
+  'none', 'GRA', 'GRS', 'SSEF', 'GUB', 'GIA', 'AGL', 'CGL', 'CD', 'IGI', 'HRD'
 ] as const;
 
 // Color options by gem type
