@@ -447,7 +447,7 @@ export type Database = {
           certificate_number: string
           certificate_type?: string
           color: string
-          color_comment: string
+          color_comment?: string
           cost_price: number
           created_at?: string | null
           date_added?: string
