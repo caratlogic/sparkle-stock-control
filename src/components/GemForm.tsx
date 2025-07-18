@@ -76,7 +76,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     const gemData = {
       ...formData,
       carat: parseFloat(formData.carat),
-      price: parseFloat(formData.price),
+      price: formData.price ? parseFloat(formData.price) : 0,
       costPrice: parseFloat(formData.costPrice) || 0,
       inStock: parseInt(formData.inStock) || 0,
       purchaseDate: formData.purchaseDate || null, // Convert empty string to null
