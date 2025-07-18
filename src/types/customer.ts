@@ -22,6 +22,7 @@ export interface Customer {
   notes?: string;
   status: 'active' | 'inactive';
   kycStatus: boolean;
+  currency?: string;
 }
 
 export interface CustomerCommunication {

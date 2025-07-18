@@ -27,6 +27,7 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
     state: customer?.address.state || '',
     zipCode: customer?.address.zipCode || '',
     country: customer?.address.country || 'USA',
+    currency: customer?.currency || 'USD',
     discount: customer?.discount || 0,
     notes: customer?.notes || '',
     kycStatus: customer?.kycStatus || false,
@@ -54,6 +55,7 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
         zipCode: formData.zipCode,
         country: formData.country,
       },
+      currency: formData.currency,
       discount: formData.discount,
       notes: formData.notes || undefined,
       kycStatus: formData.kycStatus,
@@ -239,6 +241,28 @@ export const CustomerForm = ({ customer, onSubmit, onCancel }: CustomerFormProps
                     required
                   />
                 </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="currency">Currency *</Label>
+                <select
+                  id="currency"
+                  value={formData.currency}
+                  onChange={(e) => handleInputChange('currency', e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  required
+                >
+                  <option value="USD">$ - US Dollar</option>
+                  <option value="EUR">€ - Euro</option>
+                  <option value="GBP">£ - British Pound</option>
+                  <option value="JPY">¥ - Japanese Yen</option>
+                  <option value="CAD">C$ - Canadian Dollar</option>
+                  <option value="AUD">A$ - Australian Dollar</option>
+                  <option value="CHF">CHF - Swiss Franc</option>
+                  <option value="CNY">¥ - Chinese Yuan</option>
+                  <option value="INR">₹ - Indian Rupee</option>
+                  <option value="SGD">S$ - Singapore Dollar</option>
+                </select>
               </div>
               
               <div>

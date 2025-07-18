@@ -40,7 +40,8 @@ export const useCustomers = () => {
         notes: customer.notes || undefined,
         discount: parseFloat(customer.discount?.toString() || '0'),
         status: customer.status as 'active' | 'inactive',
-        kycStatus: customer.kyc_status || false
+        kycStatus: customer.kyc_status || false,
+        currency: customer.currency || 'USD'
       }));
 
       setCustomers(transformedCustomers);
