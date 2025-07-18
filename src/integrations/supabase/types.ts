@@ -408,7 +408,7 @@ export type Database = {
           box_number: string | null
           carat: number
           certificate_number: string
-          certificate_type: string | null
+          certificate_type: string
           color: string
           color_comment: string
           cost_price: number
@@ -437,7 +437,7 @@ export type Database = {
           stone_description: string | null
           supplier: string | null
           total_in_letters: string | null
-          treatment: string | null
+          treatment: string
           updated_at: string | null
           updated_by: string | null
         }
@@ -445,7 +445,7 @@ export type Database = {
           box_number?: string | null
           carat: number
           certificate_number: string
-          certificate_type?: string | null
+          certificate_type?: string
           color: string
           color_comment: string
           cost_price: number
@@ -474,7 +474,7 @@ export type Database = {
           stone_description?: string | null
           supplier?: string | null
           total_in_letters?: string | null
-          treatment?: string | null
+          treatment?: string
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -482,7 +482,7 @@ export type Database = {
           box_number?: string | null
           carat?: number
           certificate_number?: string
-          certificate_type?: string | null
+          certificate_type?: string
           color?: string
           color_comment?: string
           cost_price?: number
@@ -511,7 +511,7 @@ export type Database = {
           stone_description?: string | null
           supplier?: string | null
           total_in_letters?: string | null
-          treatment?: string | null
+          treatment?: string
           updated_at?: string | null
           updated_by?: string | null
         }
