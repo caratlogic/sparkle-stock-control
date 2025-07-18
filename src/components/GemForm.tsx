@@ -133,8 +133,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="gemType">Gem Type</Label>
-                    <Select value={formData.gemType} onValueChange={(value) => handleChange('gemType', value)}>
+                    <Label htmlFor="gemType">Gem Type *</Label>
+                    <Select value={formData.gemType} onValueChange={(value) => handleChange('gemType', value)} required>
                       <SelectTrigger className="bg-slate-50 border-slate-200">
                         <SelectValue placeholder="Select gem type" />
                       </SelectTrigger>
@@ -147,7 +147,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="carat">Carat Weight</Label>
+                    <Label htmlFor="carat">Carat Weight *</Label>
                     <Input
                       id="carat"
                       type="number"
@@ -161,8 +161,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="cut">Cut</Label>
-                    <Select value={formData.cut} onValueChange={(value) => handleChange('cut', value)}>
+                    <Label htmlFor="cut">Cut *</Label>
+                    <Select value={formData.cut} onValueChange={(value) => handleChange('cut', value)} required>
                       <SelectTrigger className="bg-slate-50 border-slate-200">
                         <SelectValue placeholder="Select cut" />
                       </SelectTrigger>
@@ -175,8 +175,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="color">Color</Label>
-                    <Select value={formData.color} onValueChange={(value) => handleChange('color', value)}>
+                    <Label htmlFor="color">Color *</Label>
+                    <Select value={formData.color} onValueChange={(value) => handleChange('color', value)} required>
                       <SelectTrigger className="bg-slate-50 border-slate-200">
                         <SelectValue placeholder="Select color" />
                       </SelectTrigger>
@@ -195,7 +195,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       placeholder="Enter gem description..."
                       value={formData.description}
                       onChange={(e) => handleChange('description', e.target.value)}
-                      required
                       className="bg-slate-50 border-slate-200"
                       rows={2}
                     />
@@ -208,7 +207,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       placeholder="e.g., 7.5 x 5.2 x 3.1 mm"
                       value={formData.measurements}
                       onChange={(e) => handleChange('measurements', e.target.value)}
-                      required
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
@@ -221,20 +219,20 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       placeholder="12500"
                       value={formData.price}
                       onChange={(e) => handleChange('price', e.target.value)}
-                      required
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
 
                   {isOwner && (
                     <div className="space-y-2">
-                      <Label htmlFor="costPrice">Cost Price (USD)</Label>
+                      <Label htmlFor="costPrice">Cost Price (USD) *</Label>
                       <Input
                         id="costPrice"
                         type="number"
                         placeholder="8500"
                         value={formData.costPrice}
                         onChange={(e) => handleChange('costPrice', e.target.value)}
+                        required
                         className="bg-slate-50 border-slate-200"
                       />
                     </div>
@@ -357,7 +355,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     placeholder="GIA-1234567890"
                     value={formData.certificateNumber}
                     onChange={(e) => handleChange('certificateNumber', e.target.value)}
-                    required
                     className="bg-slate-50 border-slate-200"
                   />
                 </div>
