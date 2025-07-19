@@ -2,38 +2,49 @@ import { Gem, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
+import { ThemeSwitcher } from './ThemeSwitcher';
+
 export const Header = () => {
   const {
     user,
     logout,
     isOwner
   } = useAuth();
-  return <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+  
+  return (
+    <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-50 carat-shadow">
       <div className="w-full px-6">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Gem className="w-5 h-5 text-white" />
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 carat-gradient rounded-xl flex items-center justify-center shadow-lg">
+              <Gem className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-800">Inventory Management</h1>
+              <h1 className="text-2xl font-bold carat-heading">CaratLogic</h1>
+              <p className="text-xs text-muted-foreground font-medium">Professional Inventory Management</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <User className="w-4 h-4 text-slate-600" />
-              <span className="text-sm font-medium text-slate-700">{user?.name}</span>
-              <Badge variant={isOwner ? "default" : "secondary"}>
-                {isOwner ? "Owner" : "Admin"}
-              </Badge>
+          <div className="flex items-center space-x-6">
+            <ThemeSwitcher />
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-foreground">{user?.name}</span>
+                <Badge variant={isOwner ? "default" : "secondary"} className="text-xs w-fit">
+                  {isOwner ? "Owner" : "Admin"}
+                </Badge>
+              </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={logout} className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" onClick={logout} className="flex items-center space-x-2 hover:bg-destructive/10 hover:text-destructive">
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
             </Button>
           </div>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
