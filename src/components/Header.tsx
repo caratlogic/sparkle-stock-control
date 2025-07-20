@@ -16,12 +16,12 @@ export const Header = () => {
       <div className="w-full px-6">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 carat-gradient rounded-xl flex items-center justify-center shadow-lg">
-              <Gem className="w-6 h-6 text-primary-foreground" />
+            <div className="w-12 h-12 carat-gradient-luxury rounded-2xl flex items-center justify-center carat-shadow">
+              <Gem className="w-7 h-7 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold carat-heading">CaratLogic</h1>
-              <p className="text-xs text-muted-foreground font-medium">Professional Inventory Management</p>
+              <p className="text-xs text-muted-foreground font-medium carat-text-luxury">Professional Gem & Diamond Solutions</p>
             </div>
           </div>
           

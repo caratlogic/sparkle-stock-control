@@ -7,44 +7,47 @@
 
 @layer base {
   :root {
-    --background: 0 0% 99%;
-    --foreground: 215 25% 15%;
+    --background: 0 0% 100%;
+    --foreground: 225 25% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 225 25% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 225 25% 20%;
 
-    --primary: 185 84% 32%;
+    /* CaratLogic Royal Blue & Deep Teal */
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 190 20% 96%;
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 225 25% 20%;
 
-    --muted: 190 15% 94%;
+    --muted: 220 14% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 185 20% 90%;
-    --accent-foreground: 215 25% 15%;
+    --accent: 43 74% 66%;
+    --accent-foreground: 225 25% 20%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 190 20% 88%;
-    --input: 190 20% 88%;
-    --ring: 185 84% 32%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* CaratLogic Professional Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(185 84% 32%) 0%, hsl(195 100% 45%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(190 15% 94%) 0%, hsl(195 25% 88%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(185 20% 90%) 0%, hsl(190 30% 85%) 100%);
+    /* CaratLogic Luxury Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(207 90% 54%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(220 14% 96%) 0%, hsl(220 13% 91%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(43 74% 66%) 0%, hsl(45 93% 47%) 100%);
+    --gradient-luxury: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(43 74% 66%) 100%);
 
-    /* Elegant Shadows */
-    --shadow-elegant: 0 4px 20px -2px hsl(185 84% 32% / 0.1);
-    --shadow-soft: 0 2px 10px -2px hsl(185 50% 50% / 0.08);
+    /* Professional Shadows */
+    --shadow-elegant: 0 10px 40px -10px hsl(221 83% 53% / 0.15);
+    --shadow-soft: 0 4px 20px -4px hsl(221 50% 50% / 0.08);
+    --shadow-luxury: 0 20px 60px -10px hsl(221 83% 53% / 0.2);
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215 16% 47%;
@@ -57,42 +60,45 @@
   }
 
   .dark {
-    --background: 215 35% 6%;
-    --foreground: 190 20% 95%;
+    --background: 222 84% 5%;
+    --foreground: 210 40% 95%;
 
-    --card: 215 30% 8%;
-    --card-foreground: 190 20% 95%;
+    --card: 222 84% 5%;
+    --card-foreground: 210 40% 95%;
 
-    --popover: 215 30% 8%;
-    --popover-foreground: 190 20% 95%;
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 95%;
 
-    --primary: 185 90% 45%;
-    --primary-foreground: 215 35% 6%;
+    /* Dark Mode CaratLogic Colors */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 84% 5%;
 
-    --secondary: 215 20% 12%;
-    --secondary-foreground: 190 20% 95%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 95%;
 
-    --muted: 215 20% 12%;
-    --muted-foreground: 190 15% 70%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 215 25% 15%;
-    --accent-foreground: 190 20% 95%;
+    --accent: 43 74% 66%;
+    --accent-foreground: 222 84% 5%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 190 20% 95%;
+    --destructive-foreground: 210 40% 95%;
 
-    --border: 215 20% 18%;
-    --input: 215 20% 18%;
-    --ring: 185 90% 45%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 217 91% 60%;
 
-    /* Dark Mode Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(185 90% 45%) 0%, hsl(195 100% 55%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(215 20% 12%) 0%, hsl(215 25% 15%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(215 25% 15%) 0%, hsl(215 30% 18%) 100%);
+    /* Dark Mode Luxury Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(207 90% 54%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(217 32% 17%) 0%, hsl(217 32% 12%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(43 74% 66%) 0%, hsl(45 93% 47%) 100%);
+    --gradient-luxury: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(43 74% 66%) 100%);
 
-    /* Dark Elegant Shadows */
-    --shadow-elegant: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
-    --shadow-soft: 0 2px 10px -2px hsl(0 0% 0% / 0.2);
+    /* Dark Professional Shadows */
+    --shadow-elegant: 0 10px 40px -10px hsl(0 0% 0% / 0.4);
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+    --shadow-luxury: 0 20px 60px -10px hsl(0 0% 0% / 0.5);
     
     --sidebar-background: 215 35% 6%;
     --sidebar-foreground: 190 15% 70%;
@@ -112,17 +118,23 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 400;
     letter-spacing: -0.01em;
+    line-height: 1.6;
   }
 }
 
 @layer components {
   /* CaratLogic Professional Components */
   .carat-card {
-    @apply bg-card border border-border rounded-lg shadow-[var(--shadow-soft)];
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+    @apply bg-card border border-border rounded-xl shadow-[var(--shadow-soft)] transition-all duration-300;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%);
+  }
+
+  .carat-card:hover {
+    @apply shadow-[var(--shadow-elegant)];
+    transform: translateY(-2px);
   }
 
   .carat-gradient {
@@ -133,10 +145,37 @@
     background: var(--gradient-secondary);
   }
 
+  .carat-gradient-luxury {
+    background: var(--gradient-luxury);
+  }
+
   .carat-shadow {
     box-shadow: var(--shadow-elegant);
   }
 
+  .carat-shadow-luxury {
+    box-shadow: var(--shadow-luxury);
+  }
+
+  /* Professional Hero Section */
+  .hero-section {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 0l30 30-30 30L0 30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+    opacity: 0.3;
+  }
+
+  /* Diamond Sparkle Animation */
   .diamond-sparkle {
     position: relative;
     overflow: hidden;
@@ -160,10 +199,44 @@
 
   /* Professional Typography */
   .carat-heading {
+    font-family: 'Playfair Display', 'Poppins', serif;
     @apply font-semibold tracking-tight;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .carat-text-luxury {
+    font-family: 'Poppins', sans-serif;
+    @apply font-medium tracking-wide;
+  }
+
+  /* Professional Buttons */
+  .btn-luxury {
+    background: var(--gradient-luxury);
+    @apply text-white font-semibold px-8 py-3 rounded-xl shadow-[var(--shadow-soft)] transition-all duration-300;
+  }
+
+  .btn-luxury:hover {
+    @apply shadow-[var(--shadow-elegant)];
+    transform: translateY(-2px);
+  }
+
+  /* Subscription Cards */
+  .subscription-card {
+    @apply bg-card border border-border rounded-2xl p-8 transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .subscription-card:hover {
+    @apply border-primary/30;
+    box-shadow: var(--shadow-elegant);
+    transform: translateY(-4px);
+  }
+
+  .subscription-card.featured {
+    @apply border-primary ring-2 ring-primary/20;
+    box-shadow: var(--shadow-luxury);
   }
 }

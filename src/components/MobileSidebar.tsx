@@ -12,7 +12,8 @@ import {
   FileText, 
   QrCode,
   Menu,
-  Gem
+  Gem,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -23,6 +24,7 @@ interface MobileSidebarProps {
 }
 
 const navigationItems = [
+  { id: 'home', label: 'Home', icon: Home },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'inventory', label: 'Inventory', icon: Package },
   { id: 'customers', label: 'Customers', icon: Users },
@@ -52,12 +54,12 @@ export const MobileSidebar = ({ activeTab, onTabChange }: MobileSidebarProps) =>
       <SheetContent side="left" className="w-64 p-0">
         <SheetHeader className="p-4 border-b border-border">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Gem className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 carat-gradient-luxury rounded-lg flex items-center justify-center">
+              <Gem className="w-5 h-5 text-white" />
             </div>
             <div>
-              <SheetTitle className="text-lg font-semibold text-foreground">Inventory</SheetTitle>
-              <p className="text-xs text-muted-foreground">Management</p>
+              <SheetTitle className="text-lg font-semibold carat-heading">CaratLogic</SheetTitle>
+              <p className="text-xs text-muted-foreground">Professional</p>
             </div>
           </div>
         </SheetHeader>
@@ -89,7 +91,7 @@ export const MobileSidebar = ({ activeTab, onTabChange }: MobileSidebarProps) =>
 
         <div className="p-4 border-t border-border">
           <div className="text-xs text-muted-foreground text-center">
-            Diamond Inventory v1.0
+            CaratLogic v1.0
           </div>
         </div>
       </SheetContent>

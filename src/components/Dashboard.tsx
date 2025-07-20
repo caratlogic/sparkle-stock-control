@@ -17,6 +17,7 @@ import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { HelpSection } from './HelpSection';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { CaratLogicHomepage } from './CaratLogicHomepage';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
@@ -76,7 +77,7 @@ export const Dashboard = () => {
   const {
     toast
   } = useToast();
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeTab, setActiveTab] = useState('home');
   const [showGemForm, setShowGemForm] = useState(false);
   const [editingGem, setEditingGem] = useState<Gem | null>(null);
   const [selectedCustomerForComms, setSelectedCustomerForComms] = useState<Customer | null>(null);
@@ -210,8 +211,8 @@ export const Dashboard = () => {
               <MobileSidebar activeTab={activeTab} onTabChange={setActiveTab} />
               
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Business Dashboard</h1>
-                <p className="text-muted-foreground text-sm">Manage your diamond inventory and business operations</p>
+                <h1 className="text-2xl font-bold carat-heading">CaratLogic Dashboard</h1>
+                <p className="text-muted-foreground text-sm">Professional Gem & Diamond Inventory Management</p>
               </div>
             </div>
             
@@ -231,11 +232,15 @@ export const Dashboard = () => {
 
         {/* Content Area */}
         <div className="flex-1 overflow-auto">
-          <div className="p-6 space-y-6 animate-fade-in">
+          <div className={`${activeTab === 'home' ? '' : 'p-6'} space-y-6 animate-fade-in`}>
+            {activeTab === 'home' && (
+              <CaratLogicHomepage />
+            )}
+
             {activeTab === 'analytics' && (
-              <Card>
+              <Card className="carat-card">
                 <CardHeader>
-                  <CardTitle>Business Analytics</CardTitle>
+                  <CardTitle className="carat-heading">Business Analytics</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <AnalyticsDashboard gems={gems} customers={customers} invoices={invoices} />
