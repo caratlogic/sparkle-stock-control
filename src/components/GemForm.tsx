@@ -79,7 +79,13 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       price: formData.price ? parseFloat(formData.price) : 0,
       costPrice: parseFloat(formData.costPrice) || 0,
       inStock: parseInt(formData.inStock) || 0,
-      purchaseDate: formData.purchaseDate || null, // Convert empty string to null
+      purchaseDate: formData.purchaseDate || null,
+      // Ensure required database fields have default values
+      treatment: formData.treatment || 'none',
+      colorComment: formData.colorComment || 'none',
+      certificateType: formData.certificateType || 'none',
+      color: formData.color || '',
+      certificateNumber: formData.certificateNumber || '',
       ...(gem && { 
         id: gem.id, 
         stockId: gem.stockId, 
