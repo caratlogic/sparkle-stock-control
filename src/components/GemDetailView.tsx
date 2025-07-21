@@ -1,15 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Share2, Mail, User, Camera, QrCode } from 'lucide-react';
+import { ArrowLeft, Share2, Mail, User, Camera, QrCode, FileText, TrendingUp, DollarSign, Package, Calendar } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { useCustomers } from '../hooks/useCustomers';
 import { useToast } from '@/hooks/use-toast';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GemDetailViewProps {
   gem: Gem;
@@ -22,6 +23,78 @@ export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
   const { fieldConfig } = useQRCodeSettings();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [salesSummary, setSalesSummary] = useState({
+    totalCarat: 0,
+    totalQuantity: 0,
+    totalRevenue: 0,
+    invoiceCount: 0
+  });
+
+  // Fetch invoice data when component mounts
+  useEffect(() => {
+    fetchInvoiceData();
+  }, [gem.id]);
+
+  const fetchInvoiceData = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('invoice_items')
+        .select(`
+          quantity,
+          unit_price,
+          total_price,
+          carat_purchased,
+          invoices (
+            id,
+            invoice_number,
+            date_created,
+            total,
+            status,
+            customers (name, email)
+          )
+        `)
+        .eq('gem_id', gem.id);
+
+      if (error) throw error;
+
+      const invoiceList = data?.map(item => ({
+        id: item.invoices.id,
+        invoice_number: item.invoices.invoice_number,
+        date_created: item.invoices.date_created,
+        total: item.invoices.total,
+        status: item.invoices.status,
+        customer_name: item.invoices.customers.name,
+        customer_email: item.invoices.customers.email,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price,
+        carat_purchased: item.carat_purchased || 0
+      })) || [];
+
+      // Calculate summary
+      const summary = invoiceList.reduce((acc, invoice) => ({
+        totalCarat: acc.totalCarat + invoice.carat_purchased,
+        totalQuantity: acc.totalQuantity + invoice.quantity,
+        totalRevenue: acc.totalRevenue + invoice.total_price,
+        invoiceCount: acc.invoiceCount + 1
+      }), { totalCarat: 0, totalQuantity: 0, totalRevenue: 0, invoiceCount: 0 });
+
+      setInvoiceData(invoiceList);
+      setSalesSummary(summary);
+    } catch (error) {
+      console.error('Error fetching invoice data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load invoice data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSendToCustomer = async () => {
     if (!selectedCustomerId) {
@@ -289,6 +362,122 @@ export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
               {isSending ? 'Sending...' : 'Send Details'}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Sales Summary Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Sales Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-4">Loading sales data...</div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-slate-50 rounded-lg">
+                <div className="flex items-center justify-center gap-2 text-blue-600 mb-2">
+                  <Package className="w-5 h-5" />
+                  <span className="font-medium">Total Carat Sold</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">{salesSummary.totalCarat.toFixed(2)}ct</p>
+              </div>
+              <div className="text-center p-4 bg-slate-50 rounded-lg">
+                <div className="flex items-center justify-center gap-2 text-green-600 mb-2">
+                  <Package className="w-5 h-5" />
+                  <span className="font-medium">Total Quantity</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">{salesSummary.totalQuantity}</p>
+              </div>
+              <div className="text-center p-4 bg-slate-50 rounded-lg">
+                <div className="flex items-center justify-center gap-2 text-emerald-600 mb-2">
+                  <DollarSign className="w-5 h-5" />
+                  <span className="font-medium">Total Revenue</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">${salesSummary.totalRevenue.toLocaleString()}</p>
+              </div>
+              <div className="text-center p-4 bg-slate-50 rounded-lg">
+                <div className="flex items-center justify-center gap-2 text-purple-600 mb-2">
+                  <FileText className="w-5 h-5" />
+                  <span className="font-medium">Total Invoices</span>
+                </div>
+                <p className="text-2xl font-bold text-slate-800">{salesSummary.invoiceCount}</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Invoice History Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Invoice History ({invoiceData.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-4">Loading invoice history...</div>
+          ) : invoiceData.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              <FileText className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+              <p className="text-lg font-medium">No invoices found</p>
+              <p className="text-sm">This gem has not been sold yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {invoiceData.map((invoice) => (
+                <div key={invoice.id} className="border rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-semibold text-slate-800">{invoice.invoice_number}</h4>
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <User className="w-4 h-4" />
+                        <span>{invoice.customer_name}</span>
+                        <span className="text-slate-400">•</span>
+                        <span>{invoice.customer_email}</span>
+                      </div>
+                    </div>
+                    <Badge 
+                      variant={
+                        invoice.status === 'paid' ? 'default' : 
+                        invoice.status === 'partial' ? 'secondary' : 
+                        invoice.status === 'sent' ? 'outline' : 'destructive'
+                      }
+                    >
+                      {invoice.status}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4 text-slate-500" />
+                      <span>{new Date(invoice.date_created).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Package className="w-4 h-4 text-slate-500" />
+                      <span>{invoice.quantity} pcs</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Package className="w-4 h-4 text-slate-500" />
+                      <span>{invoice.carat_purchased.toFixed(2)}ct</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="w-4 h-4 text-slate-500" />
+                      <span>${invoice.unit_price.toLocaleString()}/ct</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="w-4 h-4 text-slate-500" />
+                      <span className="font-medium">${invoice.total_price.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
