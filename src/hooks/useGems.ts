@@ -28,6 +28,7 @@ export const useGems = () => {
         description: gem.description || 'No description available',
         measurements: gem.measurements || 'Not specified',
         price: parseFloat(gem.price.toString()),
+        retailPrice: gem.retail_price ? parseFloat(gem.retail_price.toString()) : undefined,
         costPrice: parseFloat(gem.cost_price.toString()),
         certificateNumber: gem.certificate_number,
         status: gem.status as any,
@@ -130,6 +131,7 @@ export const useGems = () => {
           description: gemData.description,
           measurements: gemData.measurements,
           price: gemData.price,
+          retail_price: gemData.retailPrice || gemData.price,
           cost_price: gemData.costPrice,
           certificate_number: gemData.certificateNumber,
           status: gemData.status,
@@ -168,6 +170,7 @@ export const useGems = () => {
       if (gemData.description !== undefined) updateData.description = gemData.description;
       if (gemData.measurements !== undefined) updateData.measurements = gemData.measurements;
       if (gemData.price !== undefined) updateData.price = gemData.price;
+      if (gemData.retailPrice !== undefined) updateData.retail_price = gemData.retailPrice;
       if (gemData.costPrice !== undefined) updateData.cost_price = gemData.costPrice;
       if (gemData.certificateNumber !== undefined) updateData.certificate_number = gemData.certificateNumber;
       if (gemData.status !== undefined) updateData.status = gemData.status;

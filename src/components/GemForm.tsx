@@ -30,6 +30,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     description: '',
     measurements: '',
     price: '',
+    retailPrice: '',
     costPrice: '',
     certificateNumber: '',
     status: 'In Stock',
@@ -54,6 +55,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         description: gem.description,
         measurements: gem.measurements,
         price: gem.price.toString(),
+        retailPrice: (gem.retailPrice || gem.price).toString(),
         costPrice: gem.costPrice.toString(),
         certificateNumber: gem.certificateNumber,
         status: gem.status,
@@ -77,6 +79,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       ...formData,
       carat: parseFloat(formData.carat),
       price: formData.price ? parseFloat(formData.price) : 0,
+      retailPrice: formData.retailPrice ? parseFloat(formData.retailPrice) : 0,
       costPrice: parseFloat(formData.costPrice) || 0,
       inStock: parseInt(formData.inStock) || 0,
       purchaseDate: formData.purchaseDate || null,
@@ -219,26 +222,56 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="price">Selling Price (USD)</Label>
+                    <Label htmlFor="price">Selling Price/Carat (USD)</Label>
                     <Input
                       id="price"
                       type="number"
-                      placeholder="12500"
-                      value={formData.price}
-                      onChange={(e) => handleChange('price', e.target.value)}
+                      step="0.01"
+                      placeholder="4000"
+                      value={formData.carat && formData.price ? (parseFloat(formData.price) / parseFloat(formData.carat)).toFixed(2) : ''}
+                      onChange={(e) => {
+                        const pricePerCarat = parseFloat(e.target.value) || 0;
+                        const carat = parseFloat(formData.carat) || 1;
+                        const totalPrice = (pricePerCarat * carat).toString();
+                        handleChange('price', totalPrice);
+                      }}
+                      className="bg-slate-50 border-slate-200"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="retailPrice">Retail Price/Carat (USD)</Label>
+                    <Input
+                      id="retailPrice"
+                      type="number"
+                      step="0.01"
+                      placeholder="5000"
+                      value={formData.carat && formData.retailPrice ? (parseFloat(formData.retailPrice) / parseFloat(formData.carat)).toFixed(2) : ''}
+                      onChange={(e) => {
+                        const retailPricePerCarat = parseFloat(e.target.value) || 0;
+                        const carat = parseFloat(formData.carat) || 1;
+                        const totalRetailPrice = (retailPricePerCarat * carat).toString();
+                        handleChange('retailPrice', totalRetailPrice);
+                      }}
                       className="bg-slate-50 border-slate-200"
                     />
                   </div>
 
                   {isOwner && (
                     <div className="space-y-2">
-                      <Label htmlFor="costPrice">Cost Price (USD) *</Label>
+                      <Label htmlFor="costPrice">Cost Price/Carat (USD) *</Label>
                       <Input
                         id="costPrice"
                         type="number"
-                        placeholder="8500"
-                        value={formData.costPrice}
-                        onChange={(e) => handleChange('costPrice', e.target.value)}
+                        step="0.01"
+                        placeholder="2500"
+                        value={formData.carat && formData.costPrice ? (parseFloat(formData.costPrice) / parseFloat(formData.carat)).toFixed(2) : ''}
+                        onChange={(e) => {
+                          const costPricePerCarat = parseFloat(e.target.value) || 0;
+                          const carat = parseFloat(formData.carat) || 1;
+                          const totalCostPrice = (costPricePerCarat * carat).toString();
+                          handleChange('costPrice', totalCostPrice);
+                        }}
                         required
                         className="bg-slate-50 border-slate-200"
                       />
