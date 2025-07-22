@@ -50,17 +50,28 @@ export const useGemCertificates = (gemId?: string) => {
     if (!gemId) return;
 
     try {
+      // First verify the gem exists
+      const { data: gemExists } = await supabase
+        .from('gems')
+        .select('id')
+        .eq('id', gemId)
+        .single();
+
+      if (!gemExists) {
+        throw new Error('Gem not found');
+      }
+
       const { data, error } = await supabase
         .from('gem_certificates')
         .insert([{
           gem_id: gemId,
           certificate_type: certificate.certificateType,
           certificate_number: certificate.certificateNumber,
-          issuing_authority: certificate.issuingAuthority,
-          issue_date: certificate.issueDate,
-          expiry_date: certificate.expiryDate,
-          certificate_url: certificate.certificateUrl,
-          notes: certificate.notes
+          issuing_authority: certificate.issuingAuthority || null,
+          issue_date: certificate.issueDate || null,
+          expiry_date: certificate.expiryDate || null,
+          certificate_url: certificate.certificateUrl || null,
+          notes: certificate.notes || null
         }])
         .select()
         .single();
