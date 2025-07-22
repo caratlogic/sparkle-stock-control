@@ -325,12 +325,14 @@ export const useGems = () => {
       let newSold = (currentGem.sold || 0) + quantity;
       let newTotalCarat = currentGem.carat || 0;
 
-      // For single stock type gems, when selling 1 quantity, the full carat amount should be deducted
-      if (currentGem.stock_type === 'single' && quantity === 1) {
-        // For single gems, selling 1 quantity means selling the entire gem
+      // For single stock type gems, when creating an invoice, mark as completely sold
+      if (currentGem.stock_type === 'single') {
+        console.log(`📦 useGems: Processing single stock type gem - setting to completely sold`);
+        // For single gems, any sale means the entire gem is sold
         newTotalCarat = 0;
         newInStock = 0;
         newReserved = 0;
+        newSold = 1; // Single gem can only be sold once
       } else {
         // For multiple stock type gems, deduct the specific carat amount
         newTotalCarat = Math.max(0, newTotalCarat - caratAmount);
@@ -344,13 +346,16 @@ export const useGems = () => {
         }
       }
 
-      // Determine status based on remaining stock and carat
+      // Determine status - for single stock type, always set to 'Sold' when invoiced
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
-      if (newTotalCarat <= 0 || (newInStock === 0 && newReserved === 0)) {
+      if (currentGem.stock_type === 'single' || newTotalCarat <= 0 || (newInStock === 0 && newReserved === 0)) {
         newStatus = 'Sold';
-        newTotalCarat = 0;
-        newInStock = 0;
-        newReserved = 0;
+        if (currentGem.stock_type === 'single') {
+          // Ensure single stock type gems are completely zeroed out
+          newTotalCarat = 0;
+          newInStock = 0;
+          newReserved = 0;
+        }
       } else if (newInStock > 0) {
         newStatus = 'In Stock';
       } else if (newReserved > 0) {
@@ -366,7 +371,8 @@ export const useGems = () => {
           reserved: newReserved,
           sold: newSold,
           carat: newTotalCarat,
-          status: newStatus
+          status: newStatus,
+          updated_at: new Date().toISOString()
         })
         .eq('id', gemId);
 
@@ -375,7 +381,7 @@ export const useGems = () => {
         throw error;
       }
       
-      console.log(`✅ useGems: Successfully updated gem ${gemId} for invoice - New status: ${newStatus}, Carat: ${newTotalCarat}, In Stock: ${newInStock}`);
+      console.log(`✅ useGems: Successfully updated gem ${gemId} for invoice - New status: ${newStatus}, Carat: ${newTotalCarat}, In Stock: ${newInStock}, Stock Type: ${currentGem.stock_type}`);
       await fetchGems();
       return { success: true };
     } catch (err) {
