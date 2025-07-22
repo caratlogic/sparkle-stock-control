@@ -296,7 +296,7 @@ export const useGems = () => {
       // First get the current gem data
       const { data: currentGem, error: fetchError } = await supabase
         .from('gems')
-        .select('in_stock, reserved, sold, carat')
+        .select('in_stock, reserved, sold, carat, stock_type')
         .eq('id', gemId)
         .single();
 
@@ -305,21 +305,34 @@ export const useGems = () => {
       let newInStock = currentGem.in_stock || 0;
       let newReserved = currentGem.reserved || 0;
       let newSold = (currentGem.sold || 0) + quantity;
-      let newTotalCarat = (currentGem.carat || 0) - caratAmount;
+      let newTotalCarat = currentGem.carat || 0;
 
-      if (fromConsignment) {
-        // Moving from consignment to sold
-        newReserved = Math.max(0, newReserved - quantity);
+      // For single stock type gems, when selling 1 quantity, the full carat amount should be deducted
+      if (currentGem.stock_type === 'single' && quantity === 1) {
+        // For single gems, selling 1 quantity means selling the entire gem
+        newTotalCarat = 0;
+        newInStock = 0;
+        newReserved = 0;
       } else {
-        // Moving directly from stock to sold
-        newInStock = Math.max(0, newInStock - quantity);
+        // For multiple stock type gems, deduct the specific carat amount
+        newTotalCarat = Math.max(0, newTotalCarat - caratAmount);
+        
+        if (fromConsignment) {
+          // Moving from consignment to sold
+          newReserved = Math.max(0, newReserved - quantity);
+        } else {
+          // Moving directly from stock to sold
+          newInStock = Math.max(0, newInStock - quantity);
+        }
       }
 
-      // Determine status based on total carat - if carat is 0, item is sold out
+      // Determine status based on remaining stock and carat
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
-      if (newTotalCarat <= 0) {
+      if (newTotalCarat <= 0 || (newInStock === 0 && newReserved === 0)) {
         newStatus = 'Sold';
         newTotalCarat = 0;
+        newInStock = 0;
+        newReserved = 0;
       } else if (newInStock > 0) {
         newStatus = 'In Stock';
       } else if (newReserved > 0) {
@@ -334,7 +347,7 @@ export const useGems = () => {
           in_stock: newInStock,
           reserved: newReserved,
           sold: newSold,
-          carat: Math.max(0, newTotalCarat),
+          carat: newTotalCarat,
           status: newStatus
         })
         .eq('id', gemId);
@@ -344,7 +357,7 @@ export const useGems = () => {
         throw error;
       }
       
-      console.log(`✅ useGems: Successfully updated gem ${gemId} for invoice`);
+      console.log(`✅ useGems: Successfully updated gem ${gemId} for invoice - New status: ${newStatus}, Carat: ${newTotalCarat}, In Stock: ${newInStock}`);
       await fetchGems();
       return { success: true };
     } catch (err) {
