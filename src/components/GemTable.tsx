@@ -88,12 +88,13 @@ export const GemTable = ({
     { key: 'select', label: 'Select', visible: true, mandatory: true, order: 0 },
     { key: 'image', label: customColumnLabels['image'] || 'Image', visible: true, order: 1 },
     { key: 'stockId', label: customColumnLabels['stockId'] || 'Stock ID', visible: true, mandatory: true, order: 2 },
-    { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', visible: true, order: 3 },
-    { key: 'carat', label: customColumnLabels['carat'] || 'Total Carat', visible: true, order: 4 },
-    { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 5 },
-    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', visible: true, order: 6 },
-    { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price / Carat', visible: true, order: 7 },
-    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price/Carat', visible: isOwner, order: 8 },
+    { key: 'stockType', label: customColumnLabels['stockType'] || 'Stock Type', visible: true, order: 3 },
+    { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', visible: true, order: 4 },
+    { key: 'carat', label: customColumnLabels['carat'] || 'Total Carat', visible: true, order: 5 },
+    { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 6 },
+    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', visible: true, order: 7 },
+    { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price / Carat', visible: true, order: 8 },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price/Carat', visible: isOwner, order: 9 },
     { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 10 },
     { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 11 },
     { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 12 },
@@ -670,6 +671,12 @@ export const GemTable = ({
                             >
                               {gem.stockId}
                             </button>
+                          );
+                        case 'stockType':
+                          return (
+                            <Badge variant={gem.stockType === 'single' ? 'default' : gem.stockType === 'parcel' ? 'secondary' : 'outline'}>
+                              {gem.stockType}
+                            </Badge>
                           );
                         case 'gemType':
                           return <div className="font-medium text-slate-800">{gem.gemType}</div>;

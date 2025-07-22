@@ -202,6 +202,7 @@ export const ProductSelection = ({
               max={selectedProduct?.inStock || 999}
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              placeholder={selectedProduct ? `Available: ${selectedProduct.inStock || 0}` : "1"}
             />
           </div>
 
@@ -215,6 +216,7 @@ export const ProductSelection = ({
               max={selectedProduct?.carat || 999}
               value={caratAmount}
               onChange={(e) => setCaratAmount(parseFloat(e.target.value) || 0.01)}
+              placeholder={selectedProduct ? `Available: ${selectedProduct.carat}ct` : "0.01"}
             />
           </div>
           

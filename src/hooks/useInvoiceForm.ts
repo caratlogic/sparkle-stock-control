@@ -62,7 +62,8 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
   const handleProductSelect = (product: Gem) => {
     setSelectedProduct(product);
     setProductSearch(`${product.stockId} - ${product.carat}ct total ${product.gemType} ${product.cut}`);
-    setCaratAmount(Math.min(0.01, product.carat)); // Set minimum carat or available carat
+    setQuantity(product.inStock || 1); // Set to total available quantity
+    setCaratAmount(product.carat); // Set to total available carat
   };
 
   const handleAddItem = () => {

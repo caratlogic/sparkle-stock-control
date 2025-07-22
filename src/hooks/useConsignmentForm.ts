@@ -45,7 +45,8 @@ export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseC
   const handleProductSelect = (product: Gem) => {
     setSelectedProduct(product);
     setProductSearch(`${product.stockId} - ${product.carat}ct total ${product.gemType} ${product.cut}`);
-    setCaratAmount(Math.min(0.01, product.carat));
+    setQuantity(product.inStock || 1); // Set to total available quantity
+    setCaratAmount(product.carat); // Set to total available carat
   };
 
   const handleAddItem = () => {
