@@ -145,7 +145,7 @@ export const useGems = () => {
           supplier: gemData.supplier,
           purchase_date: gemData.purchaseDate,
           origin: gemData.origin,
-          in_stock: 20, // Default 20 in stock
+          in_stock: gemData.stockType === 'single' ? 1 : (gemData.inStock || 20), // Set quantity based on stock type
           reserved: 0,
           sold: 0
         }])
