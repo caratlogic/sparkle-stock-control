@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { ImageUploader } from './ImageUploader';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
+import { GemCertificateManager } from './GemCertificateManager';
 
 interface GemFormProps {
   gem?: Gem | null;
@@ -438,9 +439,18 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
           </Card>
         </div>
 
-        {/* QR Code Preview Section */}
-        {gem && (
-          <div className="lg:col-span-1">
+        {/* Certificates and QR Code Section */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Certificates Manager */}
+          {gem && (
+            <GemCertificateManager 
+              gemId={gem.id} 
+              isEditing={true}
+            />
+          )}
+
+          {/* QR Code Preview Section */}
+          {gem && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">QR Code Preview</CardTitle>
@@ -471,8 +481,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                 />
               </CardContent>
             </Card>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

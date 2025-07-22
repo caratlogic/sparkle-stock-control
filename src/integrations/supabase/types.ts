@@ -403,6 +403,56 @@ export type Database = {
         }
         Relationships: []
       }
+      gem_certificates: {
+        Row: {
+          certificate_number: string
+          certificate_type: string
+          certificate_url: string | null
+          created_at: string
+          expiry_date: string | null
+          gem_id: string
+          id: string
+          issue_date: string | null
+          issuing_authority: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          certificate_number: string
+          certificate_type: string
+          certificate_url?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          gem_id: string
+          id?: string
+          issue_date?: string | null
+          issuing_authority?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          certificate_number?: string
+          certificate_type?: string
+          certificate_url?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          gem_id?: string
+          id?: string
+          issue_date?: string | null
+          issuing_authority?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_gem_certificates_gem_id"
+            columns: ["gem_id"]
+            isOneToOne: false
+            referencedRelation: "gems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gems: {
         Row: {
           box_number: string | null

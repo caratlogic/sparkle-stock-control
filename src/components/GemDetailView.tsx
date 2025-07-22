@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 import { supabase } from '@/integrations/supabase/client';
+import { GemCertificateManager } from './GemCertificateManager';
 
 interface GemDetailViewProps {
   gem: Gem;
@@ -322,6 +323,12 @@ export const GemDetailView = ({ gem, onBack }: GemDetailViewProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Certificates Section */}
+      <GemCertificateManager 
+        gemId={gem.id} 
+        isEditing={false}
+      />
 
       {/* Customer Sharing Section */}
       <Card>

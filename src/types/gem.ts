@@ -1,6 +1,20 @@
 
 export type GemType = 'Diamond' | 'Emerald' | 'Ruby' | 'Sapphire' | 'Amethyst' | 'Aquamarine' | 'Garnet' | 'Opal' | 'Topaz' | 'Tourmaline';
 
+export interface GemCertificate {
+  id?: string;
+  gemId?: string;
+  certificateType: string;
+  certificateNumber: string;
+  issuingAuthority?: string;
+  issueDate?: string;
+  expiryDate?: string;
+  certificateUrl?: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Gem {
   id: string;
   stockId: string;
@@ -29,6 +43,7 @@ export interface Gem {
   sold?: number;
   updatedAt?: string;
   updatedBy?: string;
+  certificates?: GemCertificate[];
   consignmentInfo?: {
     id: string;
     consignmentNumber: string;
@@ -63,7 +78,9 @@ export const COLOR_COMMENT_OPTIONS = [
 ] as const;
 
 export const CERTIFICATE_TYPE_OPTIONS = [
-  'none', 'GRA', 'GRS', 'SSEF', 'GUB', 'GIA', 'AGL', 'CGL', 'CD', 'IGI', 'HRD'
+  'none', 'AGL', 'AGTA', 'AIGS', 'GIA', 'GRS', 'Gubelin', 'HDK', 'HKJSL', 'IGI', 
+  'LOTUS', 'Mason Kay', 'PGS', 'SSEF', 'BELLEROPHON', 'CDC', 'CDTEC', 'GII', 
+  'GIT', 'GWLAB', 'ICA', 'Other'
 ] as const;
 
 // Color options by gem type
