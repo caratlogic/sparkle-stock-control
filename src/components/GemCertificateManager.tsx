@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Edit, Trash2, Save, X, ExternalLink } from 'lucide-react';
 import { GemCertificate, CERTIFICATE_TYPE_OPTIONS } from '../types/gem';
 import { useGemCertificates } from '../hooks/useGemCertificates';
+import { FileUpload } from '@/components/ui/file-upload';
 
 interface GemCertificateManagerProps {
   gemId?: string;
@@ -219,6 +220,16 @@ export const GemCertificateManager = ({ gemId, certificates: propCertificates, i
                     rows={2}
                   />
                 </div>
+
+                <FileUpload
+                  bucket="gem-certificates"
+                  folder="certificates"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  maxSize={10}
+                  onUpload={(url) => setFormData(prev => ({ ...prev, certificateUrl: url }))}
+                  currentFile={formData.certificateUrl}
+                  label="Certificate File"
+                />
 
                 <div className="flex gap-2 pt-2">
                   <Button type="submit" size="sm">

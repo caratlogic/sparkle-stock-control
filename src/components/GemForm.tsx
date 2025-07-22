@@ -10,7 +10,7 @@ import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTI
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { QRCodeDisplay } from './QRCodeDisplay';
-import { ImageUploader } from './ImageUploader';
+import { FileUpload } from './ui/file-upload';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 import { GemCertificateManager } from './GemCertificateManager';
 
@@ -425,9 +425,14 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                   />
                 </div>
 
-                <ImageUploader
-                  onImageUpload={(url) => handleChange('imageUrl', url)}
-                  currentImage={formData.imageUrl}
+                <FileUpload
+                  bucket="gem-images"
+                  folder="gems"
+                  accept="image/*"
+                  maxSize={5}
+                  onUpload={(url) => handleChange('imageUrl', url)}
+                  currentFile={formData.imageUrl}
+                  label="Gem Image"
                 />
 
                 <div className="space-y-2">
