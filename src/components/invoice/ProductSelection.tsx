@@ -202,7 +202,7 @@ export const ProductSelection = ({
               max={selectedProduct?.inStock || 999}
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-              placeholder={selectedProduct ? `Available: ${selectedProduct.inStock || 0}` : "1"}
+              placeholder={selectedProduct ? `Total: ${selectedProduct.inStock || 0}` : "1"}
             />
           </div>
 
