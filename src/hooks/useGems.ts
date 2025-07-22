@@ -382,7 +382,17 @@ export const useGems = () => {
       }
       
       console.log(`✅ useGems: Successfully updated gem ${gemId} for invoice - New status: ${newStatus}, Carat: ${newTotalCarat}, In Stock: ${newInStock}, Stock Type: ${currentGem.stock_type}`);
+      
+      // Force a complete refresh to ensure frontend syncs with database
+      console.log(`🔄 useGems: Force refreshing gems data after invoice update`);
       await fetchGems();
+      
+      // Additional forced refresh after a short delay to ensure real-time subscription catches up
+      setTimeout(async () => {
+        console.log(`🔄 useGems: Secondary refresh after invoice update`);
+        await fetchGems();
+      }, 1000);
+      
       return { success: true };
     } catch (err) {
       console.error('❌ useGems: Update gem for invoice error:', err);
