@@ -87,6 +87,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       inStock: parseInt(formData.inStock) || 0,
       purchaseDate: formData.purchaseDate || null,
       // Ensure required database fields have default values
+      stockType: formData.stockType || 'single',
       treatment: formData.treatment || 'none',
       colorComment: formData.colorComment || 'none',
       certificateType: formData.certificateType || 'none',
