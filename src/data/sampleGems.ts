@@ -1,4 +1,3 @@
-
 import { Gem } from '../types/gem';
 
 export const sampleGems: Gem[] = [
@@ -6,6 +5,7 @@ export const sampleGems: Gem[] = [
     id: '1',
     stockId: 'DM0001',
     gemType: 'Diamond',
+    stockType: 'single',
     carat: 1.25,
     cut: 'Round',
     color: 'D',
@@ -31,6 +31,7 @@ export const sampleGems: Gem[] = [
     id: '2',
     stockId: 'EM0001',
     gemType: 'Emerald',
+    stockType: 'parcel',
     carat: 2.15,
     cut: 'Emerald',
     color: 'Vivid Green',
@@ -56,6 +57,7 @@ export const sampleGems: Gem[] = [
     id: '3',
     stockId: 'RB0001',
     gemType: 'Ruby',
+    stockType: 'single',
     carat: 0.95,
     cut: 'Oval',
     color: 'Vivid Red',
@@ -80,6 +82,7 @@ export const sampleGems: Gem[] = [
     id: '4',
     stockId: 'SP0001',
     gemType: 'Sapphire',
+    stockType: 'set',
     carat: 1.50,
     cut: 'Round',
     color: 'Blue',
@@ -105,6 +108,7 @@ export const sampleGems: Gem[] = [
     id: '5',
     stockId: 'AM0001',
     gemType: 'Amethyst',
+    stockType: 'parcel',
     carat: 3.02,
     cut: 'Emerald',
     color: 'Deep Purple',
@@ -130,6 +134,7 @@ export const sampleGems: Gem[] = [
     id: '6',
     stockId: 'AQ0001',
     gemType: 'Aquamarine',
+    stockType: 'single',
     carat: 4.25,
     cut: 'Oval',
     color: 'Deep Blue',

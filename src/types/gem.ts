@@ -19,6 +19,7 @@ export interface Gem {
   id: string;
   stockId: string;
   gemType: GemType;
+  stockType: 'single' | 'parcel' | 'set';
   carat: number;
   cut: 'Round' | 'Princess' | 'Emerald' | 'Asscher' | 'Marquise' | 'Oval' | 'Radiant' | 'Pear' | 'Heart' | 'Cushion' | 'Cabochon' | 'Faceted' | 'Raw';
   color: string;
@@ -75,6 +76,10 @@ export const TREATMENT_OPTIONS = [
 
 export const COLOR_COMMENT_OPTIONS = [
   'none', 'RB', 'I', 'CF', 'VD', 'PB'
+] as const;
+
+export const STOCK_TYPE_OPTIONS = [
+  'single', 'parcel', 'set'
 ] as const;
 
 export const CERTIFICATE_TYPE_OPTIONS = [

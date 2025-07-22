@@ -22,6 +22,7 @@ export const useGems = () => {
         id: gem.id,
         stockId: gem.stock_id,
         gemType: gem.gem_type as any,
+        stockType: gem.stock_type as 'single' | 'parcel' | 'set' || 'single',
         carat: parseFloat(gem.carat.toString()),
         cut: gem.shape as any, // Map shape to cut for frontend compatibility
         color: gem.color,

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS } from '../types/gem';
+import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS, STOCK_TYPE_OPTIONS } from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { QRCodeDisplay } from './QRCodeDisplay';
@@ -25,6 +25,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const { fieldConfig } = useQRCodeSettings();
   const [formData, setFormData] = useState({
     gemType: 'Diamond',
+    stockType: 'single',
     carat: '',
     cut: '',
     color: '',
@@ -50,6 +51,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     if (gem) {
       setFormData({
         gemType: gem.gemType,
+        stockType: gem.stockType || 'single',
         carat: gem.carat.toString(),
         cut: gem.cut,
         color: gem.color,
@@ -109,6 +111,12 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       if (field === 'gemType') {
         newData.color = '';
       }
+      // Handle stock type constraints
+      if (field === 'stockType') {
+        if (value === 'single') {
+          newData.inStock = '1';
+        }
+      }
       return newData;
     });
   };
@@ -153,6 +161,20 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         {GEM_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="stockType">Stock Type *</Label>
+                    <Select value={formData.stockType} onValueChange={(value) => handleChange('stockType', value)} required>
+                      <SelectTrigger className="bg-slate-50 border-slate-200">
+                        <SelectValue placeholder="Select stock type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-slate-200">
+                        <SelectItem value="single">Single Gem (Quantity: 1)</SelectItem>
+                        <SelectItem value="parcel">Parcel (Multiple gems, different sizes)</SelectItem>
+                        <SelectItem value="set">Set (Same size and carat)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -380,11 +402,13 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                      <Input
                        id="inStock"
                        type="number"
-                       placeholder="20"
+                       placeholder={formData.stockType === 'single' ? '1' : '20'}
                        value={formData.inStock}
                        onChange={(e) => handleChange('inStock', e.target.value)}
                        className="bg-slate-50 border-slate-200"
-                       min="0"
+                       min={formData.stockType === 'single' ? '1' : '0'}
+                       max={formData.stockType === 'single' ? '1' : undefined}
+                       disabled={formData.stockType === 'single'}
                      />
                    </div>
                  </div>

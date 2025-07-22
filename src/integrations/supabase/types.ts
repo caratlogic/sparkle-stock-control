@@ -484,6 +484,7 @@ export type Database = {
           sold: number
           status: string
           stock_id: string
+          stock_type: string
           stone_description: string | null
           supplier: string | null
           total_in_letters: string | null
@@ -521,6 +522,7 @@ export type Database = {
           sold?: number
           status?: string
           stock_id: string
+          stock_type?: string
           stone_description?: string | null
           supplier?: string | null
           total_in_letters?: string | null
@@ -558,6 +560,7 @@ export type Database = {
           sold?: number
           status?: string
           stock_id?: string
+          stock_type?: string
           stone_description?: string | null
           supplier?: string | null
           total_in_letters?: string | null

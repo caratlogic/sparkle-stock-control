@@ -38,13 +38,15 @@ const InvoiceItemRow = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editQuantity, setEditQuantity] = useState(item.quantity);
   const [editCarat, setEditCarat] = useState(item.caratPurchased);
+  const [editPrice, setEditPrice] = useState(item.pricePerCarat);
 
   const handleSave = () => {
     const updatedItem = {
       ...item,
       quantity: editQuantity,
       caratPurchased: editCarat,
-      totalPrice: editCarat * item.pricePerCarat
+      pricePerCarat: editPrice,
+      totalPrice: editCarat * editPrice
     };
     onUpdateItem(updatedItem);
     setIsEditing(false);
@@ -53,6 +55,7 @@ const InvoiceItemRow = ({
   const handleCancel = () => {
     setEditQuantity(item.quantity);
     setEditCarat(item.caratPurchased);
+    setEditPrice(item.pricePerCarat);
     setIsEditing(false);
   };
 
@@ -93,6 +96,17 @@ const InvoiceItemRow = ({
               onChange={(e) => setEditCarat(parseFloat(e.target.value) || 0.01)}
               className="w-20 h-8 text-xs"
               placeholder="Carat"
+            />
+          </div>
+          <div className="text-xs">
+            <Input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={editPrice}
+              onChange={(e) => setEditPrice(parseFloat(e.target.value) || 0.01)}
+              className="w-24 h-8 text-xs"
+              placeholder="Price/ct"
             />
           </div>
           <Button size="sm" onClick={handleSave} className="h-8 px-2 text-xs">
