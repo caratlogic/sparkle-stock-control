@@ -94,7 +94,6 @@ export const GemTable = ({
     { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', visible: true, order: 6 },
     { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price / Carat', visible: true, order: 7 },
     { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price/Carat', visible: isOwner, order: 8 },
-    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', visible: isOwner, order: 9 },
     { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 10 },
     { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 11 },
     { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 12 },
@@ -162,8 +161,7 @@ export const GemTable = ({
     { key: 'stockId', label: customColumnLabels['stockId'] || 'Stock ID', defaultLabel: 'Stock ID' },
     { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', defaultLabel: 'Gem Type' },
     { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', defaultLabel: 'Selling Price/Carat' },
-    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price', defaultLabel: 'Cost Price' },
-    { key: 'costPerCarat', label: customColumnLabels['costPerCarat'] || 'Cost/Carat', defaultLabel: 'Cost/Carat' },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price/Carat', defaultLabel: 'Cost Price/Carat' },
     { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', defaultLabel: 'Treatment' },
     { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', defaultLabel: 'Supplier' },
   ];
@@ -690,8 +688,6 @@ export const GemTable = ({
                            return <div className="font-semibold text-purple-600">${((gem.retailPrice || gem.price) / gem.carat).toFixed(0)}/ct</div>;
                          case 'costPrice':
                            return isOwner ? <div className="font-medium text-emerald-600">${(gem.costPrice / gem.carat).toFixed(0)}/ct</div> : null;
-                        case 'costPerCarat':
-                          return isOwner ? <div className="text-sm text-emerald-600">${(gem.costPrice / gem.carat).toFixed(0)}/ct</div> : null;
                         case 'treatment':
                           return <div className="text-sm text-slate-600">{gem.treatment || ''}</div>;
                         case 'colorComment':
