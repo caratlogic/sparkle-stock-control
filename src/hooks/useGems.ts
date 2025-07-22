@@ -11,6 +11,8 @@ export const useGems = () => {
   const fetchGems = async () => {
     try {
       setLoading(true);
+      console.log('🔄 useGems: Fetching gems from database...');
+      
       const { data, error } = await supabase
         .from('gems')
         .select('*')
@@ -49,8 +51,24 @@ export const useGems = () => {
         updatedBy: gem.updated_by || undefined
       }));
 
+      console.log(`✅ useGems: Fetched ${transformedGems.length} gems from database`);
+      
+      // Log specific gems for debugging
+      const sa0043 = transformedGems.find(g => g.stockId === 'SA0043');
+      if (sa0043) {
+        console.log('🔍 useGems: SA0043 data:', {
+          stockId: sa0043.stockId,
+          status: sa0043.status,
+          carat: sa0043.carat,
+          inStock: sa0043.inStock,
+          reserved: sa0043.reserved,
+          sold: sa0043.sold
+        });
+      }
+
       setGems(transformedGems);
     } catch (err) {
+      console.error('❌ useGems: Error fetching gems:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch gems');
     } finally {
       setLoading(false);
