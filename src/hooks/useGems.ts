@@ -423,6 +423,28 @@ export const useGems = () => {
 
   useEffect(() => {
     fetchGems();
+
+    // Set up real-time subscription for gems table
+    const channel = supabase
+      .channel('gems-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'gems',
+        },
+        () => {
+          console.log('Gems table changed, refreshing data...');
+          fetchGems();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {
