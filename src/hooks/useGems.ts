@@ -126,6 +126,7 @@ export const useGems = () => {
         .insert([{
           stock_id: `${gemData.gemType.substring(0, 2).toUpperCase()}${String(gems.length + 1).padStart(4, '0')}`,
           gem_type: gemData.gemType,
+          stock_type: gemData.stockType || 'single',
           carat: gemData.carat,
           shape: gemData.cut, // Map cut to shape for database
           color: gemData.color,
@@ -165,6 +166,7 @@ export const useGems = () => {
       const updateData: any = {};
       
       if (gemData.gemType !== undefined) updateData.gem_type = gemData.gemType;
+      if (gemData.stockType !== undefined) updateData.stock_type = gemData.stockType;
       if (gemData.carat !== undefined) updateData.carat = gemData.carat;
       if (gemData.cut !== undefined) updateData.shape = gemData.cut; // Map cut to shape
       if (gemData.color !== undefined) updateData.color = gemData.color;
