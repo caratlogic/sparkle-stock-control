@@ -22,6 +22,7 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const [relatedConsignmentId, setRelatedConsignmentId] = useState<string | null>(null);
+  const [paymentDate, setPaymentDate] = useState('');
 
   // Reset form when preselected values change
   useEffect(() => {
@@ -36,6 +37,11 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setDiscount(0);
     setNotes('');
     setRelatedConsignmentId(null);
+    
+    // Set default payment date to 2 weeks from today
+    const defaultPaymentDate = new Date();
+    defaultPaymentDate.setDate(defaultPaymentDate.getDate() + 14);
+    setPaymentDate(defaultPaymentDate.toISOString().split('T')[0]);
 
     if (preselectedCustomer) {
       setSelectedCustomer(preselectedCustomer);
@@ -129,6 +135,8 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setNotes,
     relatedConsignmentId,
     setRelatedConsignmentId,
+    paymentDate,
+    setPaymentDate,
     handleCustomerSelect,
     handleProductSelect,
     handleAddItem,

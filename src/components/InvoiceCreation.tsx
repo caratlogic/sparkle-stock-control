@@ -52,6 +52,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
     setNotes,
     relatedConsignmentId,
     setRelatedConsignmentId,
+    paymentDate,
+    setPaymentDate,
     handleCustomerSelect,
     handleProductSelect,
     handleAddItem,
@@ -198,6 +200,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
               setShippingRequired={setShippingRequired}
               shippingCost={shippingCost}
               setShippingCost={setShippingCost}
+              paymentDate={paymentDate}
+              setPaymentDate={setPaymentDate}
             />
 
         <ProductSelection

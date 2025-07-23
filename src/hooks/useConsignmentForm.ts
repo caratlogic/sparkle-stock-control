@@ -28,8 +28,12 @@ export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseC
     setSelectedProduct(null);
     setQuantity(1);
     setCaratAmount(0.01);
-    setReturnDate('');
     setNotes('');
+    
+    // Set default return date to 2 weeks from today
+    const defaultReturnDate = new Date();
+    defaultReturnDate.setDate(defaultReturnDate.getDate() + 14);
+    setReturnDate(defaultReturnDate.toISOString().split('T')[0]);
 
     if (preselectedCustomer) {
       setSelectedCustomer(preselectedCustomer);

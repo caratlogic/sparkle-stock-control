@@ -20,6 +20,8 @@ interface InvoiceSummaryProps {
   setShippingRequired: (value: boolean) => void;
   shippingCost: number;
   setShippingCost: (value: number) => void;
+  paymentDate: string;
+  setPaymentDate: (value: string) => void;
 }
 
 export const InvoiceSummary = ({
@@ -35,6 +37,8 @@ export const InvoiceSummary = ({
   setShippingRequired,
   shippingCost,
   setShippingCost,
+  paymentDate,
+  setPaymentDate,
 }: InvoiceSummaryProps) => {
   const currencySymbol = currency === 'USD' ? '$' : '€';
   const exchangeRate = currency === 'EUR' ? 0.85 : 1; // Example exchange rate
@@ -175,6 +179,20 @@ export const InvoiceSummary = ({
             value={taxRate}
             onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
           />
+        </div>
+
+        <div>
+          <Label htmlFor="payment-date">Payment Due Date</Label>
+          <Input
+            id="payment-date"
+            type="date"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+          />
+          <p className="text-xs text-slate-500 mt-1">
+            Default: 2 weeks from invoice creation
+          </p>
         </div>
       </CardContent>
     </Card>
