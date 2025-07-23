@@ -40,6 +40,45 @@ const InvoiceItemRow = ({
   const [editCarat, setEditCarat] = useState(item.caratPurchased);
   const [editPrice, setEditPrice] = useState(item.pricePerCarat);
 
+  // Check if this is a set type item based on stockType in productDetails
+  const isSetType = item.productDetails?.stockType === 'set';
+  
+  // Calculate individual stone carat for set type items
+  const getIndividualStoneCarat = () => {
+    if (isSetType && item.productDetails?.totalCarat && item.quantity) {
+      return item.productDetails.totalCarat / item.quantity;
+    }
+    return null;
+  };
+
+  // Handle quantity change for set type items
+  const handleEditQuantityChange = (newQuantity: number) => {
+    setEditQuantity(newQuantity);
+    
+    if (isSetType) {
+      const individualCarat = getIndividualStoneCarat();
+      if (individualCarat) {
+        setEditCarat(newQuantity * individualCarat);
+      }
+    }
+  };
+
+  // Handle carat change for set type items
+  const handleEditCaratChange = (newCarat: number) => {
+    if (isSetType) {
+      const individualCarat = getIndividualStoneCarat();
+      if (individualCarat) {
+        const calculatedQuantity = Math.round(newCarat / individualCarat);
+        if (calculatedQuantity > 0) {
+          setEditQuantity(calculatedQuantity);
+          setEditCarat(calculatedQuantity * individualCarat);
+        }
+        return;
+      }
+    }
+    setEditCarat(newCarat);
+  };
+
   const handleSave = () => {
     const updatedItem = {
       ...item,
@@ -81,7 +120,7 @@ const InvoiceItemRow = ({
               type="number"
               min="1"
               value={editQuantity}
-              onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
+              onChange={(e) => handleEditQuantityChange(parseInt(e.target.value) || 1)}
               className="w-16 h-8 text-xs"
               placeholder="Qty"
             />
@@ -93,10 +132,16 @@ const InvoiceItemRow = ({
               min="0.01"
               max={item.productDetails.totalCarat}
               value={editCarat}
-              onChange={(e) => setEditCarat(parseFloat(e.target.value) || 0.01)}
+              onChange={(e) => handleEditCaratChange(parseFloat(e.target.value) || 0.01)}
               className="w-20 h-8 text-xs"
               placeholder="Carat"
+              disabled={isSetType}
             />
+            {isSetType && (
+              <div className="text-xs text-amber-600 mt-1">
+                Auto: {editQuantity} × {getIndividualStoneCarat()?.toFixed(3)}ct
+              </div>
+            )}
           </div>
           <div className="text-xs">
             <Input
@@ -160,6 +205,62 @@ export const ProductSelection = ({
   onRemoveItem,
   onUpdateItem,
 }: ProductSelectionProps) => {
+  // Calculate individual stone carat for set type gems
+  const getIndividualStoneCarat = (gem: Gem) => {
+    if (gem.stockType === 'set' && gem.inStock && gem.inStock > 0) {
+      return gem.carat / gem.inStock;
+    }
+    return null;
+  };
+
+  // Validate quantity and carat for set type gems
+  const validateSetTypeInput = (gem: Gem, qty: number, carat: number) => {
+    if (gem.stockType !== 'set') return true;
+    
+    const individualCarat = getIndividualStoneCarat(gem);
+    if (!individualCarat) return false;
+    
+    // For set type, carat must be exactly quantity * individual stone carat
+    const expectedCarat = qty * individualCarat;
+    return Math.abs(carat - expectedCarat) < 0.001; // Allow small floating point differences
+  };
+
+  // Handle quantity change for set type gems
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(newQuantity);
+    
+    if (selectedProduct && selectedProduct.stockType === 'set') {
+      const individualCarat = getIndividualStoneCarat(selectedProduct);
+      if (individualCarat) {
+        setCaratAmount(newQuantity * individualCarat);
+      }
+    }
+  };
+
+  // Handle carat change for set type gems
+  const handleCaratChange = (newCarat: number) => {
+    if (selectedProduct && selectedProduct.stockType === 'set') {
+      const individualCarat = getIndividualStoneCarat(selectedProduct);
+      if (individualCarat) {
+        // For set type, calculate the quantity that would give this carat amount
+        const calculatedQuantity = Math.round(newCarat / individualCarat);
+        if (calculatedQuantity > 0 && calculatedQuantity <= (selectedProduct.inStock || 0)) {
+          setQuantity(calculatedQuantity);
+          setCaratAmount(calculatedQuantity * individualCarat); // Ensure exact match
+        }
+        return;
+      }
+    }
+    setCaratAmount(newCarat);
+  };
+
+  const isValidForAddition = () => {
+    if (!selectedProduct) return false;
+    if (selectedProduct.stockType === 'set') {
+      return validateSetTypeInput(selectedProduct, quantity, caratAmount);
+    }
+    return caratAmount <= selectedProduct.carat;
+  };
   return (
     <Card className="lg:col-span-3">
       <CardHeader>
@@ -201,9 +302,14 @@ export const ProductSelection = ({
               min="1"
               max={selectedProduct?.inStock || 999}
               value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
               placeholder={selectedProduct ? `Total: ${selectedProduct.inStock || 0}` : "1"}
             />
+            {selectedProduct?.stockType === 'set' && (
+              <div className="text-xs text-slate-500 mt-1">
+                Individual stone: {getIndividualStoneCarat(selectedProduct)?.toFixed(3)}ct each
+              </div>
+            )}
           </div>
 
           <div>
@@ -211,19 +317,25 @@ export const ProductSelection = ({
             <Input
               id="carat-amount"
               type="number"
-              step="0.01"
+              step={selectedProduct?.stockType === 'set' ? getIndividualStoneCarat(selectedProduct) || 0.01 : 0.01}
               min="0.01"
               max={selectedProduct?.carat || 999}
               value={caratAmount}
-              onChange={(e) => setCaratAmount(parseFloat(e.target.value) || 0.01)}
+              onChange={(e) => handleCaratChange(parseFloat(e.target.value) || 0.01)}
               placeholder={selectedProduct ? `Available: ${selectedProduct.carat}ct` : "0.01"}
+              disabled={selectedProduct?.stockType === 'set'}
             />
+            {selectedProduct?.stockType === 'set' && (
+              <div className="text-xs text-amber-600 mt-1">
+                Auto-calculated: {quantity} × {getIndividualStoneCarat(selectedProduct)?.toFixed(3)}ct
+              </div>
+            )}
           </div>
           
           <div className="flex items-end">
             <Button
               onClick={onAddItem}
-              disabled={!selectedProduct || caratAmount > (selectedProduct?.carat || 0)}
+              disabled={!selectedProduct || !isValidForAddition()}
               className="w-full"
             >
               <Plus className="w-4 h-4 mr-2" />

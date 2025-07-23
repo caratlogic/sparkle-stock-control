@@ -85,6 +85,7 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
         measurements: selectedProduct.measurements,
         certificateNumber: selectedProduct.certificateNumber,
         gemType: selectedProduct.gemType,
+        stockType: selectedProduct.stockType,
       },
       quantity,
       caratPurchased: caratAmount,

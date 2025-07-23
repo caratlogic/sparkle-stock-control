@@ -80,6 +80,7 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           measurements: preselectedGem.measurements,
           certificateNumber: preselectedGem.certificateNumber,
           gemType: preselectedGem.gemType,
+          stockType: preselectedGem.stockType,
         },
         quantity: preselectedGem.inStock || 1,
         caratPurchased: preselectedGem.carat,

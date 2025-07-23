@@ -49,6 +49,7 @@ export interface InvoiceItem {
     measurements: string;
     certificateNumber: string;
     gemType?: string;
+    stockType?: 'single' | 'parcel' | 'set';
   };
   quantity: number; // Number of stones purchased
   caratPurchased: number; // Total carat weight purchased
