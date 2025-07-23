@@ -273,7 +273,16 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       }}
                       className="bg-slate-50 border-slate-200"
                       autoFocus={false}
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                      onFocus={(e) => {
+                        // Only select all on initial focus, not on click within field
+                        setTimeout(() => e.target.select(), 0);
+                      }}
+                      onClick={(e) => {
+                        // Prevent text selection if already focused
+                        if (document.activeElement === e.target) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </div>
 
@@ -292,7 +301,16 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         handleChange('retailPrice', totalRetailPrice);
                       }}
                       className="bg-slate-50 border-slate-200"
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                      onFocus={(e) => {
+                        // Only select all on initial focus, not on click within field
+                        setTimeout(() => e.target.select(), 0);
+                      }}
+                      onClick={(e) => {
+                        // Prevent text selection if already focused
+                        if (document.activeElement === e.target) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </div>
 
