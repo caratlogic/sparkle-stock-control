@@ -101,16 +101,18 @@ export const GemTable = ({
     { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', visible: false, order: 13 },
     { key: 'purchaseDate', label: customColumnLabels['purchaseDate'] || 'Purchase Date', visible: false, order: 14 },
     { key: 'origin', label: customColumnLabels['origin'] || 'Origin', visible: false, order: 15 },
-    { key: 'inStock', label: customColumnLabels['inStock'] || 'In Stock', visible: true, order: 16 },
-    { key: 'reserved', label: customColumnLabels['reserved'] || 'Reserved', visible: true, order: 17 },
-    { key: 'sold', label: customColumnLabels['sold'] || 'Sold', visible: true, order: 18 },
-    { key: 'status', label: customColumnLabels['status'] || 'Status', visible: true, order: 19 },
-    { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 20 },
-    { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 21 },
-    { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 22 },
-    { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 23 },
-    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 24 },
-    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 25 },
+    { key: 'ownershipStatus', label: customColumnLabels['ownershipStatus'] || 'Ownership Status', visible: true, order: 16 },
+    { key: 'associatedEntity', label: customColumnLabels['associatedEntity'] || 'Associated Entity', visible: true, order: 17 },
+    { key: 'inStock', label: customColumnLabels['inStock'] || 'In Stock', visible: true, order: 18 },
+    { key: 'reserved', label: customColumnLabels['reserved'] || 'Reserved', visible: true, order: 19 },
+    { key: 'sold', label: customColumnLabels['sold'] || 'Sold', visible: true, order: 20 },
+    { key: 'status', label: customColumnLabels['status'] || 'Status', visible: true, order: 21 },
+    { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 22 },
+    { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 23 },
+    { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 24 },
+    { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 25 },
+    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 26 },
+    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 27 },
   ];
 
   const [columns, setColumns] = useState<ColumnConfig[]>(getDefaultColumns());
@@ -290,7 +292,7 @@ export const GemTable = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Selling Price/Carat', ...(isOwner ? ['Cost Price'] : []), 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Purchase Date', 'Origin', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Selling Price/Carat', ...(isOwner ? ['Cost Price'] : []), 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Purchase Date', 'Origin', 'Ownership Status', 'Associated Entity', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -307,6 +309,8 @@ export const GemTable = ({
         gem.supplier || '',
         gem.purchaseDate || '',
         gem.origin || '',
+        gem.ownershipStatus === 'P' ? 'Partner Stone' : gem.ownershipStatus === 'M' ? 'Memo' : 'Owned',
+        gem.associatedEntity || 'Self',
         gem.status,
         gem.dateAdded
       ].join(','))
@@ -707,6 +711,14 @@ export const GemTable = ({
                           return <div className="text-sm text-slate-600">{gem.purchaseDate || ''}</div>;
                         case 'origin':
                           return <div className="text-sm text-slate-600">{gem.origin || ''}</div>;
+                        case 'ownershipStatus':
+                          const ownershipLabel = gem.ownershipStatus === 'P' ? 'Partner Stone' : 
+                                                gem.ownershipStatus === 'M' ? 'Memo' : 'Owned';
+                          const ownershipColor = gem.ownershipStatus === 'P' ? 'text-blue-600' :
+                                               gem.ownershipStatus === 'M' ? 'text-orange-600' : 'text-green-600';
+                          return <div className={`text-sm font-medium ${ownershipColor}`}>{ownershipLabel}</div>;
+                        case 'associatedEntity':
+                          return <div className="text-sm text-slate-600">{gem.associatedEntity || 'Self'}</div>;
                         case 'inStock':
                           return <div className="text-sm font-medium text-emerald-600">{gem.inStock || 0}</div>;
                         case 'reserved':

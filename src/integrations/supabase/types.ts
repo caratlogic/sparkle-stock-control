@@ -455,6 +455,7 @@ export type Database = {
       }
       gems: {
         Row: {
+          associated_entity: string
           box_number: string | null
           carat: number
           certificate_number: string
@@ -474,6 +475,7 @@ export type Database = {
           notes: string | null
           old_code: string | null
           origin: string | null
+          ownership_status: string
           price: number
           price_in_letters: string | null
           purchase_date: string | null
@@ -493,6 +495,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          associated_entity?: string
           box_number?: string | null
           carat: number
           certificate_number: string
@@ -512,6 +515,7 @@ export type Database = {
           notes?: string | null
           old_code?: string | null
           origin?: string | null
+          ownership_status?: string
           price: number
           price_in_letters?: string | null
           purchase_date?: string | null
@@ -531,6 +535,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          associated_entity?: string
           box_number?: string | null
           carat?: number
           certificate_number?: string
@@ -550,6 +555,7 @@ export type Database = {
           notes?: string | null
           old_code?: string | null
           origin?: string | null
+          ownership_status?: string
           price?: number
           price_in_letters?: string | null
           purchase_date?: string | null

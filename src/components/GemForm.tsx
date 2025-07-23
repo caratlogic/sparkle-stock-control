@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS, STOCK_TYPE_OPTIONS } from '../types/gem';
+import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS, STOCK_TYPE_OPTIONS, OWNERSHIP_STATUS_OPTIONS } from '../types/gem';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { QRCodeDisplay } from './QRCodeDisplay';
@@ -44,7 +44,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     supplier: '',
     purchaseDate: '',
     origin: '',
-    inStock: ''
+    inStock: '',
+    ownershipStatus: 'O',
+    associatedEntity: 'Self'
   });
 
   useEffect(() => {
@@ -70,7 +72,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         supplier: gem.supplier || '',
         purchaseDate: gem.purchaseDate || '',
         origin: gem.origin || '',
-        inStock: (gem.inStock || 0).toString()
+        inStock: (gem.inStock || 0).toString(),
+        ownershipStatus: gem.ownershipStatus || 'O',
+        associatedEntity: gem.associatedEntity || 'Self'
       });
     }
   }, [gem]);
@@ -116,6 +120,14 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       if (field === 'stockType') {
         if (value === 'single') {
           newData.inStock = '1';
+        }
+      }
+      // Handle ownership status changes
+      if (field === 'ownershipStatus') {
+        if (value === 'O') {
+          newData.associatedEntity = 'Self';
+        } else {
+          newData.associatedEntity = '';
         }
       }
       return newData;
@@ -398,20 +410,52 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                      />
                    </div>
 
-                   <div className="space-y-2">
-                     <Label htmlFor="inStock">In Stock Quantity</Label>
-                     <Input
-                       id="inStock"
-                       type="number"
-                       placeholder={formData.stockType === 'single' ? '1' : '20'}
-                       value={formData.inStock}
-                       onChange={(e) => handleChange('inStock', e.target.value)}
-                       className="bg-slate-50 border-slate-200"
-                       min={formData.stockType === 'single' ? '1' : '0'}
-                       max={formData.stockType === 'single' ? '1' : undefined}
-                       disabled={formData.stockType === 'single'}
-                     />
-                   </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ownershipStatus">Ownership Status</Label>
+                      <Select value={formData.ownershipStatus} onValueChange={(value) => handleChange('ownershipStatus', value)}>
+                        <SelectTrigger className="bg-slate-50 border-slate-200">
+                          <SelectValue placeholder="Select ownership status" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-slate-200">
+                          {OWNERSHIP_STATUS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="associatedEntity">Associated Entity</Label>
+                      <Input
+                        id="associatedEntity"
+                        placeholder={
+                          formData.ownershipStatus === 'P' ? 'Partner company name' :
+                          formData.ownershipStatus === 'M' ? 'Supplier company name' :
+                          'Self'
+                        }
+                        value={formData.associatedEntity}
+                        onChange={(e) => handleChange('associatedEntity', e.target.value)}
+                        className="bg-slate-50 border-slate-200"
+                        disabled={formData.ownershipStatus === 'O'}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="inStock">In Stock Quantity</Label>
+                      <Input
+                        id="inStock"
+                        type="number"
+                        placeholder={formData.stockType === 'single' ? '1' : '20'}
+                        value={formData.inStock}
+                        onChange={(e) => handleChange('inStock', e.target.value)}
+                        className="bg-slate-50 border-slate-200"
+                        min={formData.stockType === 'single' ? '1' : '0'}
+                        max={formData.stockType === 'single' ? '1' : undefined}
+                        disabled={formData.stockType === 'single'}
+                      />
+                    </div>
                  </div>
 
                 <div className="space-y-2">

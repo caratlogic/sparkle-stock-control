@@ -48,7 +48,9 @@ export const useGems = () => {
         reserved: gem.reserved || 0,
         sold: gem.sold || 0,
         updatedAt: gem.updated_at || undefined,
-        updatedBy: gem.updated_by || undefined
+        updatedBy: gem.updated_by || undefined,
+        ownershipStatus: (gem.ownership_status as 'P' | 'M' | 'O') || 'O',
+        associatedEntity: gem.associated_entity || 'Self'
       }));
 
       console.log(`✅ useGems: Fetched ${transformedGems.length} gems from database`);
@@ -163,6 +165,8 @@ export const useGems = () => {
           supplier: gemData.supplier,
           purchase_date: gemData.purchaseDate,
           origin: gemData.origin,
+          ownership_status: gemData.ownershipStatus || 'O',
+          associated_entity: gemData.associatedEntity || 'Self',
           in_stock: gemData.stockType === 'single' ? 1 : (gemData.inStock || 20), // Set quantity based on stock type
           reserved: 0,
           sold: 0
@@ -203,6 +207,8 @@ export const useGems = () => {
       if (gemData.supplier !== undefined) updateData.supplier = gemData.supplier;
       if (gemData.purchaseDate !== undefined) updateData.purchase_date = gemData.purchaseDate;
       if (gemData.origin !== undefined) updateData.origin = gemData.origin;
+      if (gemData.ownershipStatus !== undefined) updateData.ownership_status = gemData.ownershipStatus;
+      if (gemData.associatedEntity !== undefined) updateData.associated_entity = gemData.associatedEntity;
       if (gemData.inStock !== undefined) updateData.in_stock = gemData.inStock;
 
       console.log('Updating gem with data:', updateData);

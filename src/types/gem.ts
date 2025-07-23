@@ -44,6 +44,8 @@ export interface Gem {
   sold?: number;
   updatedAt?: string;
   updatedBy?: string;
+  ownershipStatus?: 'P' | 'M' | 'O';
+  associatedEntity?: string;
   certificates?: GemCertificate[];
   consignmentInfo?: {
     id: string;
@@ -86,6 +88,12 @@ export const CERTIFICATE_TYPE_OPTIONS = [
   'none', 'AGL', 'AGTA', 'AIGS', 'GIA', 'GRS', 'Gubelin', 'HDK', 'HKJSL', 'IGI', 
   'LOTUS', 'Mason Kay', 'PGS', 'SSEF', 'BELLEROPHON', 'CDC', 'CDTEC', 'GII', 
   'GIT', 'GWLAB', 'ICA', 'Other'
+] as const;
+
+export const OWNERSHIP_STATUS_OPTIONS = [
+  { value: 'P', label: 'Partner Stone' },
+  { value: 'M', label: 'Memo' },
+  { value: 'O', label: 'Owned' }
 ] as const;
 
 // Color options by gem type
