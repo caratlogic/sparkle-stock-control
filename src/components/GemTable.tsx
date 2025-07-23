@@ -705,14 +705,14 @@ export const GemTable = ({
                              // Handle gems with 0 carat vs individual gems
                              const totalCostPrice = gem.carat === 0 
                                ? gem.inStock * gem.costPrice  // Bulk gems: units × cost per unit
-                               : gem.carat * gem.inStock * gem.costPrice; // Individual gems: Total Carat Available × Cost Price per Carat
+                               : gem.inStock * gem.costPrice; // Individual gems: costPrice is total cost per gem
                              return isOwner ? <div className="font-medium text-emerald-600">${totalCostPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div> : null;
                            case 'totalSellingPrice':
                              // Handle gems with 0 carat vs individual gems  
                              const totalSellingPrice = gem.carat === 0
                                ? gem.inStock * (gem.retailPrice || gem.price)  // Bulk gems: units × price per unit
-                               : gem.carat * gem.inStock * (gem.retailPrice || gem.price); // Individual gems: Total Carat Available × Selling Price per Carat
-                            return <div className="font-medium text-purple-600">${totalSellingPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
+                               : gem.inStock * (gem.retailPrice || gem.price); // Individual gems: price is total price per gem
+                             return <div className="font-medium text-purple-600">${totalSellingPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
                         case 'treatment':
                           return <div className="text-sm text-slate-600">{gem.treatment || ''}</div>;
                         case 'colorComment':

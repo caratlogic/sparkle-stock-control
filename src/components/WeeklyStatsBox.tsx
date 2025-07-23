@@ -22,10 +22,9 @@ export const WeeklyStatsBox = ({
       // For bulk gems, cost_price is likely per unit
       return total + (gem.inStock * gem.costPrice);
     } else {
-      // For individual gems: Total Cost Price = Total Carat Available × Cost Price per Carat
-      // Total Carat Available = carat * inStock
-      // costPrice is per carat, so: Total Cost Price = (carat * inStock) * costPrice
-      return total + (gem.carat * gem.inStock * gem.costPrice);
+      // For individual gems: costPrice is total cost per gem, not per carat
+      // Total Cost Price = Number of gems × Cost per gem
+      return total + (gem.inStock * gem.costPrice);
     }
   }, 0);
   const totalSellingPrice = gems.reduce((total, gem) => {
@@ -34,9 +33,9 @@ export const WeeklyStatsBox = ({
       // For bulk gems, price is likely per unit
       return total + (gem.inStock * (gem.retailPrice || gem.price));
     } else {
-      // For individual gems: Total Selling Price = Total Carat Available × Selling Price per Carat
-      // retailPrice/price is per carat, so: Total Selling Price = (carat * inStock) * price
-      return total + (gem.carat * gem.inStock * (gem.retailPrice || gem.price));
+      // For individual gems: retailPrice/price is total price per gem, not per carat
+      // Total Selling Price = Number of gems × Price per gem
+      return total + (gem.inStock * (gem.retailPrice || gem.price));
     }
   }, 0);
   return <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
