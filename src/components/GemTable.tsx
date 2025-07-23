@@ -91,28 +91,29 @@ export const GemTable = ({
     { key: 'stockType', label: customColumnLabels['stockType'] || 'Stock Type', visible: true, order: 3 },
     { key: 'gemType', label: customColumnLabels['gemType'] || 'Gem Type', visible: true, order: 4 },
     { key: 'carat', label: customColumnLabels['carat'] || 'Total Carat', visible: true, order: 5 },
-    { key: 'specifications', label: customColumnLabels['specifications'] || 'Specifications', visible: true, order: 6 },
-    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', visible: true, order: 7 },
-    { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price / Carat', visible: true, order: 8 },
-    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price/Carat', visible: isOwner, order: 9 },
-    { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 10 },
-    { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 11 },
-    { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 12 },
-    { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', visible: false, order: 13 },
-    { key: 'purchaseDate', label: customColumnLabels['purchaseDate'] || 'Purchase Date', visible: false, order: 14 },
-    { key: 'origin', label: customColumnLabels['origin'] || 'Origin', visible: false, order: 15 },
-    { key: 'ownershipStatus', label: customColumnLabels['ownershipStatus'] || 'Ownership Status', visible: true, order: 16 },
-    { key: 'associatedEntity', label: customColumnLabels['associatedEntity'] || 'Associated Entity', visible: true, order: 17 },
-    { key: 'inStock', label: customColumnLabels['inStock'] || 'In Stock', visible: true, order: 18 },
-    { key: 'reserved', label: customColumnLabels['reserved'] || 'Reserved', visible: true, order: 19 },
-    { key: 'sold', label: customColumnLabels['sold'] || 'Sold', visible: true, order: 20 },
-    { key: 'status', label: customColumnLabels['status'] || 'Status', visible: true, order: 21 },
-    { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 22 },
-    { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 23 },
-    { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 24 },
-    { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 25 },
-    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 26 },
-    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 27 },
+    { key: 'shape', label: customColumnLabels['shape'] || 'Shape', visible: true, order: 6 },
+    { key: 'color', label: customColumnLabels['color'] || 'Color', visible: true, order: 7 },
+    { key: 'pricePerCarat', label: customColumnLabels['pricePerCarat'] || 'Selling Price/Carat', visible: true, order: 8 },
+    { key: 'retailPrice', label: customColumnLabels['retailPrice'] || 'Retail Price / Carat', visible: true, order: 9 },
+    { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price/Carat', visible: isOwner, order: 10 },
+    { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 11 },
+    { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 12 },
+    { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 13 },
+    { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', visible: false, order: 14 },
+    { key: 'purchaseDate', label: customColumnLabels['purchaseDate'] || 'Purchase Date', visible: false, order: 15 },
+    { key: 'origin', label: customColumnLabels['origin'] || 'Origin', visible: false, order: 16 },
+    { key: 'ownershipStatus', label: customColumnLabels['ownershipStatus'] || 'Ownership Status', visible: true, order: 17 },
+    { key: 'associatedEntity', label: customColumnLabels['associatedEntity'] || 'Associated Entity', visible: true, order: 18 },
+    { key: 'inStock', label: customColumnLabels['inStock'] || 'In Stock', visible: true, order: 19 },
+    { key: 'reserved', label: customColumnLabels['reserved'] || 'Reserved', visible: true, order: 20 },
+    { key: 'sold', label: customColumnLabels['sold'] || 'Sold', visible: true, order: 21 },
+    { key: 'status', label: customColumnLabels['status'] || 'Status', visible: true, order: 22 },
+    { key: 'dateAdded', label: customColumnLabels['dateAdded'] || 'Date Added', visible: true, order: 23 },
+    { key: 'updatedBy', label: customColumnLabels['updatedBy'] || 'Updated By', visible: true, order: 24 },
+    { key: 'lastUpdated', label: customColumnLabels['lastUpdated'] || 'Last Updated', visible: true, order: 25 },
+    { key: 'certificateNumber', label: customColumnLabels['certificateNumber'] || 'Certificate #', visible: true, order: 26 },
+    { key: 'actions', label: customColumnLabels['actions'] || 'Actions', visible: true, mandatory: true, order: 27 },
+    { key: 'qrcode', label: customColumnLabels['qrcode'] || 'QR Code', visible: true, order: 28 },
   ];
 
   const [columns, setColumns] = useState<ColumnConfig[]>(getDefaultColumns());
@@ -292,7 +293,7 @@ export const GemTable = ({
   };
 
   const exportToCSV = () => {
-    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Cut', 'Color', 'Selling Price/Carat', ...(isOwner ? ['Cost Price'] : []), 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Purchase Date', 'Origin', 'Ownership Status', 'Associated Entity', 'Status', 'Date Added'];
+    const headers = ['Stock ID', 'Gem Type', 'Carat', 'Shape', 'Color', 'Selling Price/Carat', ...(isOwner ? ['Cost Price'] : []), 'Treatment', 'Color Comment', 'Certificate Type', 'Supplier', 'Purchase Date', 'Origin', 'Ownership Status', 'Associated Entity', 'Status', 'Date Added'];
     const csvContent = [
       headers.join(','),
       ...filteredGems.map(gem => [
@@ -686,13 +687,10 @@ export const GemTable = ({
                           return <div className="font-medium text-slate-800">{gem.gemType}</div>;
                         case 'carat':
                           return <div className="font-medium text-slate-800">{gem.carat}ct</div>;
-                        case 'specifications':
-                          return (
-                            <div className="text-sm text-slate-600">
-                              <div>{gem.cut}</div>
-                              <div>{gem.color}</div>
-                            </div>
-                          );
+                        case 'shape':
+                          return <div className="text-sm text-slate-600">{gem.cut}</div>;
+                        case 'color':
+                          return <div className="text-sm text-slate-600">{gem.color}</div>;
                          case 'pricePerCarat':
                            return <div className="font-semibold text-slate-800">${(gem.price / gem.carat).toFixed(0)}/ct</div>;
                          case 'retailPrice':
