@@ -81,10 +81,10 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           certificateNumber: preselectedGem.certificateNumber,
           gemType: preselectedGem.gemType,
         },
-        quantity: 1,
-        caratPurchased: Math.min(0.01, preselectedGem.carat),
+        quantity: preselectedGem.inStock || 1,
+        caratPurchased: preselectedGem.carat,
         pricePerCarat,
-        totalPrice: Math.min(0.01, preselectedGem.carat) * pricePerCarat,
+        totalPrice: preselectedGem.carat * pricePerCarat,
       };
       setItems([newItem]);
 
