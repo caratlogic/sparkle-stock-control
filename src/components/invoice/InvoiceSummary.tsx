@@ -56,13 +56,8 @@ export const InvoiceSummary = ({
   const [manualRate, setManualRate] = useState(liveRate);
   const exchangeRate = currency === 'EUR' ? (isManuallySet ? manualRate : liveRate) : 1;
   
-  const [applyDiscount, setApplyDiscount] = useState(discount > 0);
+  const [applyDiscount, setApplyDiscount] = useState(false);
   const effectiveDiscount = applyDiscount ? discount : 0;
-  
-  // Update applyDiscount when discount changes
-  useEffect(() => {
-    setApplyDiscount(discount > 0);
-  }, [discount]);
   
   const discountAmount = (subtotal * effectiveDiscount) / 100;
   const afterDiscount = subtotal - discountAmount;
