@@ -4,8 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 import { Customer } from '../../types/customer';
 import { useState, useEffect } from 'react';
+import { useExchangeRate } from '../../hooks/useExchangeRate';
 
 interface InvoiceSummaryProps {
   subtotal: number;
@@ -41,7 +44,17 @@ export const InvoiceSummary = ({
   setPaymentDate,
 }: InvoiceSummaryProps) => {
   const currencySymbol = currency === 'USD' ? '$' : '€';
-  const exchangeRate = currency === 'EUR' ? 0.85 : 1; // Example exchange rate
+  const { 
+    exchangeRate: liveRate, 
+    isLoading, 
+    lastUpdated, 
+    isManuallySet, 
+    fetchExchangeRate, 
+    updateExchangeRateManually 
+  } = useExchangeRate();
+  
+  const [manualRate, setManualRate] = useState(liveRate);
+  const exchangeRate = currency === 'EUR' ? (isManuallySet ? manualRate : liveRate) : 1;
   
   const [applyDiscount, setApplyDiscount] = useState(discount > 0);
   const effectiveDiscount = applyDiscount ? discount : 0;
@@ -104,6 +117,40 @@ export const InvoiceSummary = ({
               <SelectItem value="EUR">EUR (€)</SelectItem>
             </SelectContent>
           </Select>
+          
+          {currency === 'EUR' && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Exchange Rate (USD to EUR)</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchExchangeRate}
+                  disabled={isLoading}
+                  className="h-7 px-2"
+                >
+                  <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+              <Input
+                type="number"
+                step="0.0001"
+                value={manualRate}
+                onChange={(e) => {
+                  const rate = parseFloat(e.target.value) || 0;
+                  setManualRate(rate);
+                  updateExchangeRateManually(rate);
+                }}
+                className="text-sm"
+              />
+              <p className="text-xs text-slate-500">
+                {lastUpdated && (
+                  <>Updated: {lastUpdated.toLocaleTimeString()} 
+                  {isManuallySet ? ' (Manual)' : ' (Live)'}</>
+                )}
+              </p>
+            </div>
+          )}
         </div>
         
         <div>
