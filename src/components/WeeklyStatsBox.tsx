@@ -17,14 +17,18 @@ export const WeeklyStatsBox = ({
 
   // Calculate total cost price and selling price based on available inventory
   const totalCostPrice = gems.reduce((total, gem) => {
-    const availableCarat = gem.carat * gem.inStock;
-    const costPerCarat = gem.costPrice / gem.carat;
-    return total + availableCarat * costPerCarat;
+    // Total Cost Price = Total Carat Available × Cost Price per Carat
+    // Since costPrice is total cost for the gem, cost per carat = costPrice / carat
+    // Total available carat = carat * inStock
+    // So: Total Cost Price = inStock * costPrice
+    return total + (gem.inStock * gem.costPrice);
   }, 0);
   const totalSellingPrice = gems.reduce((total, gem) => {
-    const availableCarat = gem.carat * gem.inStock;
-    const retailPricePerCarat = (gem.retailPrice || gem.price) / gem.carat;
-    return total + availableCarat * retailPricePerCarat;
+    // Total Selling Price = Total Carat Available × Selling Price per Carat
+    // Since retailPrice/price is total price for the gem, price per carat = price / carat
+    // Total available carat = carat * inStock
+    // So: Total Selling Price = inStock * (retailPrice || price)
+    return total + (gem.inStock * (gem.retailPrice || gem.price));
   }, 0);
   return <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <Card>

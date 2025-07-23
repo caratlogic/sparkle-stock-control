@@ -701,12 +701,12 @@ export const GemTable = ({
                            return <div className="font-semibold text-purple-600">${((gem.retailPrice || gem.price) / gem.carat).toFixed(0)}/ct</div>;
                          case 'costPrice':
                            return isOwner ? <div className="font-medium text-emerald-600">${(gem.costPrice / gem.carat).toFixed(0)}/ct</div> : null;
-                         case 'totalCostPrice':
-                           const totalCostPrice = (gem.carat * gem.inStock * gem.costPrice) / gem.carat;
-                           return isOwner ? <div className="font-medium text-emerald-600">${totalCostPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div> : null;
-                         case 'totalSellingPrice':
-                           const totalSellingPrice = (gem.carat * gem.inStock * (gem.retailPrice || gem.price)) / gem.carat;
-                           return <div className="font-medium text-purple-600">${totalSellingPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
+                          case 'totalCostPrice':
+                            const totalCostPrice = gem.inStock * gem.costPrice;
+                            return isOwner ? <div className="font-medium text-emerald-600">${totalCostPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div> : null;
+                          case 'totalSellingPrice':
+                            const totalSellingPrice = gem.inStock * (gem.retailPrice || gem.price);
+                            return <div className="font-medium text-purple-600">${totalSellingPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
                         case 'treatment':
                           return <div className="text-sm text-slate-600">{gem.treatment || ''}</div>;
                         case 'colorComment':
