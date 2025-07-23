@@ -273,16 +273,21 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       }}
                       className="bg-slate-50 border-slate-200"
                       autoFocus={false}
-                      onFocus={(e) => {
-                        // Only select all on initial focus, not on click within field
-                        setTimeout(() => e.target.select(), 0);
-                      }}
-                      onClick={(e) => {
-                        // Prevent text selection if already focused
-                        if (document.activeElement === e.target) {
-                          e.preventDefault();
-                        }
-                      }}
+                       onFocus={(e) => {
+                         // Only select all if coming from outside the input (keyboard navigation)
+                         if (!e.relatedTarget || e.relatedTarget !== e.target) {
+                           const target = e.target as HTMLInputElement;
+                           const wasClicked = target.dataset.wasClicked === "true";
+                           if (!wasClicked) {
+                             setTimeout(() => target.select(), 0);
+                           }
+                         }
+                         (e.target as HTMLInputElement).dataset.wasClicked = "false";
+                       }}
+                       onMouseDown={(e) => {
+                         // Mark that this focus came from a mouse click
+                         (e.target as HTMLInputElement).dataset.wasClicked = "true";
+                       }}
                     />
                   </div>
 
@@ -301,16 +306,21 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         handleChange('retailPrice', totalRetailPrice);
                       }}
                       className="bg-slate-50 border-slate-200"
-                      onFocus={(e) => {
-                        // Only select all on initial focus, not on click within field
-                        setTimeout(() => e.target.select(), 0);
-                      }}
-                      onClick={(e) => {
-                        // Prevent text selection if already focused
-                        if (document.activeElement === e.target) {
-                          e.preventDefault();
-                        }
-                      }}
+                       onFocus={(e) => {
+                         // Only select all if coming from outside the input (keyboard navigation)
+                         if (!e.relatedTarget || e.relatedTarget !== e.target) {
+                           const target = e.target as HTMLInputElement;
+                           const wasClicked = target.dataset.wasClicked === "true";
+                           if (!wasClicked) {
+                             setTimeout(() => target.select(), 0);
+                           }
+                         }
+                         (e.target as HTMLInputElement).dataset.wasClicked = "false";
+                       }}
+                       onMouseDown={(e) => {
+                         // Mark that this focus came from a mouse click
+                         (e.target as HTMLInputElement).dataset.wasClicked = "true";
+                       }}
                     />
                   </div>
 
