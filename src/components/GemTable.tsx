@@ -702,10 +702,16 @@ export const GemTable = ({
                          case 'costPrice':
                            return isOwner ? <div className="font-medium text-emerald-600">${(gem.costPrice / gem.carat).toFixed(0)}/ct</div> : null;
                           case 'totalCostPrice':
-                            const totalCostPrice = gem.inStock * gem.costPrice;
+                            // Handle gems with 0 carat vs individual gems
+                            const totalCostPrice = gem.carat === 0 
+                              ? gem.inStock * gem.costPrice  // Bulk gems: units × cost per unit
+                              : gem.inStock * gem.costPrice; // Individual gems: units × cost per unit
                             return isOwner ? <div className="font-medium text-emerald-600">${totalCostPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div> : null;
                           case 'totalSellingPrice':
-                            const totalSellingPrice = gem.inStock * (gem.retailPrice || gem.price);
+                            // Handle gems with 0 carat vs individual gems  
+                            const totalSellingPrice = gem.carat === 0
+                              ? gem.inStock * (gem.retailPrice || gem.price)  // Bulk gems: units × price per unit
+                              : gem.inStock * (gem.retailPrice || gem.price); // Individual gems: units × price per unit
                             return <div className="font-medium text-purple-600">${totalSellingPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>;
                         case 'treatment':
                           return <div className="text-sm text-slate-600">{gem.treatment || ''}</div>;
