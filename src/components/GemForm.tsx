@@ -13,6 +13,7 @@ import { QRCodeDisplay } from './QRCodeDisplay';
 import { FileUpload } from './ui/file-upload';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 import { GemCertificateManager } from './GemCertificateManager';
+import { usePartners } from '../hooks/usePartners';
 
 interface GemFormProps {
   gem?: Gem | null;
@@ -23,6 +24,7 @@ interface GemFormProps {
 export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const { isOwner } = useAuth();
   const { fieldConfig } = useQRCodeSettings();
+  const { partners } = usePartners();
   const [formData, setFormData] = useState({
     gemType: 'Diamond',
     stockType: 'single',
@@ -459,18 +461,34 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
 
                     <div className="space-y-2">
                       <Label htmlFor="associatedEntity">Associated Entity</Label>
-                      <Input
-                        id="associatedEntity"
-                        placeholder={
-                          formData.ownershipStatus === 'P' ? 'Partner company name' :
-                          formData.ownershipStatus === 'M' ? 'Supplier company name' :
-                          'Self'
-                        }
-                        value={formData.associatedEntity}
-                        onChange={(e) => handleChange('associatedEntity', e.target.value)}
-                        className="bg-slate-50 border-slate-200"
-                        disabled={formData.ownershipStatus === 'O'}
-                      />
+                      {formData.ownershipStatus === 'O' ? (
+                        <Input
+                          id="associatedEntity"
+                          value="Self"
+                          className="bg-slate-50 border-slate-200"
+                          disabled
+                        />
+                      ) : (
+                        <Select 
+                          value={formData.associatedEntity} 
+                          onValueChange={(value) => handleChange('associatedEntity', value)}
+                        >
+                          <SelectTrigger className="bg-slate-50 border-slate-200">
+                            <SelectValue placeholder={
+                              formData.ownershipStatus === 'P' ? 'Select partner' :
+                              formData.ownershipStatus === 'M' ? 'Select supplier' :
+                              'Select entity'
+                            } />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border-slate-200">
+                            {partners.map((partner) => (
+                              <SelectItem key={partner.id} value={partner.name}>
+                                {partner.name} {partner.company && `(${partner.company})`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
 
                     <div className="space-y-2">
