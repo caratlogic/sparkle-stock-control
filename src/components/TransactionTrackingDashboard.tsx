@@ -46,8 +46,10 @@ export const TransactionTrackingDashboard = () => {
       currency?: string;
     }> = [];
 
-    // Add invoices
-    invoices.forEach(invoice => {
+    // Add invoices (only revenue-generating: sent, overdue, paid, partial)
+    invoices.filter(invoice => 
+      ['sent', 'overdue', 'paid', 'partial'].includes(invoice.status)
+    ).forEach(invoice => {
       const invoiceItems = invoice.items?.map(item => {
         const gem = gems.find(g => g.id === item.productId);
         return {
