@@ -59,46 +59,78 @@ export const PartnerTransactionDetail = ({ partner, isOpen, onClose }: PartnerTr
   const fetchPartnerTransactions = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First, fetch partner transactions
+      const { data: transactionsData, error: transactionsError } = await supabase
         .from('partner_transactions')
-        .select(`
-          *,
-          invoices!inner(
-            invoice_number,
-            customer_id,
-            customers(name)
-          ),
-          invoice_items!inner(
-            gem_id,
-            carat_purchased,
-            gems(
-              stock_id,
-              gem_type,
-              carat
-            )
-          )
-        `)
+        .select('*')
         .eq('partner_id', partner.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (transactionsError) throw transactionsError;
 
-      const formattedTransactions = data?.map((transaction: any) => ({
-        id: transaction.id,
-        transaction_type: transaction.transaction_type,
-        transaction_id: transaction.transaction_id,
-        ownership_status: transaction.ownership_status,
-        associated_entity: transaction.associated_entity,
-        revenue_amount: transaction.revenue_amount,
-        partner_share: transaction.partner_share,
-        transaction_date: transaction.transaction_date,
-        created_at: transaction.created_at,
-        invoice_number: transaction.invoices?.invoice_number,
-        customer_name: transaction.invoices?.customers?.name,
-        gem_stock_id: transaction.invoice_items?.[0]?.gems?.stock_id,
-        gem_type: transaction.invoice_items?.[0]?.gems?.gem_type,
-        gem_carat: transaction.invoice_items?.[0]?.carat_purchased || transaction.invoice_items?.[0]?.gems?.carat
-      })) || [];
+      if (!transactionsData || transactionsData.length === 0) {
+        setTransactions([]);
+        return;
+      }
+
+      // Get all unique transaction IDs (invoice IDs)
+      const invoiceIds = transactionsData.map(t => t.transaction_id);
+
+      // Fetch invoices with customer data
+      const { data: invoicesData, error: invoicesError } = await supabase
+        .from('invoices')
+        .select(`
+          id,
+          invoice_number,
+          customer_id,
+          customers(name)
+        `)
+        .in('id', invoiceIds);
+
+      if (invoicesError) throw invoicesError;
+
+      // Fetch invoice items with gem data
+      const { data: invoiceItemsData, error: invoiceItemsError } = await supabase
+        .from('invoice_items')
+        .select(`
+          invoice_id,
+          gem_id,
+          carat_purchased,
+          gems(
+            stock_id,
+            gem_type,
+            carat
+          )
+        `)
+        .in('invoice_id', invoiceIds);
+
+      if (invoiceItemsError) throw invoiceItemsError;
+
+      // Combine the data
+      const formattedTransactions = transactionsData.map((transaction: any) => {
+        const invoice = invoicesData?.find(inv => inv.id === transaction.transaction_id);
+        const invoiceItems = invoiceItemsData?.filter(item => item.invoice_id === transaction.transaction_id);
+        
+        // Get the first gem from the invoice items (there might be multiple gems per invoice)
+        const firstGem = invoiceItems?.[0];
+
+        return {
+          id: transaction.id,
+          transaction_type: transaction.transaction_type,
+          transaction_id: transaction.transaction_id,
+          ownership_status: transaction.ownership_status,
+          associated_entity: transaction.associated_entity,
+          revenue_amount: transaction.revenue_amount,
+          partner_share: transaction.partner_share,
+          transaction_date: transaction.transaction_date,
+          created_at: transaction.created_at,
+          invoice_number: invoice?.invoice_number,
+          customer_name: invoice?.customers?.name,
+          gem_stock_id: firstGem?.gems?.stock_id,
+          gem_type: firstGem?.gems?.gem_type,
+          gem_carat: firstGem?.carat_purchased || firstGem?.gems?.carat
+        };
+      });
 
       setTransactions(formattedTransactions);
     } catch (error) {
