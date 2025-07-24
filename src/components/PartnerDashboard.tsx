@@ -25,6 +25,7 @@ import {
 import { Plus, Edit, DollarSign, Users, TrendingUp, Building } from 'lucide-react';
 import { usePartners, usePartnerTransactions, Partner } from '@/hooks/usePartners';
 import { useToast } from '@/hooks/use-toast';
+import { PartnerTransactionDetail } from './PartnerTransactionDetail';
 
 export const PartnerDashboard = () => {
   const { partners, loading, addPartner, updatePartner, deletePartner } = usePartners();
@@ -33,6 +34,7 @@ export const PartnerDashboard = () => {
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -92,6 +94,11 @@ export const PartnerDashboard = () => {
       notes: partner.notes || ''
     });
     setIsEditDialogOpen(true);
+  };
+
+  const openDetailDialog = (partner: Partner) => {
+    setSelectedPartner(partner);
+    setIsDetailDialogOpen(true);
   };
 
   // Calculate partner revenue statistics
@@ -310,7 +317,12 @@ export const PartnerDashboard = () => {
                 <TableRow key={partner.id}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{partner.name}</div>
+                      <button 
+                        onClick={() => openDetailDialog(partner)}
+                        className="font-medium text-primary hover:underline cursor-pointer text-left"
+                      >
+                        {partner.name}
+                      </button>
                       {partner.company && (
                         <div className="text-sm text-muted-foreground">{partner.company}</div>
                       )}
@@ -446,6 +458,18 @@ export const PartnerDashboard = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Partner Transaction Detail Dialog */}
+      {selectedPartner && (
+        <PartnerTransactionDetail
+          partner={selectedPartner}
+          isOpen={isDetailDialogOpen}
+          onClose={() => {
+            setIsDetailDialogOpen(false);
+            setSelectedPartner(null);
+          }}
+        />
+      )}
     </div>
   );
 };
