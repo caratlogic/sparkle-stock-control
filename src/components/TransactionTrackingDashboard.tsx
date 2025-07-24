@@ -81,6 +81,29 @@ export const TransactionTrackingDashboard = () => {
         .filter(item => item.ownership_status === 'M')
         .reduce((sum, item) => sum + item.itemAmount, 0);
 
+      // Calculate total from items for validation
+      const totalItemsAmount = ownedAmount + partnerAmount + memoAmount;
+      
+      // Debug logging to identify discrepancies
+      if (Math.abs(totalItemsAmount - invoice.total) > 1) {
+        console.log(`Invoice ${invoice.invoiceNumber} discrepancy:`, {
+          invoiceTotal: invoice.total,
+          itemsTotal: totalItemsAmount,
+          ownedAmount,
+          partnerAmount,
+          memoAmount,
+          items: invoiceItems.map(item => ({
+            ownership: item.ownership_status,
+            amount: item.itemAmount
+          }))
+        });
+      }
+
+      // Use proportional distribution if there's a mismatch (due to taxes, discounts, etc.)
+      const finalOwnedAmount = totalItemsAmount > 0 ? (ownedAmount / totalItemsAmount) * invoice.total : 0;
+      const finalPartnerAmount = totalItemsAmount > 0 ? (partnerAmount / totalItemsAmount) * invoice.total : 0;
+      const finalMemoAmount = totalItemsAmount > 0 ? (memoAmount / totalItemsAmount) * invoice.total : 0;
+
       transactions.push({
         id: invoice.id,
         type: 'invoice',
@@ -93,10 +116,10 @@ export const TransactionTrackingDashboard = () => {
         associatedEntity: entities.join(', '),
         items: invoiceItems,
         currency: invoice.currency || invoice.customerDetails?.currency || 'USD',
-        // Add breakdown amounts for accurate calculation
-        ownedAmount,
-        partnerAmount,
-        consignedAmount: memoAmount
+        // Use proportionally adjusted amounts to account for taxes/discounts
+        ownedAmount: finalOwnedAmount,
+        partnerAmount: finalPartnerAmount,
+        consignedAmount: finalMemoAmount
       });
     });
 
