@@ -103,6 +103,7 @@ export interface Invoice {
   payments?: InvoicePayment[];
   paidAmount?: number;
   remainingAmount?: number;
+  currency?: string;
 }
 
 export interface Consignment {
@@ -115,4 +116,5 @@ export interface Consignment {
   dateCreated: string;
   returnDate: string;
   notes?: string;
+  currency?: string;
 }

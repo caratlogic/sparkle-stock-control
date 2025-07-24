@@ -75,7 +75,8 @@ export const useInvoiceActions = () => {
     total: number,
     notes: string,
     relatedConsignmentId: string | null,
-    onSave: (invoice: Invoice) => void
+    onSave: (invoice: Invoice) => void,
+    currency?: string
   ) => {
     if (!selectedCustomer || items.length === 0) return;
 
@@ -95,6 +96,7 @@ export const useInvoiceActions = () => {
         dateCreated: new Date().toISOString().split('T')[0],
         dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         notes,
+        currency: currency || selectedCustomer.currency || 'USD',
         items: items.map(item => {
           // Check if this is a database gem (UUID format) or sample gem (numeric string)
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
@@ -196,10 +198,11 @@ export const useInvoiceActions = () => {
           taxRate,
           taxAmount,
           total,
-      status: 'sent',
+          status: 'sent',
           dateCreated: invoiceData.dateCreated,
           dateDue: invoiceData.dateDue,
           notes,
+          currency: currency || selectedCustomer.currency || 'USD',
         };
         
         // Send email notification
@@ -229,7 +232,8 @@ export const useInvoiceActions = () => {
     taxRate: number,
     taxAmount: number,
     total: number,
-    notes: string
+    notes: string,
+    currency?: string
   ) => {
     if (!selectedCustomer || items.length === 0) return;
 
@@ -243,10 +247,11 @@ export const useInvoiceActions = () => {
       taxRate,
       taxAmount,
       total,
-    status: 'sent',
+      status: 'sent',
       dateCreated: new Date().toISOString().split('T')[0],
       dateDue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       notes,
+      currency: currency || selectedCustomer.currency || 'USD',
     };
 
     generateInvoicePDF(invoice);

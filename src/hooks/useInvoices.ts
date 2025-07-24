@@ -40,6 +40,8 @@ export const useInvoices = () => {
           phone: invoice.customers.phone,
           company: invoice.customers.company || undefined,
           taxId: invoice.customers.tax_id || undefined,
+          vatNumber: invoice.customers.vat_number || undefined,
+          currency: invoice.customers.currency || 'USD',
           address: {
             street: invoice.customers.street,
             city: invoice.customers.city,
@@ -80,7 +82,8 @@ export const useInvoices = () => {
         status: invoice.status as any,
         dateCreated: invoice.date_created,
         dateDue: invoice.date_due,
-        notes: invoice.notes || undefined
+        notes: invoice.notes || undefined,
+        currency: invoice.currency || 'USD'
       }));
 
       console.log('Transformed invoices:', transformedInvoices);
@@ -110,7 +113,8 @@ export const useInvoices = () => {
           status: invoiceData.status || 'sent',
           date_created: invoiceData.dateCreated,
           date_due: invoiceData.dateDue,
-          notes: invoiceData.notes
+          notes: invoiceData.notes,
+          currency: invoiceData.currency || 'USD'
         })
         .select()
         .single();

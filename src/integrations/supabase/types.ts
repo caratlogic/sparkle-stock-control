@@ -96,6 +96,7 @@ export type Database = {
         Row: {
           consignment_number: string
           created_at: string | null
+          currency: string
           customer_id: string
           date_created: string
           id: string
@@ -108,6 +109,7 @@ export type Database = {
         Insert: {
           consignment_number: string
           created_at?: string | null
+          currency?: string
           customer_id: string
           date_created?: string
           id?: string
@@ -120,6 +122,7 @@ export type Database = {
         Update: {
           consignment_number?: string
           created_at?: string | null
+          currency?: string
           customer_id?: string
           date_created?: string
           id?: string
@@ -665,6 +668,7 @@ export type Database = {
       invoices: {
         Row: {
           created_at: string | null
+          currency: string
           customer_id: string
           date_created: string
           date_due: string
@@ -681,6 +685,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          currency?: string
           customer_id: string
           date_created?: string
           date_due: string
@@ -697,6 +702,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          currency?: string
           customer_id?: string
           date_created?: string
           date_due?: string
@@ -888,6 +894,7 @@ export type Database = {
       quotations: {
         Row: {
           created_at: string
+          currency: string
           customer_id: string
           date_created: string
           discount_percentage: number
@@ -904,6 +911,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          currency?: string
           customer_id: string
           date_created?: string
           discount_percentage?: number
@@ -920,6 +928,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          currency?: string
           customer_id?: string
           date_created?: string
           discount_percentage?: number

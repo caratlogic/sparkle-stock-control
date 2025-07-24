@@ -52,11 +52,12 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     }
   }, [preselectedCustomer, preselectedGem]);
 
-  // Set discount when customer is selected
+  // Set discount and currency when customer is selected
   useEffect(() => {
     if (selectedCustomer) {
       console.log('Setting discount for customer:', selectedCustomer.name, 'discount:', selectedCustomer.discount);
       setDiscount(selectedCustomer.discount || 0);
+      setCurrency(selectedCustomer.currency as 'USD' | 'EUR');
     }
   }, [selectedCustomer]);
 
@@ -65,6 +66,7 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setSelectedCustomer(customer);
     setCustomerSearch(customer.name);
     setDiscount(customer.discount || 0);
+    setCurrency(customer.currency as 'USD' | 'EUR');
   };
 
   const handleProductSelect = (product: Gem) => {

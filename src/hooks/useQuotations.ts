@@ -17,6 +17,7 @@ export interface Quotation {
   createdAt: string;
   updatedAt: string;
   updatedBy: string | null;
+  currency?: string;
 }
 
 export interface QuotationItem {
@@ -62,6 +63,7 @@ export const useQuotations = () => {
         createdAt: quotation.created_at,
         updatedAt: quotation.updated_at,
         updatedBy: quotation.updated_by,
+        currency: quotation.currency || 'USD',
       })) || [];
 
       setQuotations(quotationsWithItems);

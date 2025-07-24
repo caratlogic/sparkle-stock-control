@@ -2,9 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, FileText, User, Calendar, DollarSign, Printer } from 'lucide-react';
+import { ArrowLeft, FileText, User, Calendar, DollarSign, Printer, TrendingUp } from 'lucide-react';
 import { Invoice } from '../types/customer';
 import { formatCurrency, getCurrencySymbol } from '@/lib/utils';
+import { useExchangeRate } from '@/hooks/useExchangeRate';
 
 interface InvoiceDetailViewProps {
   invoice: Invoice;
@@ -12,10 +13,20 @@ interface InvoiceDetailViewProps {
 }
 
 export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) => {
-  const currencySymbol = getCurrencySymbol(invoice.customerDetails.currency);
+  const invoiceCurrency = invoice.currency || invoice.customerDetails.currency;
+  const currencySymbol = getCurrencySymbol(invoiceCurrency);
+  const { exchangeRate, lastUpdated } = useExchangeRate();
   
   const handlePrint = () => {
     window.print();
+  };
+
+  // Convert EUR to USD for display
+  const convertToUSD = (amount: number) => {
+    if (invoiceCurrency === 'EUR') {
+      return amount / exchangeRate;
+    }
+    return amount;
   };
 
   return (
@@ -153,7 +164,7 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
                     </td>
                     <td className="py-4 px-4">{item.quantity}</td>
                     <td className="py-4 px-4">{currencySymbol}{item.pricePerCarat.toFixed(2)}/ct</td>
-                    <td className="py-4 px-4 font-semibold">{formatCurrency(item.totalPrice, invoice.customerDetails.currency)}</td>
+                    <td className="py-4 px-4 font-semibold">{formatCurrency(item.totalPrice, invoiceCurrency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -174,7 +185,7 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-slate-600">Subtotal:</span>
-              <span className="font-semibold">{formatCurrency(invoice.subtotal, invoice.customerDetails.currency)}</span>
+              <span className="font-semibold">{formatCurrency(invoice.subtotal, invoiceCurrency)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-600">Tax Rate:</span>
@@ -182,14 +193,37 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
             </div>
             <div className="flex justify-between">
               <span className="text-slate-600">Tax Amount:</span>
-              <span className="font-semibold">{formatCurrency(invoice.taxAmount, invoice.customerDetails.currency)}</span>
+              <span className="font-semibold">{formatCurrency(invoice.taxAmount, invoiceCurrency)}</span>
             </div>
             <div className="border-t pt-3">
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>
-                <span>{formatCurrency(invoice.total, invoice.customerDetails.currency)}</span>
+                <span>{formatCurrency(invoice.total, invoiceCurrency)}</span>
               </div>
             </div>
+            {invoiceCurrency === 'EUR' && (
+              <div className="border-t pt-3 bg-slate-50 p-3 rounded-md">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-slate-600" />
+                  <span className="text-sm font-medium text-slate-700">Currency Conversion</span>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Exchange Rate (EUR to USD):</span>
+                    <span className="font-medium">1 EUR = ${(1/exchangeRate).toFixed(4)} USD</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Total in USD:</span>
+                    <span className="font-semibold">${convertToUSD(invoice.total).toFixed(2)}</span>
+                  </div>
+                  {lastUpdated && (
+                    <div className="text-xs text-slate-500">
+                      Rate updated: {lastUpdated.toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

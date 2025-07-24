@@ -13,6 +13,7 @@ interface Consignment {
     phone: string;
     company?: string;
     taxId?: string;
+    currency?: string;
     address: {
       street: string;
       city: string;
@@ -30,6 +31,7 @@ interface Consignment {
   returnDate: string;
   notes?: string;
   items: ConsignmentItem[];
+  currency?: string;
 }
 
 interface ConsignmentItem {
@@ -114,6 +116,7 @@ export const useConsignments = () => {
             phone: consignment.customers?.phone || '',
             company: consignment.customers?.company || undefined,
             taxId: consignment.customers?.tax_id || undefined,
+            currency: consignment.customers?.currency || 'USD',
             address: {
               street: consignment.customers?.street || '',
               city: consignment.customers?.city || '',
@@ -130,6 +133,7 @@ export const useConsignments = () => {
           dateCreated: consignment.date_created,
           returnDate: consignment.return_date,
           notes: consignment.notes || undefined,
+          currency: consignment.currency || 'USD',
           items: (consignment.consignment_items || []).map((item: any) => ({
             id: item.id,
             gemId: item.gem_id,

@@ -157,12 +157,13 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
       total,
       notes,
       relatedConsignmentId,
-      onSave
+      onSave,
+      currency
     );
   };
 
   const onDownloadInvoice = () => {
-    downloadInvoice(selectedCustomer, items, subtotal, taxRate, taxAmount, total, notes);
+    downloadInvoice(selectedCustomer, items, subtotal, taxRate, taxAmount, total, notes, currency);
   };
 
   return (

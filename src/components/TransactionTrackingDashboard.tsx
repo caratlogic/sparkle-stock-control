@@ -43,6 +43,7 @@ export const TransactionTrackingDashboard = () => {
       ownershipStatus: string;
       associatedEntity: string;
       items: Array<{ gemId: string; stockId?: string; ownership_status?: string; associated_entity?: string }>;
+      currency?: string;
     }> = [];
 
     // Add invoices
@@ -71,7 +72,8 @@ export const TransactionTrackingDashboard = () => {
         status: invoice.status,
         ownershipStatus: ownershipStatuses.join(', '),
         associatedEntity: entities.join(', '),
-        items: invoiceItems
+        items: invoiceItems,
+        currency: invoice.currency || invoice.customerDetails?.currency || 'USD'
       });
     });
 
@@ -103,7 +105,8 @@ export const TransactionTrackingDashboard = () => {
         status: consignment.status,
         ownershipStatus: ownershipStatuses.join(', '),
         associatedEntity: entities.join(', '),
-        items: consignmentItems
+        items: consignmentItems,
+        currency: consignment.currency || 'USD'
       });
     });
 
@@ -120,7 +123,8 @@ export const TransactionTrackingDashboard = () => {
         status: quotation.status,
         ownershipStatus: 'Mixed', // Since we don't have detailed gem data for quotations
         associatedEntity: 'Mixed',
-        items: []
+        items: [],
+        currency: quotation.currency || 'USD'
       });
     });
 
@@ -424,6 +428,7 @@ export const TransactionTrackingDashboard = () => {
                 <TableHead>Customer</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Currency</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Ownership Status</TableHead>
                 <TableHead>Associated Entity</TableHead>
@@ -443,7 +448,14 @@ export const TransactionTrackingDashboard = () => {
                   <TableCell className="font-medium">{transaction.number}</TableCell>
                   <TableCell>{transaction.customer}</TableCell>
                   <TableCell>{format(new Date(transaction.date), 'MMM dd, yyyy')}</TableCell>
-                  <TableCell>${transaction.amount.toLocaleString()}</TableCell>
+                  <TableCell>
+                    {transaction.currency === 'EUR' ? '€' : '$'}{transaction.amount.toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {transaction.currency || 'USD'}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <Badge 
                       variant={
