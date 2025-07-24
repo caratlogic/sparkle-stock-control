@@ -16,7 +16,11 @@ interface ProductSelectionProps {
   quantity: number;
   setQuantity: (value: number) => void;
   caratAmount: number;
-  setCaratAmount: (value: number) => void;
+  setCaratAmount?: (value: number) => void;
+  totalSellingPrice?: number;
+  setTotalSellingPrice?: (value: number) => void;
+  handleCaratAmountChange?: (value: number) => void;
+  handleTotalSellingPriceChange?: (value: number) => void;
   items: InvoiceItem[];
   onProductSelect: (product: Gem) => void;
   onAddItem: () => void;
@@ -199,6 +203,10 @@ export const ProductSelection = ({
   setQuantity,
   caratAmount,
   setCaratAmount,
+  totalSellingPrice,
+  setTotalSellingPrice,
+  handleCaratAmountChange,
+  handleTotalSellingPriceChange,
   items,
   onProductSelect,
   onAddItem,
@@ -246,12 +254,20 @@ export const ProductSelection = ({
         const calculatedQuantity = Math.round(newCarat / individualCarat);
         if (calculatedQuantity > 0 && calculatedQuantity <= (selectedProduct.inStock || 0)) {
           setQuantity(calculatedQuantity);
-          setCaratAmount(calculatedQuantity * individualCarat); // Ensure exact match
+          if (handleCaratAmountChange) {
+            handleCaratAmountChange(calculatedQuantity * individualCarat);
+          } else if (setCaratAmount) {
+            setCaratAmount(calculatedQuantity * individualCarat);
+          }
         }
         return;
       }
     }
-    setCaratAmount(newCarat);
+    if (handleCaratAmountChange) {
+      handleCaratAmountChange(newCarat);
+    } else if (setCaratAmount) {
+      setCaratAmount(newCarat);
+    }
   };
 
   const isValidForAddition = () => {
@@ -267,7 +283,7 @@ export const ProductSelection = ({
         <CardTitle className="text-lg">Add Products</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div className="md:col-span-2">
             <Label htmlFor="product-search">Search Gem</Label>
             <Input
@@ -328,6 +344,31 @@ export const ProductSelection = ({
             {selectedProduct?.stockType === 'set' && (
               <div className="text-xs text-amber-600 mt-1">
                 Auto-calculated: {quantity} × {getIndividualStoneCarat(selectedProduct)?.toFixed(3)}ct
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="total-selling-price">Total Selling Price</Label>
+            <Input
+              id="total-selling-price"
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={totalSellingPrice || 0}
+              onChange={(e) => {
+                const newPrice = parseFloat(e.target.value) || 0;
+                if (handleTotalSellingPriceChange) {
+                  handleTotalSellingPriceChange(newPrice);
+                } else if (setTotalSellingPrice) {
+                  setTotalSellingPrice(newPrice);
+                }
+              }}
+              placeholder="Enter total price"
+            />
+            {selectedProduct && (
+              <div className="text-xs text-slate-500 mt-1">
+                Available: ${selectedProduct.price.toLocaleString()}
               </div>
             )}
           </div>

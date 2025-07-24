@@ -42,6 +42,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
     setQuantity,
     caratAmount,
     setCaratAmount,
+    totalSellingPrice,
+    setTotalSellingPrice,
     taxRate,
     setTaxRate,
     currency,
@@ -56,6 +58,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
     setPaymentDate,
     handleCustomerSelect,
     handleProductSelect,
+    handleCaratAmountChange,
+    handleTotalSellingPriceChange,
     handleAddItem,
     handleRemoveItem,
   } = useInvoiceForm({ preselectedCustomer, preselectedGem });
@@ -213,6 +217,10 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
           setQuantity={setQuantity}
           caratAmount={caratAmount}
           setCaratAmount={setCaratAmount}
+          totalSellingPrice={totalSellingPrice}
+          setTotalSellingPrice={setTotalSellingPrice}
+          handleCaratAmountChange={handleCaratAmountChange}
+          handleTotalSellingPriceChange={handleTotalSellingPriceChange}
           items={items}
           onProductSelect={handleProductSelect}
           onAddItem={handleAddItem}

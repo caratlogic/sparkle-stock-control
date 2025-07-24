@@ -16,6 +16,7 @@ export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseC
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [caratAmount, setCaratAmount] = useState(0.01);
+  const [totalSellingPrice, setTotalSellingPrice] = useState(0);
   const [returnDate, setReturnDate] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -28,6 +29,7 @@ export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseC
     setSelectedProduct(null);
     setQuantity(1);
     setCaratAmount(0.01);
+    setTotalSellingPrice(0);
     setNotes('');
     
     // Set default return date to 2 weeks from today
@@ -51,6 +53,23 @@ export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseC
     setProductSearch(`${product.stockId} - ${product.carat}ct total ${product.gemType} ${product.cut}`);
     setQuantity(product.inStock || 1); // Set to total available quantity
     setCaratAmount(product.carat); // Set to total available carat
+    setTotalSellingPrice(product.price); // Set to total selling price
+  };
+
+  const handleCaratAmountChange = (newCarat: number) => {
+    setCaratAmount(newCarat);
+    if (selectedProduct && selectedProduct.carat > 0) {
+      const pricePerCarat = selectedProduct.price / selectedProduct.carat;
+      setTotalSellingPrice(newCarat * pricePerCarat);
+    }
+  };
+
+  const handleTotalSellingPriceChange = (newPrice: number) => {
+    setTotalSellingPrice(newPrice);
+    if (selectedProduct && selectedProduct.price > 0) {
+      const pricePerCarat = selectedProduct.price / selectedProduct.carat;
+      setCaratAmount(newPrice / pricePerCarat);
+    }
   };
 
   const handleAddItem = () => {
@@ -83,6 +102,7 @@ export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseC
     setProductSearch('');
     setQuantity(1);
     setCaratAmount(0.01);
+    setTotalSellingPrice(0);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -104,12 +124,16 @@ export const useConsignmentForm = ({ preselectedCustomer, preselectedGem }: UseC
     setQuantity,
     caratAmount,
     setCaratAmount,
+    totalSellingPrice,
+    setTotalSellingPrice,
     returnDate,
     setReturnDate,
     notes,
     setNotes,
     handleCustomerSelect,
     handleProductSelect,
+    handleCaratAmountChange,
+    handleTotalSellingPriceChange,
     handleAddItem,
     handleRemoveItem,
   };

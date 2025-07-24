@@ -17,6 +17,7 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
   const [selectedProduct, setSelectedProduct] = useState<Gem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [caratAmount, setCaratAmount] = useState(0.01);
+  const [totalSellingPrice, setTotalSellingPrice] = useState(0);
   const [taxRate, setTaxRate] = useState(8.5);
   const [currency, setCurrency] = useState<'USD' | 'EUR'>('USD');
   const [discount, setDiscount] = useState(0);
@@ -33,6 +34,7 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setSelectedProduct(null);
     setQuantity(1);
     setCaratAmount(0.01);
+    setTotalSellingPrice(0);
     setTaxRate(8.5);
     setDiscount(0);
     setNotes('');
@@ -71,6 +73,23 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     // Set to total available quantity and carat
     setQuantity(product.inStock || 1);
     setCaratAmount(product.carat);
+    setTotalSellingPrice(product.price);
+  };
+
+  const handleCaratAmountChange = (newCarat: number) => {
+    setCaratAmount(newCarat);
+    if (selectedProduct && selectedProduct.carat > 0) {
+      const pricePerCarat = selectedProduct.price / selectedProduct.carat;
+      setTotalSellingPrice(newCarat * pricePerCarat);
+    }
+  };
+
+  const handleTotalSellingPriceChange = (newPrice: number) => {
+    setTotalSellingPrice(newPrice);
+    if (selectedProduct && selectedProduct.price > 0) {
+      const pricePerCarat = selectedProduct.price / selectedProduct.carat;
+      setCaratAmount(newPrice / pricePerCarat);
+    }
   };
 
   const handleAddItem = () => {
@@ -104,6 +123,7 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setProductSearch('');
     setQuantity(1);
     setCaratAmount(0.01);
+    setTotalSellingPrice(0);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -125,6 +145,8 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setQuantity,
     caratAmount,
     setCaratAmount,
+    totalSellingPrice,
+    setTotalSellingPrice,
     taxRate,
     setTaxRate,
     currency,
@@ -139,6 +161,8 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
     setPaymentDate,
     handleCustomerSelect,
     handleProductSelect,
+    handleCaratAmountChange,
+    handleTotalSellingPriceChange,
     handleAddItem,
     handleRemoveItem,
   };

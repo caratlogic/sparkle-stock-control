@@ -43,12 +43,16 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     setQuantity,
     caratAmount,
     setCaratAmount,
+    totalSellingPrice,
+    setTotalSellingPrice,
     returnDate,
     setReturnDate,
     notes,
     setNotes,
     handleCustomerSelect,
     handleProductSelect,
+    handleCaratAmountChange,
+    handleTotalSellingPriceChange,
     handleAddItem,
     handleRemoveItem,
   } = useConsignmentForm({ preselectedCustomer, preselectedGem });
@@ -154,6 +158,10 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
           setQuantity={setQuantity}
           caratAmount={caratAmount}
           setCaratAmount={setCaratAmount}
+          totalSellingPrice={totalSellingPrice}
+          setTotalSellingPrice={setTotalSellingPrice}
+          handleCaratAmountChange={handleCaratAmountChange}
+          handleTotalSellingPriceChange={handleTotalSellingPriceChange}
           items={items.map(item => ({
             productId: item.gemId,
             productType: 'diamond' as const,
