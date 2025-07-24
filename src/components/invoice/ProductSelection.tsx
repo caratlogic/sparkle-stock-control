@@ -247,8 +247,6 @@ export const ProductSelection = ({
 
   // Handle quantity change for set type gems
   const handleQuantityChange = (newQuantity: number) => {
-    setQuantity(newQuantity);
-    
     if (selectedProduct && selectedProduct.stockType === 'set') {
       const individualCarat = getIndividualStoneCarat(selectedProduct);
       if (individualCarat) {
@@ -262,9 +260,18 @@ export const ProductSelection = ({
           if (setTotalSellingPrice) {
             setTotalSellingPrice(newTotalPrice);
           }
+        } else if (selectedProduct.price) {
+          // If no current total selling price, calculate based on gem's price per carat
+          const pricePerCarat = selectedProduct.price / selectedProduct.carat;
+          const newTotalPrice = newCaratAmount * pricePerCarat;
+          if (setTotalSellingPrice) {
+            setTotalSellingPrice(newTotalPrice);
+          }
         }
       }
     }
+    
+    setQuantity(newQuantity);
   };
 
   // Handle carat change for set type gems
