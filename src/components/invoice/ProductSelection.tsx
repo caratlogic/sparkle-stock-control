@@ -42,7 +42,7 @@ const InvoiceItemRow = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editQuantity, setEditQuantity] = useState(item.quantity);
   const [editCarat, setEditCarat] = useState(item.caratPurchased);
-  const [editPrice, setEditPrice] = useState(item.pricePerCarat);
+  const [editTotalPrice, setEditTotalPrice] = useState(item.totalPrice);
 
   // Check if this is a set type item based on stockType in productDetails
   const isSetType = item.productDetails?.stockType === 'set';
@@ -76,20 +76,32 @@ const InvoiceItemRow = ({
         if (calculatedQuantity > 0) {
           setEditQuantity(calculatedQuantity);
           setEditCarat(calculatedQuantity * individualCarat);
+          // Update total price based on new carat amount
+          const pricePerCarat = editTotalPrice / item.caratPurchased;
+          setEditTotalPrice(calculatedQuantity * individualCarat * pricePerCarat);
         }
         return;
       }
     }
     setEditCarat(newCarat);
+    // Update total price based on new carat amount
+    const pricePerCarat = editTotalPrice / item.caratPurchased;
+    setEditTotalPrice(newCarat * pricePerCarat);
+  };
+
+  // Handle total price change
+  const handleEditTotalPriceChange = (newTotalPrice: number) => {
+    setEditTotalPrice(newTotalPrice);
   };
 
   const handleSave = () => {
+    const pricePerCarat = editTotalPrice / editCarat;
     const updatedItem = {
       ...item,
       quantity: editQuantity,
       caratPurchased: editCarat,
-      pricePerCarat: editPrice,
-      totalPrice: editCarat * editPrice
+      pricePerCarat: pricePerCarat,
+      totalPrice: editTotalPrice
     };
     onUpdateItem(updatedItem);
     setIsEditing(false);
@@ -98,7 +110,7 @@ const InvoiceItemRow = ({
   const handleCancel = () => {
     setEditQuantity(item.quantity);
     setEditCarat(item.caratPurchased);
-    setEditPrice(item.pricePerCarat);
+    setEditTotalPrice(item.totalPrice);
     setIsEditing(false);
   };
 
@@ -152,10 +164,10 @@ const InvoiceItemRow = ({
               type="number"
               step="0.01"
               min="0.01"
-              value={editPrice}
-              onChange={(e) => setEditPrice(parseFloat(e.target.value) || 0.01)}
-              className="w-24 h-8 text-xs"
-              placeholder="Price/ct"
+              value={editTotalPrice}
+              onChange={(e) => handleEditTotalPriceChange(parseFloat(e.target.value) || 0.01)}
+              className="w-28 h-8 text-xs"
+              placeholder="Total Price"
             />
           </div>
           <Button size="sm" onClick={handleSave} className="h-8 px-2 text-xs">
