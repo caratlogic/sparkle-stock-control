@@ -149,9 +149,18 @@ export const TransactionTrackingDashboard = () => {
   const stats = useMemo(() => {
     const totalTransactions = filteredTransactions.length;
     
-    const invoiceCount = filteredTransactions.filter(t => t.type === 'invoice').length;
-    const consignmentCount = filteredTransactions.filter(t => t.type === 'consignment').length;
-    const quotationCount = filteredTransactions.filter(t => t.type === 'quotation').length;
+    const invoiceTransactions = filteredTransactions.filter(t => t.type === 'invoice');
+    const consignmentTransactions = filteredTransactions.filter(t => t.type === 'consignment');
+    const quotationTransactions = filteredTransactions.filter(t => t.type === 'quotation');
+    
+    const invoiceCount = invoiceTransactions.length;
+    const consignmentCount = consignmentTransactions.length;
+    const quotationCount = quotationTransactions.length;
+
+    // Calculate separate revenue for each transaction type
+    const invoiceRevenue = invoiceTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const consignmentRevenue = consignmentTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const quotationRevenue = quotationTransactions.reduce((sum, t) => sum + t.amount, 0);
 
     // Calculate totals by currency and ownership
     const currencyBreakdown = filteredTransactions.reduce((acc, t) => {
@@ -184,6 +193,9 @@ export const TransactionTrackingDashboard = () => {
       invoiceCount,
       consignmentCount,
       quotationCount,
+      invoiceRevenue,
+      consignmentRevenue,
+      quotationRevenue,
       ownershipBreakdown,
       currencyBreakdown
     };
@@ -292,17 +304,43 @@ export const TransactionTrackingDashboard = () => {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Invoice Revenue</CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.totalValue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">${stats.invoiceRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              All transactions combined
+              {stats.invoiceCount} invoices
             </p>
           </CardContent>
         </Card>
         
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Consignment Revenue</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${stats.consignmentRevenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.consignmentCount} consignments
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Quotation Revenue</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${stats.quotationRevenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.quotationCount} quotations
+            </p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Own Revenue</CardTitle>
@@ -315,7 +353,7 @@ export const TransactionTrackingDashboard = () => {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Partner Revenue</CardTitle>
@@ -325,34 +363,6 @@ export const TransactionTrackingDashboard = () => {
             <div className="text-2xl font-bold">${stats.ownershipBreakdown.partner.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
               Partner gems
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Consigned Revenue</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.ownershipBreakdown.consigned.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              Consigned gems
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Own vs Partner</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold">
-              {stats.totalValue > 0 ? ((stats.ownershipBreakdown.owned / stats.totalValue) * 100).toFixed(1) : 0}% / {stats.totalValue > 0 ? ((stats.ownershipBreakdown.partner / stats.totalValue) * 100).toFixed(1) : 0}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Own / Partner split
             </p>
           </CardContent>
         </Card>
