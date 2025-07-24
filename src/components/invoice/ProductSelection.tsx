@@ -255,8 +255,9 @@ export const ProductSelection = ({
         
         // Update total selling price proportionally for set type gems
         if (totalSellingPrice && quantity > 0) {
-          const pricePerStone = totalSellingPrice / quantity;
-          const newTotalPrice = newQuantity * pricePerStone;
+          // Calculate price per carat from current total selling price and carat amount
+          const pricePerCarat = totalSellingPrice / caratAmount;
+          const newTotalPrice = newCaratAmount * pricePerCarat;
           if (setTotalSellingPrice) {
             setTotalSellingPrice(newTotalPrice);
           }
