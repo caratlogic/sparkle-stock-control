@@ -162,7 +162,15 @@ export const TransactionTrackingDashboard = () => {
     const consignmentRevenue = consignmentTransactions.reduce((sum, t) => sum + t.amount, 0);
     const quotationRevenue = quotationTransactions.reduce((sum, t) => sum + t.amount, 0);
 
-    // Calculate totals by currency and ownership
+    // Calculate ownership breakdown only from invoices (since that's what the cards show)
+    const invoiceOwnershipBreakdown = invoiceTransactions.reduce((acc, t) => {
+      if (t.ownershipStatus.includes('O')) acc.owned += t.amount;
+      if (t.ownershipStatus.includes('C')) acc.consigned += t.amount;
+      if (t.ownershipStatus.includes('P')) acc.partner += t.amount;
+      return acc;
+    }, { owned: 0, consigned: 0, partner: 0 });
+
+    // Calculate totals by currency and ownership (for the currency breakdown section)
     const currencyBreakdown = filteredTransactions.reduce((acc, t) => {
       const currency = t.currency || 'USD';
       if (!acc[currency]) {
@@ -178,14 +186,8 @@ export const TransactionTrackingDashboard = () => {
       return acc;
     }, {} as Record<string, { total: number; owned: number; consigned: number; partner: number }>);
 
-    // Legacy totals (USD equivalent for compatibility)
+    // Legacy total value (for compatibility)
     const totalValue = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
-    const ownershipBreakdown = filteredTransactions.reduce((acc, t) => {
-      if (t.ownershipStatus.includes('O')) acc.owned += t.amount;
-      if (t.ownershipStatus.includes('C')) acc.consigned += t.amount;
-      if (t.ownershipStatus.includes('P')) acc.partner += t.amount;
-      return acc;
-    }, { owned: 0, consigned: 0, partner: 0 });
 
     return {
       totalTransactions,
@@ -196,7 +198,7 @@ export const TransactionTrackingDashboard = () => {
       invoiceRevenue,
       consignmentRevenue,
       quotationRevenue,
-      ownershipBreakdown,
+      ownershipBreakdown: invoiceOwnershipBreakdown, // Now only from invoices
       currencyBreakdown
     };
   }, [filteredTransactions]);
@@ -343,26 +345,26 @@ export const TransactionTrackingDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Own Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Own Invoice Revenue</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.ownershipBreakdown.owned.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Self-owned gems
+              From self-owned gems (invoices only)
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Partner Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Partner Invoice Revenue</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.ownershipBreakdown.partner.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Partner gems
+              From partner gems (invoices only)
             </p>
           </CardContent>
         </Card>
