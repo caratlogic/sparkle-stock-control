@@ -320,7 +320,7 @@ export const useGems = () => {
       // First get the current gem data
       const { data: currentGem, error: fetchError } = await supabase
         .from('gems')
-        .select('in_stock, reserved, sold, carat, stock_type')
+        .select('in_stock, reserved, sold, carat, stock_type, price, cost_price')
         .eq('id', gemId)
         .single();
 
@@ -352,6 +352,25 @@ export const useGems = () => {
         }
       }
 
+      // Calculate new total prices based on remaining carat
+      let newTotalSellingPrice = currentGem.price || 0;
+      let newTotalCostPrice = currentGem.cost_price || 0;
+      
+      if (currentGem.stock_type === 'single') {
+        // For single gems, when sold, total prices become 0
+        newTotalSellingPrice = 0;
+        newTotalCostPrice = 0;
+      } else if (currentGem.carat && currentGem.carat > 0) {
+        // For multiple stock type gems, calculate proportional prices
+        // Calculate per-carat prices first
+        const sellingPricePerCarat = currentGem.price / currentGem.carat;
+        const costPricePerCarat = currentGem.cost_price / currentGem.carat;
+        
+        // Calculate new total prices based on remaining carat
+        newTotalSellingPrice = newTotalCarat * sellingPricePerCarat;
+        newTotalCostPrice = newTotalCarat * costPricePerCarat;
+      }
+
       // Determine status - for single stock type, always set to 'Sold' when invoiced
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
       if (currentGem.stock_type === 'single' || newTotalCarat <= 0 || (newInStock === 0 && newReserved === 0)) {
@@ -361,6 +380,8 @@ export const useGems = () => {
           newTotalCarat = 0;
           newInStock = 0;
           newReserved = 0;
+          newTotalSellingPrice = 0;
+          newTotalCostPrice = 0;
         }
       } else if (newInStock > 0) {
         newStatus = 'In Stock';
@@ -377,6 +398,8 @@ export const useGems = () => {
           reserved: newReserved,
           sold: newSold,
           carat: newTotalCarat,
+          price: newTotalSellingPrice,
+          cost_price: newTotalCostPrice,
           status: newStatus,
           updated_at: new Date().toISOString()
         })
