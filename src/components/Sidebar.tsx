@@ -32,6 +32,8 @@ const navigationItems = [
   { id: 'customers', label: 'Customers', icon: Users },
   { id: 'transactions', label: 'Transactions', icon: Receipt },
   { id: 'payments', label: 'Payments', icon: CreditCard },
+  { id: 'partners', label: 'Partners', icon: Users },
+  { id: 'transaction-tracking', label: 'Transaction Tracking', icon: BarChart3 },
   { id: 'reminders', label: 'Reminders', icon: Bell },
   { id: 'communications', label: 'Communications', icon: MessageSquare },
   { id: 'credit-notes', label: 'Credit Notes', icon: FileText },

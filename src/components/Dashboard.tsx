@@ -13,6 +13,8 @@ import { ReminderDashboard } from './ReminderDashboard';
 import { CommunicationsDashboard } from './CommunicationsDashboard';
 import { CreditNotesDashboard } from './CreditNotesDashboard';
 import { QRCodeManagement } from './QRCodeManagement';
+import { PartnerDashboard } from './PartnerDashboard';
+import { TransactionTrackingDashboard } from './TransactionTrackingDashboard';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
 import { HelpSection } from './HelpSection';
@@ -285,6 +287,10 @@ export const Dashboard = () => {
             {activeTab === 'reminders' && <ReminderDashboard />}
 
             {activeTab === 'communications' && <CommunicationsDashboard />}
+
+            {activeTab === 'partners' && <PartnerDashboard />}
+
+            {activeTab === 'transaction-tracking' && <TransactionTrackingDashboard />}
 
             {activeTab === 'invoice-creation' && (
               <InvoiceCreation 

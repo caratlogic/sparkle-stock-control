@@ -15,6 +15,7 @@ import { CustomerSelection } from './invoice/CustomerSelection';
 import { InvoiceSummary } from './invoice/InvoiceSummary';
 import { ProductSelection } from './invoice/ProductSelection';
 import { InvoiceNotes } from './invoice/InvoiceNotes';
+import { TransactionDetailsCard } from './TransactionDetailsCard';
 
 interface InvoiceCreationProps {
   onCancel: () => void;
@@ -229,6 +230,8 @@ export const InvoiceCreation = ({ onCancel, onSave, preselectedGem, preselectedC
         />
 
         <InvoiceNotes notes={notes} setNotes={setNotes} />
+
+        <TransactionDetailsCard items={items} type="invoice" />
       </div>
 
       <div className="flex justify-end space-x-4 mt-6">

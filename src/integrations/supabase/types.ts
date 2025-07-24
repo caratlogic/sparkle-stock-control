@@ -721,6 +721,98 @@ export type Database = {
           },
         ]
       }
+      partner_transactions: {
+        Row: {
+          associated_entity: string
+          created_at: string
+          id: string
+          ownership_status: string
+          partner_id: string
+          partner_share: number
+          revenue_amount: number
+          transaction_date: string
+          transaction_id: string
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          associated_entity: string
+          created_at?: string
+          id?: string
+          ownership_status: string
+          partner_id: string
+          partner_share?: number
+          revenue_amount?: number
+          transaction_date?: string
+          transaction_id: string
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          associated_entity?: string
+          created_at?: string
+          id?: string
+          ownership_status?: string
+          partner_id?: string
+          partner_share?: number
+          revenue_amount?: number
+          transaction_date?: string
+          transaction_id?: string
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_transactions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          address: string | null
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          ownership_percentage: number
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          ownership_percentage?: number
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          ownership_percentage?: number
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       qr_code_settings: {
         Row: {
           created_at: string | null

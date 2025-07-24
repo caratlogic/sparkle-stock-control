@@ -13,6 +13,7 @@ import { useConsignmentActions } from '../hooks/useConsignmentActions';
 import { CustomerSelection } from './invoice/CustomerSelection';
 import { ProductSelection } from './invoice/ProductSelection';
 import { InvoiceNotes } from './invoice/InvoiceNotes';
+import { TransactionDetailsCard } from './TransactionDetailsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -198,6 +199,19 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
         />
 
         <InvoiceNotes notes={notes} setNotes={setNotes} />
+
+        <TransactionDetailsCard 
+          items={items.map(item => ({
+            productId: item.gemId,
+            productType: 'diamond' as const,
+            productDetails: item.productDetails || { stockId: '', totalCarat: 0, cut: '', color: '', description: '', measurements: '', certificateNumber: '' },
+            quantity: item.quantity,
+            caratPurchased: item.caratConsigned,
+            pricePerCarat: item.pricePerCarat,
+            totalPrice: item.totalPrice
+          }))} 
+          type="consignment" 
+        />
       </div>
 
       <div className="flex justify-end space-x-4 mt-6">
