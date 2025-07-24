@@ -50,9 +50,25 @@ export const TransactionTrackingDashboard = () => {
     }> = [];
 
     // Add invoices (only revenue-generating: sent, overdue, paid, partial)
-    invoices.filter(invoice => 
+    const revenueInvoices = invoices.filter(invoice => 
       ['sent', 'overdue', 'paid', 'partial'].includes(invoice.status)
-    ).forEach(invoice => {
+    );
+    
+    console.log('🔍 DEBUGGING INVOICE BREAKDOWN:');
+    console.log('Total invoices:', invoices.length);
+    console.log('Revenue-generating invoices:', revenueInvoices.length);
+    
+    let totalInvoiceRevenue = 0;
+    let totalOwnedFromItems = 0;
+    let totalPartnerFromItems = 0;
+    let totalMemoFromItems = 0;
+    let totalProportionalOwned = 0;
+    let totalProportionalPartner = 0;
+    let totalProportionalMemo = 0;
+    
+    revenueInvoices.forEach((invoice, index) => {
+      totalInvoiceRevenue += invoice.total;
+      
       const invoiceItems = invoice.items?.map(item => {
         const gem = gems.find(g => g.id === item.productId);
         return {
@@ -60,13 +76,9 @@ export const TransactionTrackingDashboard = () => {
           stockId: gem?.stockId,
           ownership_status: gem?.ownershipStatus || 'O',
           associated_entity: gem?.associatedEntity || 'Self',
-          itemAmount: item.totalPrice || 0  // Get the actual amount for this item
+          itemAmount: item.totalPrice || 0
         };
       }) || [];
-
-      // Determine ownership status and entity from gems
-      const ownershipStatuses = [...new Set(invoiceItems.map(item => item.ownership_status))];
-      const entities = [...new Set(invoiceItems.map(item => item.associated_entity))];
 
       // Calculate ownership breakdown amounts for this invoice
       const ownedAmount = invoiceItems
@@ -81,28 +93,40 @@ export const TransactionTrackingDashboard = () => {
         .filter(item => item.ownership_status === 'M')
         .reduce((sum, item) => sum + item.itemAmount, 0);
 
-      // Calculate total from items for validation
+      // Calculate total from items
       const totalItemsAmount = ownedAmount + partnerAmount + memoAmount;
+      totalOwnedFromItems += ownedAmount;
+      totalPartnerFromItems += partnerAmount;
+      totalMemoFromItems += memoAmount;
       
-      // Debug logging to identify discrepancies
-      if (Math.abs(totalItemsAmount - invoice.total) > 1) {
-        console.log(`Invoice ${invoice.invoiceNumber} discrepancy:`, {
-          invoiceTotal: invoice.total,
-          itemsTotal: totalItemsAmount,
-          ownedAmount,
-          partnerAmount,
-          memoAmount,
-          items: invoiceItems.map(item => ({
-            ownership: item.ownership_status,
-            amount: item.itemAmount
-          }))
-        });
-      }
-
       // Use proportional distribution if there's a mismatch (due to taxes, discounts, etc.)
       const finalOwnedAmount = totalItemsAmount > 0 ? (ownedAmount / totalItemsAmount) * invoice.total : 0;
       const finalPartnerAmount = totalItemsAmount > 0 ? (partnerAmount / totalItemsAmount) * invoice.total : 0;
       const finalMemoAmount = totalItemsAmount > 0 ? (memoAmount / totalItemsAmount) * invoice.total : 0;
+      
+      totalProportionalOwned += finalOwnedAmount;
+      totalProportionalPartner += finalPartnerAmount;
+      totalProportionalMemo += finalMemoAmount;
+      
+      // Log significant discrepancies
+      if (Math.abs(totalItemsAmount - invoice.total) > 1 || totalItemsAmount === 0) {
+        console.log(`⚠️ Invoice ${invoice.invoiceNumber}:`, {
+          invoiceTotal: invoice.total,
+          itemsTotal: totalItemsAmount,
+          itemsCount: invoiceItems.length,
+          hasItems: invoiceItems.length > 0,
+          ownedAmount,
+          partnerAmount,
+          memoAmount,
+          proportionalOwned: finalOwnedAmount,
+          proportionalPartner: finalPartnerAmount,
+          proportionalMemo: finalMemoAmount
+        });
+      }
+
+      // Determine ownership status and entity from gems
+      const ownershipStatuses = [...new Set(invoiceItems.map(item => item.ownership_status))];
+      const entities = [...new Set(invoiceItems.map(item => item.associated_entity))];
 
       transactions.push({
         id: invoice.id,
@@ -116,12 +140,20 @@ export const TransactionTrackingDashboard = () => {
         associatedEntity: entities.join(', '),
         items: invoiceItems,
         currency: invoice.currency || invoice.customerDetails?.currency || 'USD',
-        // Use proportionally adjusted amounts to account for taxes/discounts
-        ownedAmount: finalOwnedAmount,
-        partnerAmount: finalPartnerAmount,
-        consignedAmount: finalMemoAmount
+        // Use proportionally adjusted amounts OR fall back to invoice total if no items
+        ownedAmount: totalItemsAmount > 0 ? finalOwnedAmount : invoice.total, // Default to owned if no items
+        partnerAmount: totalItemsAmount > 0 ? finalPartnerAmount : 0,
+        consignedAmount: totalItemsAmount > 0 ? finalMemoAmount : 0
       });
     });
+    
+    console.log('💰 REVENUE TOTALS:');
+    console.log('Total invoice revenue:', totalInvoiceRevenue);
+    console.log('Total from items (raw):', totalOwnedFromItems + totalPartnerFromItems + totalMemoFromItems);
+    console.log('Total proportional:', totalProportionalOwned + totalProportionalPartner + totalProportionalMemo);
+    console.log('Owned (proportional):', totalProportionalOwned);
+    console.log('Partner (proportional):', totalProportionalPartner);
+    console.log('Memo (proportional):', totalProportionalMemo);
 
     // Add consignments
     consignments.forEach(consignment => {
