@@ -111,7 +111,7 @@ export const CaratLogicHomepage = () => {
       <section className="py-20 px-6 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Why Choose CaratLogic?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Why Choose Carat Logic?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Built specifically for the gem and diamond industry with deep understanding of your unique challenges
             </p>
