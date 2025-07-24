@@ -5,6 +5,7 @@ import { useConsignments } from './useConsignments';
 import { useInvoices } from './useInvoices';
 import { useGems } from './useGems';
 import { useCustomerCommunications } from './useCustomerCommunications';
+import { usePartners, usePartnerTransactions } from './usePartners';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useInvoiceActions = () => {
@@ -12,6 +13,8 @@ export const useInvoiceActions = () => {
   const { addInvoice } = useInvoices();
   const { gems, updateGemStatus, updateGemQuantityForInvoice } = useGems();
   const { addCommunication } = useCustomerCommunications();
+  const { partners } = usePartners();
+  const { addPartnerTransaction } = usePartnerTransactions();
   const [isSaving, setIsSaving] = useState(false);
 
   const sendInvoiceEmail = async (invoice: Invoice) => {
@@ -131,7 +134,7 @@ export const useInvoiceActions = () => {
       if (result.success) {
         console.log('✅ InvoiceCreation: Successfully saved invoice');
         
-        // Update gem quantities for invoiced gems
+        // Update gem quantities for invoiced gems and create partner transactions
         for (const item of items) {
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.productId);
           let gemId = item.productId;
@@ -147,6 +150,34 @@ export const useInvoiceActions = () => {
           const fromConsignment = relatedConsignmentId !== null;
           await updateGemQuantityForInvoice(gemId, item.quantity, item.caratPurchased, fromConsignment);
           console.log(`✅ InvoiceCreation: Updated gem ${gemId} quantities and status for invoice`);
+          
+          // Check if this gem belongs to a partner and create partner transaction
+          const gem = gems.find(g => g.id === gemId);
+          if (gem && gem.ownershipStatus === 'P' && gem.associatedEntity && gem.associatedEntity !== 'Self') {
+            const partner = partners.find(p => p.name === gem.associatedEntity);
+            if (partner) {
+              const partnerShare = (item.totalPrice * partner.ownership_percentage) / 100;
+              
+              console.log(`🔄 Creating partner transaction for gem ${gemId}, partner ${partner.name}, share: $${partnerShare}`);
+              
+              const partnerTransactionResult = await addPartnerTransaction({
+                partner_id: partner.id,
+                transaction_type: 'invoice',
+                transaction_id: result.data.id,
+                ownership_status: gem.ownershipStatus,
+                associated_entity: gem.associatedEntity,
+                revenue_amount: item.totalPrice,
+                partner_share: partnerShare,
+                transaction_date: invoiceData.dateCreated
+              });
+              
+              if (partnerTransactionResult.success) {
+                console.log(`✅ Partner transaction created for ${partner.name}`);
+              } else {
+                console.error(`❌ Failed to create partner transaction: ${partnerTransactionResult.error}`);
+              }
+            }
+          }
         }
         
         // If there's a related consignment, mark it as inactive
