@@ -1,17 +1,17 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Package, User, Calendar, Printer } from 'lucide-react';
+import { ArrowLeft, FileText, User, Calendar, Printer } from 'lucide-react';
 import { formatCurrency, getCurrencySymbol } from '@/lib/utils';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
 
-interface ConsignmentItem {
+interface QuotationItem {
   id: string;
   gemId: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  discount: number;
   productDetails?: {
     stockId: string;
     carat: number;
@@ -24,9 +24,9 @@ interface ConsignmentItem {
   };
 }
 
-interface Consignment {
+interface Quotation {
   id: string;
-  consignmentNumber: string;
+  quotationNumber: string;
   customerId: string;
   customerDetails: {
     id: string;
@@ -49,23 +49,26 @@ interface Consignment {
     notes?: string;
     currency?: string;
   };
-  status: 'pending' | 'returned' | 'purchased' | 'inactive';
+  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
   dateCreated: string;
-  returnDate: string;
+  validUntil?: string;
   notes?: string;
-  items: ConsignmentItem[];
+  terms?: string;
+  items: QuotationItem[];
+  subtotal: number;
+  discountPercentage: number;
+  total: number;
   currency?: string;
 }
 
-interface ConsignmentDetailViewProps {
-  consignment: Consignment;
+interface QuotationDetailViewProps {
+  quotation: Quotation;
   onBack: () => void;
 }
 
-export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetailViewProps) => {
-  const totalValue = consignment.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-  const consignmentCurrency = consignment.currency || consignment.customerDetails?.currency || 'USD';
-  const currencySymbol = getCurrencySymbol(consignmentCurrency);
+export const QuotationDetailView = ({ quotation, onBack }: QuotationDetailViewProps) => {
+  const quotationCurrency = quotation.currency || quotation.customerDetails?.currency || 'USD';
+  const currencySymbol = getCurrencySymbol(quotationCurrency);
   const { exchangeRate } = useExchangeRate();
   
   const handlePrint = () => {
@@ -81,60 +84,62 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
             Back to Transactions
           </Button>
           <h1 className="text-2xl font-bold text-slate-800">
-            Consignment Details - {consignment.consignmentNumber}
+            Quotation Details - {quotation.quotationNumber}
           </h1>
         </div>
         <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700">
           <Printer className="w-4 h-4 mr-2" />
-          Print Consignment
+          Print Quotation
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Consignment Information */}
+        {/* Quotation Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5" />
-              Consignment Information
+              <FileText className="w-5 h-5" />
+              Quotation Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-slate-600">Consignment Number</label>
-                <p className="text-lg font-semibold">{consignment.consignmentNumber}</p>
+                <label className="text-sm font-medium text-slate-600">Quotation Number</label>
+                <p className="text-lg font-semibold">{quotation.quotationNumber}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-600">Status</label>
                 <div className="mt-1">
-                  <Badge variant={consignment.status === 'purchased' ? 'default' : 'secondary'}>
-                    {consignment.status.charAt(0).toUpperCase() + consignment.status.slice(1)}
+                  <Badge variant={quotation.status === 'accepted' ? 'default' : 'secondary'}>
+                    {quotation.status.charAt(0).toUpperCase() + quotation.status.slice(1)}
                   </Badge>
                 </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-600">Date Created</label>
-                <p className="text-lg">{new Date(consignment.dateCreated).toLocaleDateString()}</p>
+                <p className="text-lg">{new Date(quotation.dateCreated).toLocaleDateString()}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-slate-600">Return Date</label>
-                <p className="text-lg">{new Date(consignment.returnDate).toLocaleDateString()}</p>
-              </div>
+              {quotation.validUntil && (
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Valid Until</label>
+                  <p className="text-lg">{new Date(quotation.validUntil).toLocaleDateString()}</p>
+                </div>
+              )}
               <div className="col-span-2">
                 <label className="text-sm font-medium text-slate-600">Total Value</label>
-                <p className="text-xl font-bold text-slate-800">{formatCurrency(totalValue, consignmentCurrency)}</p>
-                {consignmentCurrency === 'EUR' && (
+                <p className="text-xl font-bold text-slate-800">{formatCurrency(quotation.total, quotationCurrency)}</p>
+                {quotationCurrency === 'EUR' && (
                   <p className="text-sm text-slate-600">
-                    ~${(totalValue * exchangeRate).toLocaleString()} USD (Rate: {exchangeRate})
+                    ~${(quotation.total * exchangeRate).toLocaleString()} USD (Rate: {exchangeRate})
                   </p>
                 )}
               </div>
             </div>
-            {consignment.notes && (
+            {quotation.notes && (
               <div>
                 <label className="text-sm font-medium text-slate-600">Notes</label>
-                <p className="text-lg">{consignment.notes}</p>
+                <p className="text-lg">{quotation.notes}</p>
               </div>
             )}
           </CardContent>
@@ -151,36 +156,36 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium text-slate-600">Name</label>
-              <p className="text-lg font-semibold">{consignment.customerDetails.name}</p>
+              <p className="text-lg font-semibold">{quotation.customerDetails.name}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-slate-600">Email</label>
-              <p className="text-lg">{consignment.customerDetails.email}</p>
+              <p className="text-lg">{quotation.customerDetails.email}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-slate-600">Phone</label>
-              <p className="text-lg">{consignment.customerDetails.phone}</p>
+              <p className="text-lg">{quotation.customerDetails.phone}</p>
             </div>
-            {consignment.customerDetails.company && (
+            {quotation.customerDetails.company && (
               <div>
                 <label className="text-sm font-medium text-slate-600">Company</label>
-                <p className="text-lg">{consignment.customerDetails.company}</p>
+                <p className="text-lg">{quotation.customerDetails.company}</p>
               </div>
             )}
             <div>
               <label className="text-sm font-medium text-slate-600">Address</label>
               <p className="text-lg">
-                {consignment.customerDetails.address.street}, {consignment.customerDetails.address.city}, {consignment.customerDetails.address.state} {consignment.customerDetails.address.zipCode}
+                {quotation.customerDetails.address.street}, {quotation.customerDetails.address.city}, {quotation.customerDetails.address.state} {quotation.customerDetails.address.zipCode}
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Consignment Items */}
+      {/* Quotation Items */}
       <Card>
         <CardHeader>
-          <CardTitle>Consignment Items</CardTitle>
+          <CardTitle>Quotation Items</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -191,11 +196,12 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Description</th>
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Quantity</th>
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Unit Price</th>
+                  <th className="text-left py-3 px-4 font-medium text-slate-600">Discount</th>
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {consignment.items.map((item) => (
+                {quotation.items.map((item) => (
                   <tr key={item.id} className="border-b border-slate-100">
                     <td className="py-4 px-4">
                       <div className="font-medium">{item.productDetails?.stockId || 'N/A'}</div>
@@ -206,7 +212,6 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
                         {item.productDetails && (
                           <>
                             <div><strong>Total:</strong> {item.productDetails.carat}ct {item.productDetails.cut}</div>
-                            <div><strong>Consigned:</strong> {(item as any).caratConsigned || 0}ct</div>
                             <div>{item.productDetails.color}</div>
                             <div>Cert: {item.productDetails.certificateNumber}</div>
                             {item.productDetails.measurements && (
@@ -217,13 +222,47 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
                       </div>
                     </td>
                     <td className="py-4 px-4">{item.quantity || 0}</td>
-                    <td className="py-4 px-4">{formatCurrency(item.unitPrice || 0, consignmentCurrency)}</td>
-                    <td className="py-4 px-4 font-semibold">{formatCurrency(item.totalPrice || 0, consignmentCurrency)}</td>
+                    <td className="py-4 px-4">{formatCurrency(item.unitPrice || 0, quotationCurrency)}</td>
+                    <td className="py-4 px-4">{item.discount}%</td>
+                    <td className="py-4 px-4 font-semibold">{formatCurrency(item.totalPrice || 0, quotationCurrency)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* Summary */}
+          <div className="mt-6 border-t pt-4">
+            <div className="text-right space-y-2">
+              <div className="flex justify-end gap-8">
+                <span className="font-medium">Subtotal:</span>
+                <span>{formatCurrency(quotation.subtotal, quotationCurrency)}</span>
+              </div>
+              {quotation.discountPercentage > 0 && (
+                <div className="flex justify-end gap-8">
+                  <span className="font-medium">Discount ({quotation.discountPercentage}%):</span>
+                  <span>-{formatCurrency(quotation.subtotal * (quotation.discountPercentage / 100), quotationCurrency)}</span>
+                </div>
+              )}
+              <div className="flex justify-end gap-8 text-lg font-bold border-t pt-2">
+                <span>Total:</span>
+                <span>{formatCurrency(quotation.total, quotationCurrency)}</span>
+              </div>
+              {quotationCurrency === 'EUR' && (
+                <div className="flex justify-end gap-8 text-sm text-slate-600">
+                  <span>USD Equivalent:</span>
+                  <span>~${(quotation.total * exchangeRate).toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {quotation.terms && (
+            <div className="mt-6 pt-4 border-t">
+              <h4 className="font-medium text-slate-800 mb-2">Terms & Conditions:</h4>
+              <p className="text-slate-600">{quotation.terms}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

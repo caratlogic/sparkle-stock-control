@@ -146,12 +146,29 @@ export const TransactionTrackingDashboard = () => {
   // Calculate statistics
   const stats = useMemo(() => {
     const totalTransactions = filteredTransactions.length;
-    const totalValue = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
     
     const invoiceCount = filteredTransactions.filter(t => t.type === 'invoice').length;
     const consignmentCount = filteredTransactions.filter(t => t.type === 'consignment').length;
     const quotationCount = filteredTransactions.filter(t => t.type === 'quotation').length;
 
+    // Calculate totals by currency and ownership
+    const currencyBreakdown = filteredTransactions.reduce((acc, t) => {
+      const currency = t.currency || 'USD';
+      if (!acc[currency]) {
+        acc[currency] = { total: 0, owned: 0, consigned: 0, partner: 0 };
+      }
+      
+      acc[currency].total += t.amount;
+      
+      if (t.ownershipStatus.includes('O')) acc[currency].owned += t.amount;
+      if (t.ownershipStatus.includes('C')) acc[currency].consigned += t.amount;
+      if (t.ownershipStatus.includes('P')) acc[currency].partner += t.amount;
+      
+      return acc;
+    }, {} as Record<string, { total: number; owned: number; consigned: number; partner: number }>);
+
+    // Legacy totals (USD equivalent for compatibility)
+    const totalValue = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
     const ownershipBreakdown = filteredTransactions.reduce((acc, t) => {
       if (t.ownershipStatus.includes('O')) acc.owned += t.amount;
       if (t.ownershipStatus.includes('C')) acc.consigned += t.amount;
@@ -165,7 +182,8 @@ export const TransactionTrackingDashboard = () => {
       invoiceCount,
       consignmentCount,
       quotationCount,
-      ownershipBreakdown
+      ownershipBreakdown,
+      currencyBreakdown
     };
   }, [filteredTransactions]);
 
@@ -341,72 +359,85 @@ export const TransactionTrackingDashboard = () => {
       {/* Revenue Breakdown Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Revenue Breakdown</CardTitle>
+          <CardTitle>Revenue Breakdown by Currency</CardTitle>
           <CardDescription>
-            Detailed breakdown of revenue by ownership type
+            Detailed breakdown of revenue by currency and ownership type
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Own Revenue</span>
-                <span className="text-lg font-bold text-green-600">
-                  ${stats.ownershipBreakdown.owned.toLocaleString()}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-green-600 h-2 rounded-full" 
-                  style={{ 
-                    width: `${stats.totalValue > 0 ? (stats.ownershipBreakdown.owned / stats.totalValue) * 100 : 0}%` 
-                  }}
-                ></div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {stats.totalValue > 0 ? ((stats.ownershipBreakdown.owned / stats.totalValue) * 100).toFixed(1) : 0}% of total revenue
-              </p>
-            </div>
+          <div className="space-y-6">
+            {Object.entries(stats.currencyBreakdown).map(([currency, breakdown]) => (
+              <div key={currency} className="space-y-4">
+                <h4 className="text-lg font-semibold flex items-center gap-2">
+                  {currency === 'EUR' ? '€' : '$'} {currency}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({currency === 'EUR' ? '€' : '$'}{breakdown.total.toLocaleString()})
+                  </span>
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Own Revenue</span>
+                      <span className="text-lg font-bold text-green-600">
+                        {currency === 'EUR' ? '€' : '$'}{breakdown.owned.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full" 
+                        style={{ 
+                          width: `${breakdown.total > 0 ? (breakdown.owned / breakdown.total) * 100 : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {breakdown.total > 0 ? ((breakdown.owned / breakdown.total) * 100).toFixed(1) : 0}% of {currency} revenue
+                    </p>
+                  </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Partner Revenue</span>
-                <span className="text-lg font-bold text-blue-600">
-                  ${stats.ownershipBreakdown.partner.toLocaleString()}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full" 
-                  style={{ 
-                    width: `${stats.totalValue > 0 ? (stats.ownershipBreakdown.partner / stats.totalValue) * 100 : 0}%` 
-                  }}
-                ></div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {stats.totalValue > 0 ? ((stats.ownershipBreakdown.partner / stats.totalValue) * 100).toFixed(1) : 0}% of total revenue
-              </p>
-            </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Partner Revenue</span>
+                      <span className="text-lg font-bold text-blue-600">
+                        {currency === 'EUR' ? '€' : '$'}{breakdown.partner.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full" 
+                        style={{ 
+                          width: `${breakdown.total > 0 ? (breakdown.partner / breakdown.total) * 100 : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {breakdown.total > 0 ? ((breakdown.partner / breakdown.total) * 100).toFixed(1) : 0}% of {currency} revenue
+                    </p>
+                  </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Consigned Revenue</span>
-                <span className="text-lg font-bold text-purple-600">
-                  ${stats.ownershipBreakdown.consigned.toLocaleString()}
-                </span>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Consigned Revenue</span>
+                      <span className="text-lg font-bold text-purple-600">
+                        {currency === 'EUR' ? '€' : '$'}{breakdown.consigned.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-purple-600 h-2 rounded-full" 
+                        style={{ 
+                          width: `${breakdown.total > 0 ? (breakdown.consigned / breakdown.total) * 100 : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {breakdown.total > 0 ? ((breakdown.consigned / breakdown.total) * 100).toFixed(1) : 0}% of {currency} revenue
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-purple-600 h-2 rounded-full" 
-                  style={{ 
-                    width: `${stats.totalValue > 0 ? (stats.ownershipBreakdown.consigned / stats.totalValue) * 100 : 0}%` 
-                  }}
-                ></div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {stats.totalValue > 0 ? ((stats.ownershipBreakdown.consigned / stats.totalValue) * 100).toFixed(1) : 0}% of total revenue
-              </p>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
