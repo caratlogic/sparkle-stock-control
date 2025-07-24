@@ -44,6 +44,9 @@ export const TransactionTrackingDashboard = () => {
       associatedEntity: string;
       items: Array<{ gemId: string; stockId?: string; ownership_status?: string; associated_entity?: string }>;
       currency?: string;
+      ownedAmount?: number;
+      partnerAmount?: number;
+      consignedAmount?: number;
     }> = [];
 
     // Add invoices (only revenue-generating: sent, overdue, paid, partial)
@@ -56,13 +59,27 @@ export const TransactionTrackingDashboard = () => {
           gemId: item.productId,
           stockId: gem?.stockId,
           ownership_status: gem?.ownershipStatus || 'O',
-          associated_entity: gem?.associatedEntity || 'Self'
+          associated_entity: gem?.associatedEntity || 'Self',
+          itemAmount: item.totalPrice || 0  // Get the actual amount for this item
         };
       }) || [];
 
       // Determine ownership status and entity from gems
       const ownershipStatuses = [...new Set(invoiceItems.map(item => item.ownership_status))];
       const entities = [...new Set(invoiceItems.map(item => item.associated_entity))];
+
+      // Calculate ownership breakdown amounts for this invoice
+      const ownedAmount = invoiceItems
+        .filter(item => item.ownership_status === 'O')
+        .reduce((sum, item) => sum + item.itemAmount, 0);
+      
+      const partnerAmount = invoiceItems
+        .filter(item => item.ownership_status === 'P')
+        .reduce((sum, item) => sum + item.itemAmount, 0);
+      
+      const memoAmount = invoiceItems
+        .filter(item => item.ownership_status === 'M')
+        .reduce((sum, item) => sum + item.itemAmount, 0);
 
       transactions.push({
         id: invoice.id,
@@ -75,7 +92,11 @@ export const TransactionTrackingDashboard = () => {
         ownershipStatus: ownershipStatuses.join(', '),
         associatedEntity: entities.join(', '),
         items: invoiceItems,
-        currency: invoice.currency || invoice.customerDetails?.currency || 'USD'
+        currency: invoice.currency || invoice.customerDetails?.currency || 'USD',
+        // Add breakdown amounts for accurate calculation
+        ownedAmount,
+        partnerAmount,
+        consignedAmount: memoAmount
       });
     });
 
@@ -162,11 +183,11 @@ export const TransactionTrackingDashboard = () => {
     const consignmentRevenue = consignmentTransactions.reduce((sum, t) => sum + t.amount, 0);
     const quotationRevenue = quotationTransactions.reduce((sum, t) => sum + t.amount, 0);
 
-    // Calculate ownership breakdown only from invoices (since that's what the cards show)
+    // Calculate ownership breakdown using the precise amounts from invoices
     const invoiceOwnershipBreakdown = invoiceTransactions.reduce((acc, t) => {
-      if (t.ownershipStatus.includes('O')) acc.owned += t.amount;
-      if (t.ownershipStatus.includes('C')) acc.consigned += t.amount;
-      if (t.ownershipStatus.includes('P')) acc.partner += t.amount;
+      acc.owned += t.ownedAmount || 0;
+      acc.partner += t.partnerAmount || 0;
+      acc.consigned += t.consignedAmount || 0;
       return acc;
     }, { owned: 0, consigned: 0, partner: 0 });
 
