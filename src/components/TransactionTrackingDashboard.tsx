@@ -172,8 +172,10 @@ export const TransactionTrackingDashboard = () => {
   }
 
   // Get unique ownership statuses and entities for filters
-  const ownershipStatuses = [...new Set(allTransactions.flatMap(t => t.ownershipStatus.split(', ')))];
-  const entities = [...new Set(allTransactions.flatMap(t => t.associatedEntity.split(', ')))];
+  const ownershipStatuses = [...new Set(allTransactions.flatMap(t => t.ownershipStatus.split(', ')))]
+    .filter(status => status && status.trim() !== '');
+  const entities = [...new Set(allTransactions.flatMap(t => t.associatedEntity.split(', ')))]
+    .filter(entity => entity && entity.trim() !== '');
 
   return (
     <div className="space-y-6">
