@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Package, User, Calendar, Printer } from 'lucide-react';
+import { formatCurrency, getCurrencySymbol } from '@/lib/utils';
 
 interface ConsignmentItem {
   id: string;
@@ -60,6 +61,7 @@ interface ConsignmentDetailViewProps {
 
 export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetailViewProps) => {
   const totalValue = consignment.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  const currencySymbol = getCurrencySymbol((consignment.customerDetails as any)?.currency);
   
   const handlePrint = () => {
     window.print();
@@ -116,7 +118,7 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
               </div>
               <div className="col-span-2">
                 <label className="text-sm font-medium text-slate-600">Total Value</label>
-                <p className="text-xl font-bold text-slate-800">${totalValue.toLocaleString()}</p>
+                <p className="text-xl font-bold text-slate-800">{formatCurrency(totalValue, (consignment.customerDetails as any)?.currency)}</p>
               </div>
             </div>
             {consignment.notes && (
@@ -205,8 +207,8 @@ export const ConsignmentDetailView = ({ consignment, onBack }: ConsignmentDetail
                       </div>
                     </td>
                     <td className="py-4 px-4">{item.quantity || 0}</td>
-                    <td className="py-4 px-4">${(item.unitPrice || 0).toLocaleString()}</td>
-                    <td className="py-4 px-4 font-semibold">${(item.totalPrice || 0).toLocaleString()}</td>
+                    <td className="py-4 px-4">{formatCurrency(item.unitPrice || 0, (consignment.customerDetails as any)?.currency)}</td>
+                    <td className="py-4 px-4 font-semibold">{formatCurrency(item.totalPrice || 0, (consignment.customerDetails as any)?.currency)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FileText, User, Calendar, DollarSign, Printer } from 'lucide-react';
 import { Invoice } from '../types/customer';
+import { formatCurrency, getCurrencySymbol } from '@/lib/utils';
 
 interface InvoiceDetailViewProps {
   invoice: Invoice;
@@ -11,6 +12,8 @@ interface InvoiceDetailViewProps {
 }
 
 export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) => {
+  const currencySymbol = getCurrencySymbol(invoice.customerDetails.currency);
+  
   const handlePrint = () => {
     window.print();
   };
@@ -149,8 +152,8 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
                       </div>
                     </td>
                     <td className="py-4 px-4">{item.quantity}</td>
-                    <td className="py-4 px-4">${item.pricePerCarat.toFixed(2)}/ct</td>
-                    <td className="py-4 px-4 font-semibold">${item.totalPrice.toLocaleString()}</td>
+                    <td className="py-4 px-4">{currencySymbol}{item.pricePerCarat.toFixed(2)}/ct</td>
+                    <td className="py-4 px-4 font-semibold">{formatCurrency(item.totalPrice, invoice.customerDetails.currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -171,7 +174,7 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-slate-600">Subtotal:</span>
-              <span className="font-semibold">${invoice.subtotal.toLocaleString()}</span>
+              <span className="font-semibold">{formatCurrency(invoice.subtotal, invoice.customerDetails.currency)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-600">Tax Rate:</span>
@@ -179,12 +182,12 @@ export const InvoiceDetailView = ({ invoice, onBack }: InvoiceDetailViewProps) =
             </div>
             <div className="flex justify-between">
               <span className="text-slate-600">Tax Amount:</span>
-              <span className="font-semibold">${invoice.taxAmount.toLocaleString()}</span>
+              <span className="font-semibold">{formatCurrency(invoice.taxAmount, invoice.customerDetails.currency)}</span>
             </div>
             <div className="border-t pt-3">
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>
-                <span>${invoice.total.toLocaleString()}</span>
+                <span>{formatCurrency(invoice.total, invoice.customerDetails.currency)}</span>
               </div>
             </div>
           </div>

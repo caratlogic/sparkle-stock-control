@@ -12,6 +12,7 @@ import { Gem } from '../types/gem';
 import { Customer } from '../types/customer';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { formatCurrency, getCurrencySymbol } from '@/lib/utils';
 
 interface QuotationItem {
   gem: Gem;
@@ -32,6 +33,9 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
   const { toast } = useToast();
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
+  
+  const selectedCustomerData = customers.find(c => c.id === selectedCustomer);
+  const currencySymbol = getCurrencySymbol(selectedCustomerData?.currency);
 
   // Auto-populate with pre-selected gems on open
   useEffect(() => {
@@ -99,6 +103,7 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
     const customerData = customers.find(c => c.id === selectedCustomer);
     const quotationNumber = `QUO-${Date.now()}`;
     const currentDate = new Date().toLocaleDateString();
+    const currencySymbol = getCurrencySymbol(customerData?.currency);
 
     const itemRows = quotationItems.map((item, index) => {
       const itemTotal = item.caratQuantity * item.pricePerCarat;
@@ -115,9 +120,9 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
             ${item.gem.measurements}
           </td>
           <td style="padding: 12px; text-align: center;">${item.caratQuantity}ct</td>
-          <td style="padding: 12px; text-align: right;">$${item.pricePerCarat.toLocaleString()}</td>
+          <td style="padding: 12px; text-align: right;">${currencySymbol}${item.pricePerCarat.toLocaleString()}</td>
           <td style="padding: 12px; text-align: right;">${item.discount}%</td>
-          <td style="padding: 12px; text-align: right;">$${netAmount.toLocaleString()}</td>
+          <td style="padding: 12px; text-align: right;">${currencySymbol}${netAmount.toLocaleString()}</td>
         </tr>
       `;
     }).join('');
@@ -176,17 +181,17 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
           <table style="margin-left: auto; border-collapse: collapse;">
             <tr>
               <td style="padding: 8px 12px; text-align: right; font-weight: bold;">Subtotal:</td>
-              <td style="padding: 8px 12px; text-align: right; width: 120px;">$${subtotal.toLocaleString()}</td>
+              <td style="padding: 8px 12px; text-align: right; width: 120px;">${currencySymbol}${subtotal.toLocaleString()}</td>
             </tr>
             ${quotationDetails.discount > 0 ? `
             <tr>
               <td style="padding: 8px 12px; text-align: right; font-weight: bold;">Overall Discount (${quotationDetails.discount}%):</td>
-              <td style="padding: 8px 12px; text-align: right;">-$${overallDiscountAmount.toLocaleString()}</td>
+              <td style="padding: 8px 12px; text-align: right;">-${currencySymbol}${overallDiscountAmount.toLocaleString()}</td>
             </tr>
             ` : ''}
             <tr style="border-top: 2px solid #e5e7eb;">
               <td style="padding: 12px; text-align: right; font-weight: bold; font-size: 18px;">Total:</td>
-              <td style="padding: 12px; text-align: right; font-weight: bold; font-size: 18px;">$${total.toLocaleString()}</td>
+              <td style="padding: 12px; text-align: right; font-weight: bold; font-size: 18px;">${currencySymbol}${total.toLocaleString()}</td>
             </tr>
           </table>
         </div>
@@ -317,7 +322,7 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
         communication_type: 'email',
         sender_type: 'staff',
         subject: `Quotation sent for ${quotationItems.length} gems`,
-        message: `Quotation sent with total value: $${calculateTotal().toLocaleString()}`,
+        message: `Quotation sent with total value: ${currencySymbol}${calculateTotal().toLocaleString()}`,
         response_status: 'sent'
       });
 
@@ -392,7 +397,7 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
                 <SelectContent>
                   {availableGems.map(gem => (
                     <SelectItem key={gem.id} value={gem.id}>
-                      {gem.stockId} - {gem.gemType} {gem.carat}ct - ${gem.price.toLocaleString()}
+                      {gem.stockId} - {gem.gemType} {gem.carat}ct - {currencySymbol}{gem.price.toLocaleString()}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -507,17 +512,17 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
                     </div>
                     <div className="flex justify-between">
                       <span>Subtotal:</span>
-                      <span>${calculateSubtotal().toLocaleString()}</span>
+                      <span>{currencySymbol}{calculateSubtotal().toLocaleString()}</span>
                     </div>
                     {quotationDetails.discount > 0 && (
                       <div className="flex justify-between text-red-600">
                         <span>Overall Discount ({quotationDetails.discount}%):</span>
-                        <span>-${(calculateSubtotal() * quotationDetails.discount / 100).toLocaleString()}</span>
+                        <span>-{currencySymbol}{(calculateSubtotal() * quotationDetails.discount / 100).toLocaleString()}</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
                       <span>Total:</span>
-                      <span>${calculateTotal().toLocaleString()}</span>
+                      <span>{currencySymbol}{calculateTotal().toLocaleString()}</span>
                     </div>
                   </div>
                 </CardContent>
