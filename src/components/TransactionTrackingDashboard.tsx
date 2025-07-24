@@ -252,7 +252,7 @@ export const TransactionTrackingDashboard = () => {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
@@ -268,43 +268,144 @@ export const TransactionTrackingDashboard = () => {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalValue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Across filtered transactions
+              All transactions combined
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Owned Items</CardTitle>
+            <CardTitle className="text-sm font-medium">Own Revenue</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.ownershipBreakdown.owned.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Self-owned transactions
+              Self-owned gems
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Partner Items</CardTitle>
+            <CardTitle className="text-sm font-medium">Partner Revenue</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.ownershipBreakdown.partner.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Partner transactions
+              Partner gems
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Consigned Revenue</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${stats.ownershipBreakdown.consigned.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              Consigned gems
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Own vs Partner</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">
+              {stats.totalValue > 0 ? ((stats.ownershipBreakdown.owned / stats.totalValue) * 100).toFixed(1) : 0}% / {stats.totalValue > 0 ? ((stats.ownershipBreakdown.partner / stats.totalValue) * 100).toFixed(1) : 0}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Own / Partner split
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Revenue Breakdown Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Revenue Breakdown</CardTitle>
+          <CardDescription>
+            Detailed breakdown of revenue by ownership type
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Own Revenue</span>
+                <span className="text-lg font-bold text-green-600">
+                  ${stats.ownershipBreakdown.owned.toLocaleString()}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full" 
+                  style={{ 
+                    width: `${stats.totalValue > 0 ? (stats.ownershipBreakdown.owned / stats.totalValue) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {stats.totalValue > 0 ? ((stats.ownershipBreakdown.owned / stats.totalValue) * 100).toFixed(1) : 0}% of total revenue
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Partner Revenue</span>
+                <span className="text-lg font-bold text-blue-600">
+                  ${stats.ownershipBreakdown.partner.toLocaleString()}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full" 
+                  style={{ 
+                    width: `${stats.totalValue > 0 ? (stats.ownershipBreakdown.partner / stats.totalValue) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {stats.totalValue > 0 ? ((stats.ownershipBreakdown.partner / stats.totalValue) * 100).toFixed(1) : 0}% of total revenue
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Consigned Revenue</span>
+                <span className="text-lg font-bold text-purple-600">
+                  ${stats.ownershipBreakdown.consigned.toLocaleString()}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-purple-600 h-2 rounded-full" 
+                  style={{ 
+                    width: `${stats.totalValue > 0 ? (stats.ownershipBreakdown.consigned / stats.totalValue) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {stats.totalValue > 0 ? ((stats.ownershipBreakdown.consigned / stats.totalValue) * 100).toFixed(1) : 0}% of total revenue
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Transactions Table */}
       <Card>
