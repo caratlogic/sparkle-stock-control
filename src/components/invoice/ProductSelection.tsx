@@ -252,7 +252,17 @@ export const ProductSelection = ({
     if (selectedProduct && selectedProduct.stockType === 'set') {
       const individualCarat = getIndividualStoneCarat(selectedProduct);
       if (individualCarat) {
-        setCaratAmount(newQuantity * individualCarat);
+        const newCaratAmount = newQuantity * individualCarat;
+        setCaratAmount(newCaratAmount);
+        
+        // Update total selling price proportionally for set type gems
+        if (totalSellingPrice && quantity > 0) {
+          const pricePerStone = totalSellingPrice / quantity;
+          const newTotalPrice = newQuantity * pricePerStone;
+          if (setTotalSellingPrice) {
+            setTotalSellingPrice(newTotalPrice);
+          }
+        }
       }
     }
   };
