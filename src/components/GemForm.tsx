@@ -17,6 +17,7 @@ import { GemCertificateManager } from './GemCertificateManager';
 import { usePartners } from '../hooks/usePartners';
 import { useAssociatedEntities } from '../hooks/useAssociatedEntities';
 
+
 interface GemFormProps {
   gem?: Gem | null;
   onSubmit: (gem: any) => void;
