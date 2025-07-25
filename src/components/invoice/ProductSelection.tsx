@@ -62,31 +62,26 @@ const InvoiceItemRow = ({
 
   // Handle quantity change for set type items
   const handleEditQuantityChange = (newQuantity: number) => {
-    console.log('🔧 handleEditQuantityChange called:', {
+    console.log('🔧 NEW handleEditQuantityChange called - NO PRICE CALCULATION:', {
       newQuantity,
       oldQuantity: editQuantity,
-      originalItemQuantity: item.quantity,
-      originalItemTotalPrice: item.totalPrice,
       currentEditTotalPrice: editTotalPrice,
       isSetType,
-      stockType: item.productDetails?.stockType,
-      productDetails: item.productDetails
+      stockType: item.productDetails?.stockType
     });
     
     setEditQuantity(newQuantity);
     
     if (isSetType) {
-      console.log('🎯 SET TYPE detected - handling set type logic');
+      console.log('💎 SET TYPE: Only updating carat, keeping total price unchanged');
       const individualCarat = getIndividualStoneCarat();
       if (individualCarat) {
         setEditCarat(newQuantity * individualCarat);
-        // For set types, only update carat but keep total price unchanged when quantity changes
-        console.log('💎 SET TYPE: Only updating carat, keeping total price unchanged');
       }
     } else {
-      console.log('💎 REGULAR GEM detected - keeping total price unchanged when quantity changes');
-      // For regular gems, don't update total price when quantity changes
-      // Total price should only change when carat is modified
+      console.log('💎 PARCEL TYPE: Quantity changed, keeping total price unchanged');
+      // For parcel/regular gems, only update quantity
+      // Total price remains unchanged when quantity changes
     }
   };
 
