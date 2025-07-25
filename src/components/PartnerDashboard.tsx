@@ -22,14 +22,15 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from '@/components/ui/dialog';
-import { Plus, Edit, DollarSign, Users, TrendingUp, Building } from 'lucide-react';
-import { usePartners, usePartnerTransactions, Partner } from '@/hooks/usePartners';
+import { Plus, Edit, DollarSign, Users, TrendingUp, Building, Gem } from 'lucide-react';
+import { usePartners, usePartnerTransactions, usePartnerGems, Partner } from '@/hooks/usePartners';
 import { useToast } from '@/hooks/use-toast';
 import { PartnerTransactionDetail } from './PartnerTransactionDetail';
 
 export const PartnerDashboard = () => {
   const { partners, loading, addPartner, updatePartner, deletePartner } = usePartners();
   const { transactions } = usePartnerTransactions();
+  const { gemsByPartner } = usePartnerGems();
   const { toast } = useToast();
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -106,12 +107,15 @@ export const PartnerDashboard = () => {
     const partnerTransactions = transactions.filter(t => t.partner_id === partner.id);
     const totalRevenue = partnerTransactions.reduce((sum, t) => sum + t.revenue_amount, 0);
     const partnerShare = partnerTransactions.reduce((sum, t) => sum + t.partner_share, 0);
+    const partnerGems = gemsByPartner[partner.name] || [];
     
     return {
       ...partner,
       totalRevenue,
       partnerShare,
-      transactionCount: partnerTransactions.length
+      transactionCount: partnerTransactions.length,
+      gemCount: partnerGems.length,
+      totalCarats: partnerGems.reduce((sum, gem) => sum + gem.carat, 0)
     };
   });
 
@@ -278,15 +282,15 @@ export const PartnerDashboard = () => {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Ownership</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Partner Gems</CardTitle>
+            <Gem className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {partners.length > 0 ? (partners.reduce((sum, p) => sum + p.ownership_percentage, 0) / partners.length).toFixed(1) : 0}%
+              {Object.values(gemsByPartner).reduce((sum, gems) => sum + gems.length, 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Average stake
+              Total stones
             </p>
           </CardContent>
         </Card>
@@ -305,6 +309,7 @@ export const PartnerDashboard = () => {
                 <TableHead>Partner</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Ownership %</TableHead>
+                <TableHead>Gems</TableHead>
                 <TableHead>Total Revenue</TableHead>
                 <TableHead>Partner Share</TableHead>
                 <TableHead>Transactions</TableHead>
@@ -337,6 +342,15 @@ export const PartnerDashboard = () => {
                     </div>
                   </TableCell>
                   <TableCell>{partner.ownership_percentage}%</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Gem className="w-4 h-4 text-blue-600" />
+                      <span className="font-medium">{partner.gemCount}</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({partner.totalCarats.toFixed(2)}ct)
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell>${partner.totalRevenue.toLocaleString()}</TableCell>
                   <TableCell>${partner.partnerShare.toLocaleString()}</TableCell>
                   <TableCell>{partner.transactionCount}</TableCell>

@@ -208,3 +208,51 @@ export const useAssociatedEntityTransactions = () => {
     addAssociatedEntityTransaction
   };
 };
+
+// Hook to fetch gems by associated entity
+export const useAssociatedEntityGems = () => {
+  const [gemsByEntity, setGemsByEntity] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEntityGems = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('gems')
+        .select('*')
+        .eq('ownership_status', 'M')
+        .neq('associated_entity', 'Self');
+
+      if (error) throw error;
+
+      // Group gems by associated_entity (entity name)
+      const grouped = (data || []).reduce((acc, gem) => {
+        const entityName = gem.associated_entity;
+        if (!acc[entityName]) {
+          acc[entityName] = [];
+        }
+        acc[entityName].push(gem);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      setGemsByEntity(grouped);
+    } catch (err) {
+      console.error('Error fetching entity gems:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEntityGems();
+  }, []);
+
+  return {
+    gemsByEntity,
+    loading,
+    error,
+    refetch: fetchEntityGems
+  };
+};

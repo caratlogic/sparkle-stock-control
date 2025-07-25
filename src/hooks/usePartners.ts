@@ -210,3 +210,51 @@ export const usePartnerTransactions = () => {
     addPartnerTransaction
   };
 };
+
+// Hook to fetch gems by partner
+export const usePartnerGems = () => {
+  const [gemsByPartner, setGemsByPartner] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchPartnerGems = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('gems')
+        .select('*')
+        .eq('ownership_status', 'P')
+        .neq('associated_entity', 'Self');
+
+      if (error) throw error;
+
+      // Group gems by associated_entity (partner name)
+      const grouped = (data || []).reduce((acc, gem) => {
+        const partnerName = gem.associated_entity;
+        if (!acc[partnerName]) {
+          acc[partnerName] = [];
+        }
+        acc[partnerName].push(gem);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      setGemsByPartner(grouped);
+    } catch (err) {
+      console.error('Error fetching partner gems:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPartnerGems();
+  }, []);
+
+  return {
+    gemsByPartner,
+    loading,
+    error,
+    refetch: fetchPartnerGems
+  };
+};

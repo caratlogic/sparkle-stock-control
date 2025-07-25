@@ -9,14 +9,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Building2, Edit2, Trash2, TrendingUp } from 'lucide-react';
-import { useAssociatedEntities, useAssociatedEntityTransactions, type AssociatedEntity } from '@/hooks/useAssociatedEntities';
+import { Plus, Building2, Edit2, Trash2, TrendingUp, Gem } from 'lucide-react';
+import { useAssociatedEntities, useAssociatedEntityTransactions, useAssociatedEntityGems, type AssociatedEntity } from '@/hooks/useAssociatedEntities';
 import { AssociatedEntityDetailView } from './AssociatedEntityDetailView';
 import { toast } from 'sonner';
 
 export const AssociatedEntitiesDashboard = () => {
   const { associatedEntities, loading, addAssociatedEntity, updateAssociatedEntity, deleteAssociatedEntity } = useAssociatedEntities();
   const { transactions } = useAssociatedEntityTransactions();
+  const { gemsByEntity } = useAssociatedEntityGems();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<AssociatedEntity | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
@@ -95,7 +96,10 @@ export const AssociatedEntitiesDashboard = () => {
     const entityTransactions = transactions.filter(t => t.associated_entity_name === entityName);
     const totalRevenue = entityTransactions.reduce((sum, t) => sum + t.revenue_amount, 0);
     const transactionCount = entityTransactions.length;
-    return { totalRevenue, transactionCount };
+    const entityGems = gemsByEntity[entityName] || [];
+    const gemCount = entityGems.length;
+    const totalCarats = entityGems.reduce((sum, gem) => sum + gem.carat, 0);
+    return { totalRevenue, transactionCount, gemCount, totalCarats };
   };
 
   // Show detail view if an entity is selected
@@ -249,10 +253,12 @@ export const AssociatedEntitiesDashboard = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+              <Gem className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-sm font-medium text-slate-600">Total Transactions</p>
-                <p className="text-2xl font-bold text-slate-800">{transactions.length}</p>
+                <p className="text-sm font-medium text-slate-600">Total Memo Gems</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {Object.values(gemsByEntity).reduce((sum, gems) => sum + gems.length, 0)}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -270,6 +276,7 @@ export const AssociatedEntitiesDashboard = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Contact</TableHead>
+                <TableHead>Memo Gems</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Revenue</TableHead>
                 <TableHead>Transactions</TableHead>
@@ -293,6 +300,15 @@ export const AssociatedEntitiesDashboard = () => {
                         {entity.email && <div>{entity.email}</div>}
                         {entity.phone && <div>{entity.phone}</div>}
                         {!entity.email && !entity.phone && '-'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Gem className="w-4 h-4 text-emerald-600" />
+                        <span className="font-medium">{stats.gemCount}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({stats.totalCarats.toFixed(2)}ct)
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
