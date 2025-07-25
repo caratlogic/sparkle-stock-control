@@ -142,12 +142,17 @@ export const TransactionTrackingDashboard = () => {
     const consignedGems = gems.filter(g => g.ownershipStatus === 'M');
     console.log('🔍 CONSIGNED GEMS DEBUG:');
     console.log('Total consigned gems:', consignedGems.length);
-    console.log('Consigned gems:', consignedGems.map(g => ({
-      stockId: g.stockId,
-      ownershipStatus: g.ownershipStatus,
-      associatedEntity: g.associatedEntity,
-      price: g.price
-    })));
+    consignedGems.forEach(gem => {
+      console.log('Consigned gem details:', {
+        id: gem.id,
+        stockId: gem.stockId,
+        ownershipStatus: gem.ownershipStatus,
+        associatedEntity: gem.associatedEntity,
+        price: gem.price,
+        gemType: gem.gemType,
+        carat: gem.carat
+      });
+    });
 
     console.log('💰 REVENUE TOTALS:');
     console.log('Total invoice revenue:', totalInvoiceRevenue);
