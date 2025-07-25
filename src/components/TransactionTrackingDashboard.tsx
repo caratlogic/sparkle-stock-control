@@ -104,27 +104,24 @@ export const TransactionTrackingDashboard = () => {
 
       // Debug: Check if invoice has items and ownership breakdown
       if (invoiceItems.length === 0) {
-        console.log(`🚨 Invoice ${invoice.invoiceNumber} has NO ITEMS - Total: ${invoice.total}`);
+        console.log(`🚨 Invoice ${invoice.invoiceNumber} has NO ITEMS - Total: ${invoice.total} - Adding to OWNED`);
       } else if (ownedAmount === 0 && partnerAmount === 0 && memoAmount === 0) {
-        console.log(`🚨 Invoice ${invoice.invoiceNumber} has items but NO OWNERSHIP STATUS - Total: ${invoice.total}`);
+        console.log(`🚨 Invoice ${invoice.invoiceNumber} has items but NO OWNERSHIP STATUS - Total: ${invoice.total} - Adding to OWNED`);
         invoiceItems.forEach(item => {
           console.log(`   Item: ${item.stockId} - Ownership: ${item.ownership_status} - Price: ${item.itemAmount}`);
         });
       }
       
+      // Track every invoice's contribution to totals
+      console.log(`📊 Invoice ${invoice.invoiceNumber}: Revenue ${invoice.total} → Owned: ${finalOwnedAmount}, Partner: ${finalPartnerAmount}, Memo: ${finalMemoAmount}`);
+      
       // Log significant discrepancies or missing ownership
-      if (Math.abs(totalItemsAmount - invoice.total) > 1 || totalItemsAmount === 0) {
-        console.log(`⚠️ Invoice ${invoice.invoiceNumber}:`, {
+      if (Math.abs(totalItemsAmount - invoice.total) > 1) {
+        console.log(`⚠️ AMOUNT MISMATCH - Invoice ${invoice.invoiceNumber}:`, {
           invoiceTotal: invoice.total,
           itemsTotal: totalItemsAmount,
-          itemsCount: invoiceItems.length,
-          hasItems: invoiceItems.length > 0,
-          ownedAmount,
-          partnerAmount,
-          memoAmount,
-          proportionalOwned: finalOwnedAmount,
-          proportionalPartner: finalPartnerAmount,
-          proportionalMemo: finalMemoAmount
+          difference: invoice.total - totalItemsAmount,
+          itemsCount: invoiceItems.length
         });
       }
 
