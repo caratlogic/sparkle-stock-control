@@ -249,9 +249,18 @@ export const TransactionTrackingDashboard = () => {
         };
       }
       acc[currency].total += t.amount;
-      if (t.ownershipStatus.includes('O')) acc[currency].owned += t.amount;
-      if (t.ownershipStatus.includes('C')) acc[currency].consigned += t.amount;
-      if (t.ownershipStatus.includes('P')) acc[currency].partner += t.amount;
+      
+      // Use the precise amounts from invoice transactions
+      if (t.type === 'invoice') {
+        acc[currency].owned += t.ownedAmount || 0;
+        acc[currency].partner += t.partnerAmount || 0;
+        acc[currency].consigned += t.consignedAmount || 0;
+      } else {
+        // For non-invoice transactions, use ownership status detection
+        if (t.ownershipStatus.includes('O')) acc[currency].owned += t.amount;
+        if (t.ownershipStatus.includes('M')) acc[currency].consigned += t.amount;
+        if (t.ownershipStatus.includes('P')) acc[currency].partner += t.amount;
+      }
       return acc;
     }, {} as Record<string, {
       total: number;
