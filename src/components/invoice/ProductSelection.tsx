@@ -80,6 +80,18 @@ const InvoiceItemRow = ({
       const individualCarat = getIndividualStoneCarat();
       if (individualCarat) {
         setEditCarat(newQuantity * individualCarat);
+        // Also update total price proportionally for set types
+        if (item.quantity > 0) {
+          const pricePerStone = item.totalPrice / item.quantity;
+          const newTotalPrice = newQuantity * pricePerStone;
+          console.log('💰 SET TYPE: Calculating new price:', {
+            pricePerStone,
+            newQuantity,
+            newTotalPrice,
+            calculation: `${newQuantity} × ${pricePerStone} = ${newTotalPrice}`
+          });
+          setEditTotalPrice(newTotalPrice);
+        }
       }
     } else {
       console.log('💎 REGULAR GEM detected - calculating proportional price');
