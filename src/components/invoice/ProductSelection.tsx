@@ -60,32 +60,41 @@ const InvoiceItemRow = ({
     return null;
   };
 
-  // Handle quantity change - FIXED VERSION v2.0 - NO PRICE CHANGES
+  // Handle quantity change - FIXED VERSION v3.0 - CORRECT LOGIC FOR BOTH TYPES
   const handleEditQuantityChange = (newQuantity: number) => {
-    console.log('🚀 FIXED v2.0 - handleEditQuantityChange - NO PRICE CALCULATION:', {
+    console.log('🚀 FIXED v3.0 - handleEditQuantityChange - CORRECT LOGIC:', {
       newQuantity,
       oldQuantity: editQuantity,
       currentEditTotalPrice: editTotalPrice,
-      willKeepSamePrice: true,
       isSetType,
       stockType: item.productDetails?.stockType
     });
     
-    // CRITICAL: Only update quantity, NEVER update price
     setEditQuantity(newQuantity);
     
     if (isSetType) {
-      console.log('💎 SET TYPE: Only updating carat, KEEPING total price unchanged');
+      console.log('💎 SET TYPE: Updating carat AND total price proportionally');
       const individualCarat = getIndividualStoneCarat();
       if (individualCarat) {
         setEditCarat(newQuantity * individualCarat);
+        // For set types, update total price proportionally when quantity changes
+        if (item.quantity > 0) {
+          const pricePerStone = item.totalPrice / item.quantity;
+          const newTotalPrice = newQuantity * pricePerStone;
+          console.log('💰 SET TYPE: Calculating new price:', {
+            pricePerStone,
+            newQuantity,
+            newTotalPrice,
+            calculation: `${newQuantity} × ${pricePerStone} = ${newTotalPrice}`
+          });
+          setEditTotalPrice(newTotalPrice);
+        }
       }
     } else {
       console.log('💎 PARCEL TYPE: Quantity changed, KEEPING total price unchanged');
+      // For parcel/regular gems, DON'T update total price when quantity changes
+      // Total price should only change when carat is modified
     }
-    
-    // EXPLICITLY LOG: Price should remain the same
-    console.log('🔒 PRICE LOCKED: Total price should remain:', editTotalPrice);
   };
 
   // Handle carat change for set type items
