@@ -92,11 +92,12 @@ export const TransactionTrackingDashboard = () => {
       totalPartnerFromItems += partnerAmount;
       totalMemoFromItems += memoAmount;
 
-      // For ownership breakdown, use raw amounts (not proportional with taxes)
-      // This ensures consigned revenue reflects actual gem values, not tax-adjusted amounts
-      const finalOwnedAmount = ownedAmount;
-      const finalPartnerAmount = partnerAmount;
-      const finalMemoAmount = memoAmount;
+      // CRITICAL FIX: Always account for full invoice amount in ownership breakdown
+      // If no items or ownership data exists, default to "owned" to prevent revenue leaks
+      const finalOwnedAmount = totalItemsAmount > 0 ? ownedAmount : invoice.total;
+      const finalPartnerAmount = totalItemsAmount > 0 ? partnerAmount : 0;
+      const finalMemoAmount = totalItemsAmount > 0 ? memoAmount : 0;
+      
       totalProportionalOwned += finalOwnedAmount;
       totalProportionalPartner += finalPartnerAmount;
       totalProportionalMemo += finalMemoAmount;
@@ -142,9 +143,9 @@ export const TransactionTrackingDashboard = () => {
         associatedEntity: entities.join(', '),
         items: invoiceItems,
         currency: invoice.currency || invoice.customerDetails?.currency || 'USD',
-        // Use proportionally adjusted amounts OR fall back to invoice total if no items
+        // CRITICAL FIX: Always account for full invoice amount in ownership breakdown
+        // If no items or ownership data, default to "owned" to prevent revenue leaks
         ownedAmount: totalItemsAmount > 0 ? finalOwnedAmount : invoice.total,
-        // Default to owned if no items
         partnerAmount: totalItemsAmount > 0 ? finalPartnerAmount : 0,
         consignedAmount: totalItemsAmount > 0 ? finalMemoAmount : 0
       });
