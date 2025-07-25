@@ -57,6 +57,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
 
   useEffect(() => {
     if (gem) {
+      console.log('🔍 GemForm: Populating form with gem data:', gem);
       setFormData({
         gemType: gem.gemType,
         stockType: gem.stockType || 'single',
@@ -83,6 +84,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         associatedEntity: gem.associatedEntity || 'Self',
         partnerPercentage: (gem.partnerPercentage || 0).toString()
       });
+      console.log('✅ GemForm: Form data set with partnerPercentage:', gem.partnerPercentage);
     }
   }, [gem]);
 

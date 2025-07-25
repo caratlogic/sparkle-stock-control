@@ -54,6 +54,17 @@ export const useGems = () => {
         partnerPercentage: gem.partner_percentage || 0
       }));
 
+      // Log partner stones for debugging
+      const partnerStones = transformedGems.filter(g => g.ownershipStatus === 'P');
+      if (partnerStones.length > 0) {
+        console.log('🔍 useGems: Partner stones found:', partnerStones.map(g => ({
+          stockId: g.stockId,
+          associatedEntity: g.associatedEntity,
+          partnerPercentage: g.partnerPercentage,
+          originalData: data.find(og => og.stock_id === g.stockId)?.partner_percentage
+        })));
+      }
+
       console.log(`✅ useGems: Fetched ${transformedGems.length} gems from database`);
       
       // Log specific gems for debugging
