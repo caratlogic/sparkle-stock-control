@@ -193,16 +193,10 @@ export const Dashboard = () => {
         <div className="text-lg">Loading dashboard...</div>
       </div>;
   }
-  return (
-    <div className="flex h-screen bg-background">
+  return <div className="flex h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
-        <Sidebar 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
 
       {/* Main Content */}
@@ -215,7 +209,7 @@ export const Dashboard = () => {
               <MobileSidebar activeTab={activeTab} onTabChange={setActiveTab} />
               
               <div>
-                <h1 className="text-2xl font-bold carat-heading">CaratLogic Dashboard</h1>
+                <h1 className="text-2xl font-bold carat-heading">Carat Logic Dashboard</h1>
                 <p className="text-muted-foreground text-sm">Professional Gem & Diamond Inventory Management</p>
               </div>
             </div>
@@ -237,50 +231,32 @@ export const Dashboard = () => {
         {/* Content Area */}
         <div className="flex-1 overflow-auto">
           <div className={`${activeTab === 'home' ? '' : 'p-6'} space-y-6 animate-fade-in`}>
-            {activeTab === 'home' && (
-              <CaratLogicHomepage />
-            )}
+            {activeTab === 'home' && <CaratLogicHomepage />}
 
-            {activeTab === 'analytics' && (
-              <Card className="carat-card">
+            {activeTab === 'analytics' && <Card className="carat-card">
                 <CardHeader>
                   <CardTitle className="carat-heading">Business Analytics</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <AnalyticsDashboard gems={gems} customers={customers} invoices={invoices} />
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
 
-            {activeTab === 'inventory' && (
-              <div className="space-y-6">
+            {activeTab === 'inventory' && <div className="space-y-6">
                 <WeeklyStatsBox gems={gems} />
-                <GemTable 
-                  gems={gems} 
-                  onEdit={gem => {
-                    setEditingGem(gem);
-                    setShowGemForm(true);
-                  }} 
-                  onDelete={handleDeleteGem} 
-                  onAdd={() => setShowGemForm(true)} 
-                  onCreateInvoice={handleCreateInvoice} 
-                  onCreateConsignment={handleCreateConsignment} 
-                />
-              </div>
-            )}
+                <GemTable gems={gems} onEdit={gem => {
+              setEditingGem(gem);
+              setShowGemForm(true);
+            }} onDelete={handleDeleteGem} onAdd={() => setShowGemForm(true)} onCreateInvoice={handleCreateInvoice} onCreateConsignment={handleCreateConsignment} />
+              </div>}
 
-            {activeTab === 'customers' && (
-              <CustomerDashboard 
-                onCreateInvoice={customer => {
-                  setInvoiceCustomer(customer);
-                  setActiveTab('invoice-creation');
-                }} 
-                onCreateConsignment={customer => {
-                  setConsignmentCustomer(customer);
-                  setActiveTab('consignment-creation');
-                }} 
-              />
-            )}
+            {activeTab === 'customers' && <CustomerDashboard onCreateInvoice={customer => {
+            setInvoiceCustomer(customer);
+            setActiveTab('invoice-creation');
+          }} onCreateConsignment={customer => {
+            setConsignmentCustomer(customer);
+            setActiveTab('consignment-creation');
+          }} />}
 
             {activeTab === 'transactions' && <TransactionDashboard />}
 
@@ -296,39 +272,25 @@ export const Dashboard = () => {
 
             {activeTab === 'transaction-tracking' && <TransactionTrackingDashboard />}
 
-            {activeTab === 'invoice-creation' && (
-              <InvoiceCreation 
-                preselectedGem={invoiceGem} 
-                preselectedCustomer={invoiceCustomer} 
-                onCancel={() => {
-                  setInvoiceGem(null);
-                  setInvoiceCustomer(null);
-                  setActiveTab('transactions');
-                }} 
-                onSave={() => {
-                  setInvoiceGem(null);
-                  setInvoiceCustomer(null);
-                  setActiveTab('transactions');
-                }} 
-              />
-            )}
+            {activeTab === 'invoice-creation' && <InvoiceCreation preselectedGem={invoiceGem} preselectedCustomer={invoiceCustomer} onCancel={() => {
+            setInvoiceGem(null);
+            setInvoiceCustomer(null);
+            setActiveTab('transactions');
+          }} onSave={() => {
+            setInvoiceGem(null);
+            setInvoiceCustomer(null);
+            setActiveTab('transactions');
+          }} />}
 
-            {activeTab === 'consignment-creation' && (
-              <ConsignmentCreation 
-                preselectedGem={consignmentGem} 
-                preselectedCustomer={consignmentCustomer} 
-                onCancel={() => {
-                  setConsignmentGem(null);
-                  setConsignmentCustomer(null);
-                  setActiveTab('transactions');
-                }} 
-                onSave={() => {
-                  setConsignmentGem(null);
-                  setConsignmentCustomer(null);
-                  setActiveTab('transactions');
-                }} 
-              />
-            )}
+            {activeTab === 'consignment-creation' && <ConsignmentCreation preselectedGem={consignmentGem} preselectedCustomer={consignmentCustomer} onCancel={() => {
+            setConsignmentGem(null);
+            setConsignmentCustomer(null);
+            setActiveTab('transactions');
+          }} onSave={() => {
+            setConsignmentGem(null);
+            setConsignmentCustomer(null);
+            setActiveTab('transactions');
+          }} />}
 
             {activeTab === 'credit-notes' && <CreditNotesDashboard />}
 
@@ -339,9 +301,6 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {showHelp && (
-        <HelpSection onClose={() => setShowHelp(false)} />
-      )}
-    </div>
-  );
+      {showHelp && <HelpSection onClose={() => setShowHelp(false)} />}
+    </div>;
 };
