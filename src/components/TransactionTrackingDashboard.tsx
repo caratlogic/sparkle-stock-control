@@ -171,20 +171,28 @@ export const TransactionTrackingDashboard = () => {
           gemId: item.productId,
           stockId: gem?.stockId,
           ownership_status: gem?.ownershipStatus || 'O',
-          itemAmount: item.totalPrice || 0
+          itemAmount: item.totalPrice || 0,
+          gemFound: !!gem
         };
       }) || [];
       
       const consignedItems = invoiceItems.filter(item => item.ownership_status === 'M');
       if (consignedItems.length > 0) {
         const consignedAmount = consignedItems.reduce((sum, item) => sum + item.itemAmount, 0);
+        const totalItemsAmount = invoiceItems.reduce((sum, item) => sum + item.itemAmount, 0);
+        const proportionalConsigned = totalItemsAmount > 0 ? consignedAmount / totalItemsAmount * invoice.total : 0;
+        
         console.log(`Invoice ${invoice.invoiceNumber}:`, {
-          total: invoice.total,
+          invoiceTotal: invoice.total,
+          totalItemsAmount,
           consignedItems: consignedItems.map(item => ({
             stockId: item.stockId,
-            amount: item.itemAmount
+            gemId: item.gemId,
+            itemAmount: item.itemAmount,
+            gemFound: item.gemFound
           })),
-          consignedAmount
+          rawConsignedAmount: consignedAmount,
+          proportionalConsigned: proportionalConsigned
         });
       }
     });
