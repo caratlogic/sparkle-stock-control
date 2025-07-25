@@ -66,8 +66,9 @@ const InvoiceItemRow = ({
       }
     } else {
       // For regular gems, update total price proportionally when quantity changes
-      if (editTotalPrice && item.quantity > 0) {
-        const pricePerStone = editTotalPrice / item.quantity;
+      // Use original item data to calculate price per stone
+      if (item.quantity > 0) {
+        const pricePerStone = item.totalPrice / item.quantity;
         setEditTotalPrice(newQuantity * pricePerStone);
       }
     }
