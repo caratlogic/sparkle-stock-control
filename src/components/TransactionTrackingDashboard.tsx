@@ -173,6 +173,7 @@ export const TransactionTrackingDashboard = () => {
     console.log('Owned (proportional):', totalProportionalOwned);
     console.log('Partner (proportional):', totalProportionalPartner);
     console.log('Memo (proportional):', totalProportionalMemo);
+    console.log('🚨 DISCREPANCY:', totalInvoiceRevenue - (totalProportionalOwned + totalProportionalPartner + totalProportionalMemo));
     
     // Debug: Show which invoices contain consigned items
     console.log('📋 INVOICES WITH CONSIGNED ITEMS:');
