@@ -46,6 +46,11 @@ const InvoiceItemRow = ({
 
   // Check if this is a set type item based on stockType in productDetails
   const isSetType = item.productDetails?.stockType === 'set';
+  console.log('🔍 isSetType check:', {
+    stockType: item.productDetails?.stockType,
+    isSetType,
+    stockId: item.productDetails?.stockId
+  });
   
   // Calculate individual stone carat for set type items
   const getIndividualStoneCarat = () => {
