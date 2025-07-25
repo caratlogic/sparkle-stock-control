@@ -63,17 +63,21 @@ const InvoiceItemRow = ({
       originalItemQuantity: item.quantity,
       originalItemTotalPrice: item.totalPrice,
       currentEditTotalPrice: editTotalPrice,
-      isSetType
+      isSetType,
+      stockType: item.productDetails?.stockType,
+      productDetails: item.productDetails
     });
     
     setEditQuantity(newQuantity);
     
     if (isSetType) {
+      console.log('🎯 SET TYPE detected - handling set type logic');
       const individualCarat = getIndividualStoneCarat();
       if (individualCarat) {
         setEditCarat(newQuantity * individualCarat);
       }
     } else {
+      console.log('💎 REGULAR GEM detected - calculating proportional price');
       // For regular gems, update total price proportionally when quantity changes
       // Use original item data to calculate price per stone
       if (item.quantity > 0) {
@@ -86,6 +90,8 @@ const InvoiceItemRow = ({
           calculation: `${newQuantity} × ${pricePerStone} = ${newTotalPrice}`
         });
         setEditTotalPrice(newTotalPrice);
+      } else {
+        console.log('⚠️ Cannot calculate price: item.quantity is 0 or invalid');
       }
     }
   };
