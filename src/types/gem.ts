@@ -34,7 +34,7 @@ export interface Gem {
   notes?: string;
   imageUrl?: string;
   treatment?: string;
-  colorComment?: string;
+  
   certificateType?: string;
   supplier?: string;
   purchaseDate?: string;
@@ -58,26 +58,8 @@ export interface Gem {
   };
 }
 
-export const GEM_TYPES = [
-  'Diamond', 'Emerald', 'Ruby', 'Sapphire', 'Amethyst', 
-  'Aquamarine', 'Garnet', 'Opal', 'Topaz', 'Tourmaline'
-] as const;
-
-export const CUT_OPTIONS = [
-  'Round', 'Princess', 'Emerald', 'Asscher', 'Marquise', 
-  'Oval', 'Radiant', 'Pear', 'Heart', 'Cushion', 'Cabochon', 'Faceted', 'Raw'
-] as const;
-
 export const STATUS_OPTIONS = [
   'In Stock', 'Sold', 'Reserved'
-] as const;
-
-export const TREATMENT_OPTIONS = [
-  'none', 'H', 'NH', 'NO', 'MI'
-] as const;
-
-export const COLOR_COMMENT_OPTIONS = [
-  'none', 'RB', 'I', 'CF', 'VD', 'PB'
 ] as const;
 
 export const STOCK_TYPE_OPTIONS = [
@@ -95,17 +77,3 @@ export const OWNERSHIP_STATUS_OPTIONS = [
   { value: 'M', label: 'Memo' },
   { value: 'O', label: 'Owned' }
 ] as const;
-
-// Color options by gem type
-export const GEM_COLORS = {
-  Diamond: ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'],
-  Emerald: ['Vivid Green', 'Green', 'Slightly Bluish Green', 'Yellowish Green', 'Light Green'],
-  Ruby: ['Vivid Red', 'Red', 'Slightly Purplish Red', 'Pinkish Red', 'Dark Red'],
-  Sapphire: ['Blue', 'Pink', 'Yellow', 'White', 'Orange', 'Purple', 'Green', 'Padparadscha'],
-  Amethyst: ['Deep Purple', 'Purple', 'Light Purple', 'Lavender', 'Rose de France'],
-  Aquamarine: ['Deep Blue', 'Blue', 'Light Blue', 'Blue-Green', 'Pale Blue'],
-  Garnet: ['Red', 'Orange', 'Yellow', 'Green', 'Purple', 'Pink'],
-  Opal: ['White', 'Black', 'Crystal', 'Boulder', 'Fire', 'Water'],
-  Topaz: ['Blue', 'Pink', 'Yellow', 'White', 'Orange', 'Imperial'],
-  Tourmaline: ['Pink', 'Green', 'Blue', 'Watermelon', 'Paraiba', 'Black']
-};

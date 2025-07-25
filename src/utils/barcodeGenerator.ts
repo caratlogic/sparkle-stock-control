@@ -6,7 +6,6 @@ export const generateBarcode = (
   carat?: number, 
   measurements?: string, 
   certificates?: string,
-  colorComment?: string,
   origin?: string,
   treatment?: string
 ): string => {
@@ -19,7 +18,6 @@ export const generateBarcode = (
     carat,
     measurements,
     certificates,
-    colorComment,
     origin,
     treatment: treatment === 'Heated' ? 'Heated' : 'Not Heated'
   };
@@ -47,11 +45,11 @@ export const downloadBarcode = (
   carat?: number, 
   measurements?: string, 
   certificates?: string,
-  colorComment?: string,
+  
   origin?: string,
   treatment?: string
 ) => {
-  const barcodeDataUrl = generateBarcode(stockId, carat, measurements, certificates, colorComment, origin, treatment);
+  const barcodeDataUrl = generateBarcode(stockId, carat, measurements, certificates, origin, treatment);
   
   // Create a download link
   const link = document.createElement('a');

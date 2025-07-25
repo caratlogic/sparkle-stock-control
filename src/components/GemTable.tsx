@@ -99,7 +99,7 @@ export const GemTable = ({
     { key: 'costPrice', label: customColumnLabels['costPrice'] || 'Cost Price/Carat', visible: isOwner, order: 11 },
     { key: 'totalCostPrice', label: customColumnLabels['totalCostPrice'] || 'Total Cost Price', visible: isOwner, order: 12 },
     { key: 'treatment', label: customColumnLabels['treatment'] || 'Treatment', visible: false, order: 13 },
-    { key: 'colorComment', label: customColumnLabels['colorComment'] || 'Color Comment', visible: false, order: 14 },
+    
     { key: 'certificateType', label: customColumnLabels['certificateType'] || 'Certificate Type', visible: false, order: 15 },
     { key: 'supplier', label: customColumnLabels['supplier'] || 'Supplier', visible: false, order: 16 },
     { key: 'purchaseDate', label: customColumnLabels['purchaseDate'] || 'Purchase Date', visible: false, order: 17 },
@@ -310,7 +310,7 @@ export const GemTable = ({
         gem.price,
         ...(isOwner ? [(gem.costPrice / gem.carat).toFixed(2), gem.costPrice] : []),
         gem.treatment || '',
-        gem.colorComment || '',
+        
         gem.certificateType || '',
         gem.supplier || '',
         gem.purchaseDate || '',
@@ -708,8 +708,6 @@ export const GemTable = ({
                            return isOwner ? <div className="font-medium text-red-600">${gem.costPrice.toLocaleString()}</div> : null;
                         case 'treatment':
                           return <div className="text-sm text-slate-600">{gem.treatment || ''}</div>;
-                        case 'colorComment':
-                          return <div className="text-sm text-slate-600">{gem.colorComment || ''}</div>;
                         case 'certificateType':
                           return <div className="text-sm text-slate-600">{gem.certificateType || ''}</div>;
                         case 'supplier':

@@ -542,6 +542,39 @@ export type Database = {
           },
         ]
       }
+      gem_settings: {
+        Row: {
+          created_at: string
+          display_order: number
+          gem_type: string | null
+          id: string
+          is_active: boolean
+          setting_type: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          gem_type?: string | null
+          id?: string
+          is_active?: boolean
+          setting_type: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          gem_type?: string | null
+          id?: string
+          is_active?: boolean
+          setting_type?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       gems: {
         Row: {
           associated_entity: string

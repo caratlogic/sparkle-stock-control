@@ -9,7 +9,7 @@ interface BarcodeDisplayProps {
   carat?: number;
   measurements?: string;
   certificates?: string;
-  colorComment?: string;
+  
   origin?: string;
   treatment?: string;
   size?: 'small' | 'medium' | 'large';
@@ -21,7 +21,6 @@ export const BarcodeDisplay = ({
   carat,
   measurements,
   certificates,
-  colorComment,
   origin,
   treatment,
   size = 'medium', 
@@ -31,7 +30,7 @@ export const BarcodeDisplay = ({
 
   useEffect(() => {
     if (canvasRef.current) {
-      const barcodeDataUrl = generateBarcode(stockId, carat, measurements, certificates, colorComment, origin, treatment);
+      const barcodeDataUrl = generateBarcode(stockId, carat, measurements, certificates, origin, treatment);
       const img = new Image();
       img.onload = () => {
         const ctx = canvasRef.current?.getContext('2d');
@@ -44,10 +43,10 @@ export const BarcodeDisplay = ({
       };
       img.src = barcodeDataUrl;
     }
-  }, [stockId, carat, measurements, certificates, colorComment, origin, treatment, size]);
+  }, [stockId, carat, measurements, certificates, origin, treatment, size]);
 
   const handleDownload = () => {
-    downloadBarcode(stockId, carat, measurements, certificates, colorComment, origin, treatment);
+    downloadBarcode(stockId, carat, measurements, certificates, origin, treatment);
   };
 
   return (

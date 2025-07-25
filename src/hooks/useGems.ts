@@ -39,7 +39,7 @@ export const useGems = () => {
         notes: gem.notes || undefined,
         imageUrl: gem.image_url || undefined,
         treatment: gem.treatment || undefined,
-        colorComment: gem.color_comment || undefined,
+        
         certificateType: gem.certificate_type || undefined,
         supplier: gem.supplier || undefined,
         purchaseDate: gem.purchase_date || undefined,
@@ -160,7 +160,7 @@ export const useGems = () => {
           notes: gemData.notes,
           image_url: gemData.imageUrl,
           treatment: gemData.treatment,
-          color_comment: gemData.colorComment,
+          
           certificate_type: gemData.certificateType,
           supplier: gemData.supplier,
           purchase_date: gemData.purchaseDate,
@@ -202,7 +202,7 @@ export const useGems = () => {
       if (gemData.notes !== undefined) updateData.notes = gemData.notes;
       if (gemData.imageUrl !== undefined) updateData.image_url = gemData.imageUrl;
       if (gemData.treatment !== undefined) updateData.treatment = gemData.treatment || 'none';
-      if (gemData.colorComment !== undefined) updateData.color_comment = gemData.colorComment || 'none';
+      
       if (gemData.certificateType !== undefined) updateData.certificate_type = gemData.certificateType || 'none';
       if (gemData.supplier !== undefined) updateData.supplier = gemData.supplier;
       if (gemData.purchaseDate !== undefined) updateData.purchase_date = gemData.purchaseDate;

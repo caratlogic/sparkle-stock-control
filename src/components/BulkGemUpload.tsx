@@ -35,7 +35,7 @@ export const BulkGemUpload = ({ isOpen, onClose, onSuccess }: BulkGemUploadProps
     const headers = [
       'gemType', 'carat', 'cut', 'color', 'description', 'measurements',
       'price', 'costPrice', 'certificateNumber', 'status', 'treatment',
-      'colorComment', 'certificateType', 'supplier', 'purchaseDate',
+      'certificateType', 'supplier', 'purchaseDate',
       'origin', 'inStock', 'notes'
     ];
 
@@ -201,7 +201,7 @@ export const BulkGemUpload = ({ isOpen, onClose, onSuccess }: BulkGemUploadProps
           notes: item.data.notes || null,
           image_url: item.data.imageUrl || null,
           treatment: item.data.treatment || null,
-          color_comment: item.data.colorComment || null,
+          
           certificate_type: item.data.certificateType || null,
           supplier: item.data.supplier || null,
           purchase_date: item.data.purchaseDate || null,

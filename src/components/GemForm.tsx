@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Gem, GEM_TYPES, CUT_OPTIONS, STATUS_OPTIONS, GEM_COLORS, TREATMENT_OPTIONS, COLOR_COMMENT_OPTIONS, CERTIFICATE_TYPE_OPTIONS, STOCK_TYPE_OPTIONS, OWNERSHIP_STATUS_OPTIONS } from '../types/gem';
+import { Gem, STATUS_OPTIONS, CERTIFICATE_TYPE_OPTIONS, STOCK_TYPE_OPTIONS, OWNERSHIP_STATUS_OPTIONS } from '../types/gem';
+import { useGemSettings } from '@/hooks/useGemSettings';
 import { ArrowLeft, Save, Gem as GemIcon, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { QRCodeDisplay } from './QRCodeDisplay';
@@ -27,6 +28,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const { fieldConfig } = useQRCodeSettings();
   const { partners } = usePartners();
   const { associatedEntities } = useAssociatedEntities();
+  const { getGemTypes, getCuts, getTreatments, getColorsForGemType } = useGemSettings();
   const [formData, setFormData] = useState({
     gemType: 'Diamond',
     stockType: 'single',
@@ -43,7 +45,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     notes: '',
     imageUrl: '',
     treatment: 'none',
-    colorComment: 'none',
     certificateType: 'none',
     supplier: '',
     purchaseDate: '',
@@ -71,7 +72,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         notes: gem.notes || '',
         imageUrl: gem.imageUrl || '',
         treatment: gem.treatment || 'none',
-        colorComment: gem.colorComment || 'none',
+        
         certificateType: gem.certificateType || 'none',
         supplier: gem.supplier || '',
         purchaseDate: gem.purchaseDate || '',
@@ -97,7 +98,6 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       // Ensure required database fields have default values
       stockType: formData.stockType || 'single',
       treatment: formData.treatment || 'none',
-      colorComment: formData.colorComment || 'none',
       certificateType: formData.certificateType || 'none',
       color: formData.color || '',
       certificateNumber: formData.certificateNumber || '',
@@ -138,7 +138,10 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     });
   };
 
-  const availableColors = GEM_COLORS[formData.gemType as keyof typeof GEM_COLORS] || [];
+  const gemTypes = getGemTypes();
+  const cuts = getCuts();
+  const treatments = getTreatments();
+  const availableColors = getColorsForGemType(formData.gemType) || [];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -175,7 +178,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         <SelectValue placeholder="Select gem type" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-slate-200">
-                        {GEM_TYPES.map((type) => (
+                        {gemTypes.map((type) => (
                           <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
                       </SelectContent>
@@ -217,7 +220,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                         <SelectValue placeholder="Select cut" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-slate-200">
-                        {CUT_OPTIONS.map((cut) => (
+                        {cuts.map((cut) => (
                           <SelectItem key={cut} value={cut}>{cut}</SelectItem>
                         ))}
                       </SelectContent>
@@ -371,26 +374,9 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       </SelectTrigger>
                       <SelectContent className="bg-white border-slate-200">
                         <SelectItem value="none">None</SelectItem>
-                        {TREATMENT_OPTIONS.map((treatment) => (
+                        {treatments.map((treatment) => (
                           <SelectItem key={treatment} value={treatment}>
                             {treatment} - {treatment === 'H' ? 'Heated' : treatment === 'NH' ? 'No Heat' : treatment === 'NO' ? 'No Oil' : 'Minor'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="colorComment">Color Comment</Label>
-                    <Select value={formData.colorComment} onValueChange={(value) => handleChange('colorComment', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select color comment" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="none">None</SelectItem>
-                        {COLOR_COMMENT_OPTIONS.map((comment) => (
-                          <SelectItem key={comment} value={comment}>
-                            {comment} - {comment === 'RB' ? 'Royal' : comment === 'I' ? 'Intense' : comment === 'CF' ? 'Cornflower' : comment === 'VD' ? 'Vivid' : 'Pigeon Blood'}
                           </SelectItem>
                         ))}
                       </SelectContent>

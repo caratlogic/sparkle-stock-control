@@ -18,7 +18,7 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-20',
     notes: 'Excellent quality diamond with perfect cut',
     treatment: 'Natural',
-    colorComment: 'Colorless',
+    
     certificateType: 'GIA',
     supplier: 'Bangkok Diamond House',
     purchaseDate: '2024-06-15',
@@ -44,7 +44,7 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-18',
     notes: 'Large emerald with excellent color',
     treatment: 'Oil Enhanced',
-    colorComment: 'Intense Green',
+    
     certificateType: 'GRS',
     supplier: 'Colombian Emerald Co.',
     purchaseDate: '2024-06-10',
@@ -69,7 +69,7 @@ export const sampleGems: Gem[] = [
     status: 'In Stock',
     dateAdded: '2024-06-15',
     treatment: 'Heat Treated',
-    colorComment: 'Pigeon Blood',
+    
     certificateType: 'SSEF',
     supplier: 'Myanmar Ruby Trading',
     purchaseDate: '2024-06-08',
@@ -95,7 +95,7 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-10',
     notes: 'Sold to Johnson Jewelry',
     treatment: 'Heat Treated',
-    colorComment: 'Cornflower Blue',
+    
     certificateType: 'AGL',
     supplier: 'Ceylon Sapphire Traders',
     purchaseDate: '2024-06-02',
@@ -121,7 +121,7 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-25',
     notes: 'Large amethyst with excellent clarity',
     treatment: 'Natural',
-    colorComment: 'Royal Purple',
+    
     certificateType: 'Gübelin',
     supplier: 'Brazilian Gem Exports',
     purchaseDate: '2024-06-18',
@@ -147,7 +147,7 @@ export const sampleGems: Gem[] = [
     dateAdded: '2024-06-22',
     notes: 'Beautiful aquamarine with excellent blue color',
     treatment: 'Natural',
-    colorComment: 'Intense Blue',
+    
     certificateType: 'IGI',
     supplier: 'Madagascar Aqua Ltd.',
     purchaseDate: '2024-06-14',
