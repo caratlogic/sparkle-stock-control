@@ -371,18 +371,31 @@ export const useGems = () => {
         newTotalCostPrice = newTotalCarat * costPricePerCarat;
       }
 
-      // Determine status - for single stock type, always set to 'Sold' when invoiced
+      // Determine status - critical fix for sold gems display
       let newStatus: 'In Stock' | 'Sold' | 'Reserved';
-      if (currentGem.stock_type === 'single' || newTotalCarat <= 0 || (newInStock === 0 && newReserved === 0)) {
+      
+      // For single stock type gems - always mark as completely sold when invoiced
+      if (currentGem.stock_type === 'single') {
         newStatus = 'Sold';
-        if (currentGem.stock_type === 'single') {
-          // Ensure single stock type gems are completely zeroed out
-          newTotalCarat = 0;
-          newInStock = 0;
-          newReserved = 0;
-          newTotalSellingPrice = 0;
-          newTotalCostPrice = 0;
-        }
+        // Ensure single stock type gems are completely zeroed out
+        newTotalCarat = 0;
+        newInStock = 0;
+        newReserved = 0;
+        newSold = 1;
+        newTotalSellingPrice = 0;
+        newTotalCostPrice = 0;
+        console.log(`🔴 CRITICAL FIX: Single gem ${gemId} marked as completely sold - all quantities zeroed`);
+      } 
+      // For parcel/set stock types - check remaining quantities
+      else if (newTotalCarat <= 0 || (newInStock === 0 && newReserved === 0)) {
+        newStatus = 'Sold';
+        // Ensure no remaining quantities for sold parcels/sets
+        newTotalCarat = 0;
+        newInStock = 0;
+        newReserved = 0;
+        newTotalSellingPrice = 0;
+        newTotalCostPrice = 0;
+        console.log(`🔴 CRITICAL FIX: Parcel/Set gem ${gemId} completely sold - all quantities zeroed`);
       } else if (newInStock > 0) {
         newStatus = 'In Stock';
       } else if (newReserved > 0) {
