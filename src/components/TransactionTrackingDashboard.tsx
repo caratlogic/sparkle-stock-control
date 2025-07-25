@@ -4,27 +4,29 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileText, Package, Receipt, TrendingUp, DollarSign, Users } from 'lucide-react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useConsignments } from '@/hooks/useConsignments';
 import { useQuotations } from '@/hooks/useQuotations';
 import { useGems } from '@/hooks/useGems';
 import { format } from 'date-fns';
-
 export const TransactionTrackingDashboard = () => {
-  const { invoices, loading: invoicesLoading } = useInvoices();
-  const { consignments, loading: consignmentsLoading } = useConsignments();
-  const { quotations, loading: quotationsLoading } = useQuotations();
-  const { gems } = useGems();
-
+  const {
+    invoices,
+    loading: invoicesLoading
+  } = useInvoices();
+  const {
+    consignments,
+    loading: consignmentsLoading
+  } = useConsignments();
+  const {
+    quotations,
+    loading: quotationsLoading
+  } = useQuotations();
+  const {
+    gems
+  } = useGems();
   const [ownershipFilter, setOwnershipFilter] = useState<string>('all');
   const [entityFilter, setEntityFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -42,7 +44,12 @@ export const TransactionTrackingDashboard = () => {
       status: string;
       ownershipStatus: string;
       associatedEntity: string;
-      items: Array<{ gemId: string; stockId?: string; ownership_status?: string; associated_entity?: string }>;
+      items: Array<{
+        gemId: string;
+        stockId?: string;
+        ownership_status?: string;
+        associated_entity?: string;
+      }>;
       currency?: string;
       ownedAmount?: number;
       partnerAmount?: number;
@@ -50,14 +57,10 @@ export const TransactionTrackingDashboard = () => {
     }> = [];
 
     // Add invoices (only revenue-generating: sent, overdue, paid, partial)
-    const revenueInvoices = invoices.filter(invoice => 
-      ['sent', 'overdue', 'paid', 'partial'].includes(invoice.status)
-    );
-    
+    const revenueInvoices = invoices.filter(invoice => ['sent', 'overdue', 'paid', 'partial'].includes(invoice.status));
     console.log('🔍 DEBUGGING INVOICE BREAKDOWN:');
     console.log('Total invoices:', invoices.length);
     console.log('Revenue-generating invoices:', revenueInvoices.length);
-    
     let totalInvoiceRevenue = 0;
     let totalOwnedFromItems = 0;
     let totalPartnerFromItems = 0;
@@ -65,10 +68,8 @@ export const TransactionTrackingDashboard = () => {
     let totalProportionalOwned = 0;
     let totalProportionalPartner = 0;
     let totalProportionalMemo = 0;
-    
     revenueInvoices.forEach((invoice, index) => {
       totalInvoiceRevenue += invoice.total;
-      
       const invoiceItems = invoice.items?.map(item => {
         const gem = gems.find(g => g.id === item.productId);
         return {
@@ -81,33 +82,24 @@ export const TransactionTrackingDashboard = () => {
       }) || [];
 
       // Calculate ownership breakdown amounts for this invoice
-      const ownedAmount = invoiceItems
-        .filter(item => item.ownership_status === 'O')
-        .reduce((sum, item) => sum + item.itemAmount, 0);
-      
-      const partnerAmount = invoiceItems
-        .filter(item => item.ownership_status === 'P')
-        .reduce((sum, item) => sum + item.itemAmount, 0);
-      
-      const memoAmount = invoiceItems
-        .filter(item => item.ownership_status === 'M')
-        .reduce((sum, item) => sum + item.itemAmount, 0);
+      const ownedAmount = invoiceItems.filter(item => item.ownership_status === 'O').reduce((sum, item) => sum + item.itemAmount, 0);
+      const partnerAmount = invoiceItems.filter(item => item.ownership_status === 'P').reduce((sum, item) => sum + item.itemAmount, 0);
+      const memoAmount = invoiceItems.filter(item => item.ownership_status === 'M').reduce((sum, item) => sum + item.itemAmount, 0);
 
       // Calculate total from items
       const totalItemsAmount = ownedAmount + partnerAmount + memoAmount;
       totalOwnedFromItems += ownedAmount;
       totalPartnerFromItems += partnerAmount;
       totalMemoFromItems += memoAmount;
-      
+
       // Use proportional distribution if there's a mismatch (due to taxes, discounts, etc.)
-      const finalOwnedAmount = totalItemsAmount > 0 ? (ownedAmount / totalItemsAmount) * invoice.total : 0;
-      const finalPartnerAmount = totalItemsAmount > 0 ? (partnerAmount / totalItemsAmount) * invoice.total : 0;
-      const finalMemoAmount = totalItemsAmount > 0 ? (memoAmount / totalItemsAmount) * invoice.total : 0;
-      
+      const finalOwnedAmount = totalItemsAmount > 0 ? ownedAmount / totalItemsAmount * invoice.total : 0;
+      const finalPartnerAmount = totalItemsAmount > 0 ? partnerAmount / totalItemsAmount * invoice.total : 0;
+      const finalMemoAmount = totalItemsAmount > 0 ? memoAmount / totalItemsAmount * invoice.total : 0;
       totalProportionalOwned += finalOwnedAmount;
       totalProportionalPartner += finalPartnerAmount;
       totalProportionalMemo += finalMemoAmount;
-      
+
       // Log significant discrepancies
       if (Math.abs(totalItemsAmount - invoice.total) > 1 || totalItemsAmount === 0) {
         console.log(`⚠️ Invoice ${invoice.invoiceNumber}:`, {
@@ -127,7 +119,6 @@ export const TransactionTrackingDashboard = () => {
       // Determine ownership status and entity from gems
       const ownershipStatuses = [...new Set(invoiceItems.map(item => item.ownership_status))];
       const entities = [...new Set(invoiceItems.map(item => item.associated_entity))];
-
       transactions.push({
         id: invoice.id,
         type: 'invoice',
@@ -141,12 +132,12 @@ export const TransactionTrackingDashboard = () => {
         items: invoiceItems,
         currency: invoice.currency || invoice.customerDetails?.currency || 'USD',
         // Use proportionally adjusted amounts OR fall back to invoice total if no items
-        ownedAmount: totalItemsAmount > 0 ? finalOwnedAmount : invoice.total, // Default to owned if no items
+        ownedAmount: totalItemsAmount > 0 ? finalOwnedAmount : invoice.total,
+        // Default to owned if no items
         partnerAmount: totalItemsAmount > 0 ? finalPartnerAmount : 0,
         consignedAmount: totalItemsAmount > 0 ? finalMemoAmount : 0
       });
     });
-    
     console.log('💰 REVENUE TOTALS:');
     console.log('Total invoice revenue:', totalInvoiceRevenue);
     console.log('Total from items (raw):', totalOwnedFromItems + totalPartnerFromItems + totalMemoFromItems);
@@ -166,10 +157,8 @@ export const TransactionTrackingDashboard = () => {
           associated_entity: gem?.associatedEntity || 'Self'
         };
       }) || [];
-
       const ownershipStatuses = [...new Set(consignmentItems.map(item => item.ownership_status))];
       const entities = [...new Set(consignmentItems.map(item => item.associated_entity))];
-
       transactions.push({
         id: consignment.id,
         type: 'consignment',
@@ -195,17 +184,18 @@ export const TransactionTrackingDashboard = () => {
         id: quotation.id,
         type: 'quotation',
         number: quotation.quotationNumber,
-        customer: 'Unknown', // Quotations don't have customer details in this structure
+        customer: 'Unknown',
+        // Quotations don't have customer details in this structure
         date: quotation.dateCreated,
         amount: quotation.total,
         status: quotation.status,
-        ownershipStatus: 'Mixed', // Since we don't have detailed gem data for quotations
+        ownershipStatus: 'Mixed',
+        // Since we don't have detailed gem data for quotations
         associatedEntity: 'Mixed',
         items: [],
         currency: quotation.currency || 'USD'
       });
     });
-
     return transactions;
   }, [invoices, consignments, quotations, gems]);
 
@@ -215,8 +205,7 @@ export const TransactionTrackingDashboard = () => {
       if (typeFilter !== 'all' && transaction.type !== typeFilter) return false;
       if (ownershipFilter !== 'all' && !transaction.ownershipStatus.includes(ownershipFilter)) return false;
       if (entityFilter !== 'all' && !transaction.associatedEntity.includes(entityFilter)) return false;
-      if (searchTerm && !transaction.customer.toLowerCase().includes(searchTerm.toLowerCase()) && 
-          !transaction.number.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      if (searchTerm && !transaction.customer.toLowerCase().includes(searchTerm.toLowerCase()) && !transaction.number.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       return true;
     });
   }, [allTransactions, typeFilter, ownershipFilter, entityFilter, searchTerm]);
@@ -224,11 +213,9 @@ export const TransactionTrackingDashboard = () => {
   // Calculate statistics
   const stats = useMemo(() => {
     const totalTransactions = filteredTransactions.length;
-    
     const invoiceTransactions = filteredTransactions.filter(t => t.type === 'invoice');
     const consignmentTransactions = filteredTransactions.filter(t => t.type === 'consignment');
     const quotationTransactions = filteredTransactions.filter(t => t.type === 'quotation');
-    
     const invoiceCount = invoiceTransactions.length;
     const consignmentCount = consignmentTransactions.length;
     const quotationCount = quotationTransactions.length;
@@ -244,27 +231,37 @@ export const TransactionTrackingDashboard = () => {
       acc.partner += t.partnerAmount || 0;
       acc.consigned += t.consignedAmount || 0;
       return acc;
-    }, { owned: 0, consigned: 0, partner: 0 });
+    }, {
+      owned: 0,
+      consigned: 0,
+      partner: 0
+    });
 
     // Calculate totals by currency and ownership (for the currency breakdown section)
     const currencyBreakdown = filteredTransactions.reduce((acc, t) => {
       const currency = t.currency || 'USD';
       if (!acc[currency]) {
-        acc[currency] = { total: 0, owned: 0, consigned: 0, partner: 0 };
+        acc[currency] = {
+          total: 0,
+          owned: 0,
+          consigned: 0,
+          partner: 0
+        };
       }
-      
       acc[currency].total += t.amount;
-      
       if (t.ownershipStatus.includes('O')) acc[currency].owned += t.amount;
       if (t.ownershipStatus.includes('C')) acc[currency].consigned += t.amount;
       if (t.ownershipStatus.includes('P')) acc[currency].partner += t.amount;
-      
       return acc;
-    }, {} as Record<string, { total: number; owned: number; consigned: number; partner: number }>);
+    }, {} as Record<string, {
+      total: number;
+      owned: number;
+      consigned: number;
+      partner: number;
+    }>);
 
     // Legacy total value (for compatibility)
     const totalValue = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
-
     return {
       totalTransactions,
       totalValue,
@@ -274,25 +271,20 @@ export const TransactionTrackingDashboard = () => {
       invoiceRevenue,
       consignmentRevenue,
       quotationRevenue,
-      ownershipBreakdown: invoiceOwnershipBreakdown, // Now only from invoices
+      ownershipBreakdown: invoiceOwnershipBreakdown,
+      // Now only from invoices
       currencyBreakdown
     };
   }, [filteredTransactions]);
-
   const isLoading = invoicesLoading || consignmentsLoading || quotationsLoading;
-
   if (isLoading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
   // Get unique ownership statuses and entities for filters
-  const ownershipStatuses = [...new Set(allTransactions.flatMap(t => t.ownershipStatus.split(', ')))]
-    .filter(status => status && status.trim() !== '');
-  const entities = [...new Set(allTransactions.flatMap(t => t.associatedEntity.split(', ')))]
-    .filter(entity => entity && entity.trim() !== '');
-
-  return (
-    <div className="space-y-6">
+  const ownershipStatuses = [...new Set(allTransactions.flatMap(t => t.ownershipStatus.split(', ')))].filter(status => status && status.trim() !== '');
+  const entities = [...new Set(allTransactions.flatMap(t => t.associatedEntity.split(', ')))].filter(entity => entity && entity.trim() !== '');
+  return <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Transaction Tracking</h1>
@@ -331,9 +323,7 @@ export const TransactionTrackingDashboard = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  {ownershipStatuses.map(status => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
+                  {ownershipStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -346,20 +336,14 @@ export const TransactionTrackingDashboard = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Entities</SelectItem>
-                  {entities.map(entity => (
-                    <SelectItem key={entity} value={entity}>{entity}</SelectItem>
-                  ))}
+                  {entities.map(entity => <SelectItem key={entity} value={entity}>{entity}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="md:col-span-2">
               <Label>Search</Label>
-              <Input
-                placeholder="Search by customer or transaction number..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <Input placeholder="Search by customer or transaction number..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
             </div>
           </div>
         </CardContent>
@@ -395,7 +379,7 @@ export const TransactionTrackingDashboard = () => {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Consignment Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Consignment Amount</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -408,7 +392,7 @@ export const TransactionTrackingDashboard = () => {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quotation Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Quotation Amount</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -469,8 +453,7 @@ export const TransactionTrackingDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {Object.entries(stats.currencyBreakdown).map(([currency, breakdown]) => (
-              <div key={currency} className="space-y-4">
+            {Object.entries(stats.currencyBreakdown).map(([currency, breakdown]) => <div key={currency} className="space-y-4">
                 <h4 className="text-lg font-semibold flex items-center gap-2">
                   {currency === 'EUR' ? '€' : '$'} {currency}
                   <span className="text-sm font-normal text-muted-foreground">
@@ -487,15 +470,12 @@ export const TransactionTrackingDashboard = () => {
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-600 h-2 rounded-full" 
-                        style={{ 
-                          width: `${breakdown.total > 0 ? (breakdown.owned / breakdown.total) * 100 : 0}%` 
-                        }}
-                      ></div>
+                      <div className="bg-green-600 h-2 rounded-full" style={{
+                    width: `${breakdown.total > 0 ? breakdown.owned / breakdown.total * 100 : 0}%`
+                  }}></div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {breakdown.total > 0 ? ((breakdown.owned / breakdown.total) * 100).toFixed(1) : 0}% of {currency} revenue
+                      {breakdown.total > 0 ? (breakdown.owned / breakdown.total * 100).toFixed(1) : 0}% of {currency} revenue
                     </p>
                   </div>
 
@@ -507,15 +487,12 @@ export const TransactionTrackingDashboard = () => {
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
-                        style={{ 
-                          width: `${breakdown.total > 0 ? (breakdown.partner / breakdown.total) * 100 : 0}%` 
-                        }}
-                      ></div>
+                      <div className="bg-blue-600 h-2 rounded-full" style={{
+                    width: `${breakdown.total > 0 ? breakdown.partner / breakdown.total * 100 : 0}%`
+                  }}></div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {breakdown.total > 0 ? ((breakdown.partner / breakdown.total) * 100).toFixed(1) : 0}% of {currency} revenue
+                      {breakdown.total > 0 ? (breakdown.partner / breakdown.total * 100).toFixed(1) : 0}% of {currency} revenue
                     </p>
                   </div>
 
@@ -527,20 +504,16 @@ export const TransactionTrackingDashboard = () => {
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-purple-600 h-2 rounded-full" 
-                        style={{ 
-                          width: `${breakdown.total > 0 ? (breakdown.consigned / breakdown.total) * 100 : 0}%` 
-                        }}
-                      ></div>
+                      <div className="bg-purple-600 h-2 rounded-full" style={{
+                    width: `${breakdown.total > 0 ? breakdown.consigned / breakdown.total * 100 : 0}%`
+                  }}></div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {breakdown.total > 0 ? ((breakdown.consigned / breakdown.total) * 100).toFixed(1) : 0}% of {currency} revenue
+                      {breakdown.total > 0 ? (breakdown.consigned / breakdown.total * 100).toFixed(1) : 0}% of {currency} revenue
                     </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </CardContent>
       </Card>
@@ -569,8 +542,7 @@ export const TransactionTrackingDashboard = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.map((transaction) => (
-                <TableRow key={`${transaction.type}-${transaction.id}`}>
+              {filteredTransactions.map(transaction => <TableRow key={`${transaction.type}-${transaction.id}`}>
                   <TableCell>
                     <Badge variant="outline" className="capitalize">
                       {transaction.type === 'invoice' && <Receipt className="w-3 h-3 mr-1" />}
@@ -591,47 +563,32 @@ export const TransactionTrackingDashboard = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={
-                        transaction.status === 'paid' ? 'default' :
-                        transaction.status === 'sent' ? 'secondary' :
-                        transaction.status === 'pending' ? 'destructive' :
-                        'outline'
-                      }
-                    >
+                    <Badge variant={transaction.status === 'paid' ? 'default' : transaction.status === 'sent' ? 'secondary' : transaction.status === 'pending' ? 'destructive' : 'outline'}>
                       {transaction.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {transaction.ownershipStatus.split(', ').map((status, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+                      {transaction.ownershipStatus.split(', ').map((status, index) => <Badge key={index} variant="outline" className="text-xs">
                           {status}
-                        </Badge>
-                      ))}
+                        </Badge>)}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {transaction.associatedEntity.split(', ').map((entity, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
+                      {transaction.associatedEntity.split(', ').map((entity, index) => <Badge key={index} variant="secondary" className="text-xs">
                           {entity}
-                        </Badge>
-                      ))}
+                        </Badge>)}
                     </div>
                   </TableCell>
-                </TableRow>
-              ))}
+                </TableRow>)}
             </TableBody>
           </Table>
           
-          {filteredTransactions.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
+          {filteredTransactions.length === 0 && <div className="text-center py-8 text-muted-foreground">
               No transactions found matching the current filters.
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
