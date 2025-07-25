@@ -46,7 +46,7 @@ export const PartnerGemsDialog = ({ open, onOpenChange, partnerName, gems }: Par
 
           {gems.length > 0 ? (
             <Table>
-              <TableHeader>
+               <TableHeader>
                 <TableRow>
                   <TableHead>Stock ID</TableHead>
                   <TableHead>Gem Type</TableHead>
@@ -54,6 +54,7 @@ export const PartnerGemsDialog = ({ open, onOpenChange, partnerName, gems }: Par
                   <TableHead>Shape</TableHead>
                   <TableHead>Carat</TableHead>
                   <TableHead>Price</TableHead>
+                  <TableHead>Partnership %</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Certificate</TableHead>
                 </TableRow>
@@ -61,18 +62,21 @@ export const PartnerGemsDialog = ({ open, onOpenChange, partnerName, gems }: Par
               <TableBody>
                 {gems.map((gem) => (
                   <TableRow key={gem.id}>
-                    <TableCell className="font-medium">{gem.stock_id}</TableCell>
-                    <TableCell>{gem.gem_type}</TableCell>
-                    <TableCell>{gem.color}</TableCell>
-                    <TableCell>{gem.shape || '-'}</TableCell>
-                    <TableCell>{gem.carat}</TableCell>
-                    <TableCell>${gem.price.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <Badge variant={gem.status === 'In Stock' ? 'default' : 'secondary'}>
-                        {gem.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{gem.certificate_number || '-'}</TableCell>
+                     <TableCell className="font-medium">{gem.stock_id}</TableCell>
+                     <TableCell>{gem.gem_type}</TableCell>
+                     <TableCell>{gem.color}</TableCell>
+                     <TableCell>{gem.shape || '-'}</TableCell>
+                     <TableCell>{gem.carat}</TableCell>
+                     <TableCell>${gem.price.toLocaleString()}</TableCell>
+                     <TableCell className="font-medium text-emerald-600">
+                       {gem.partner_percentage || 0}%
+                     </TableCell>
+                     <TableCell>
+                       <Badge variant={gem.status === 'In Stock' ? 'default' : 'secondary'}>
+                         {gem.status}
+                       </Badge>
+                     </TableCell>
+                     <TableCell>{gem.certificate_number || '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
