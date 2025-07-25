@@ -138,6 +138,17 @@ export const TransactionTrackingDashboard = () => {
         consignedAmount: totalItemsAmount > 0 ? finalMemoAmount : 0
       });
     });
+    // Debug: Check all consigned gems
+    const consignedGems = gems.filter(g => g.ownershipStatus === 'M');
+    console.log('🔍 CONSIGNED GEMS DEBUG:');
+    console.log('Total consigned gems:', consignedGems.length);
+    console.log('Consigned gems:', consignedGems.map(g => ({
+      stockId: g.stockId,
+      ownershipStatus: g.ownershipStatus,
+      associatedEntity: g.associatedEntity,
+      price: g.price
+    })));
+
     console.log('💰 REVENUE TOTALS:');
     console.log('Total invoice revenue:', totalInvoiceRevenue);
     console.log('Total from items (raw):', totalOwnedFromItems + totalPartnerFromItems + totalMemoFromItems);
@@ -145,6 +156,33 @@ export const TransactionTrackingDashboard = () => {
     console.log('Owned (proportional):', totalProportionalOwned);
     console.log('Partner (proportional):', totalProportionalPartner);
     console.log('Memo (proportional):', totalProportionalMemo);
+    
+    // Debug: Show which invoices contain consigned items
+    console.log('📋 INVOICES WITH CONSIGNED ITEMS:');
+    revenueInvoices.forEach(invoice => {
+      const invoiceItems = invoice.items?.map(item => {
+        const gem = gems.find(g => g.id === item.productId);
+        return {
+          gemId: item.productId,
+          stockId: gem?.stockId,
+          ownership_status: gem?.ownershipStatus || 'O',
+          itemAmount: item.totalPrice || 0
+        };
+      }) || [];
+      
+      const consignedItems = invoiceItems.filter(item => item.ownership_status === 'M');
+      if (consignedItems.length > 0) {
+        const consignedAmount = consignedItems.reduce((sum, item) => sum + item.itemAmount, 0);
+        console.log(`Invoice ${invoice.invoiceNumber}:`, {
+          total: invoice.total,
+          consignedItems: consignedItems.map(item => ({
+            stockId: item.stockId,
+            amount: item.itemAmount
+          })),
+          consignedAmount
+        });
+      }
+    });
 
     // Add consignments
     consignments.forEach(consignment => {
