@@ -60,29 +60,32 @@ const InvoiceItemRow = ({
     return null;
   };
 
-  // Handle quantity change for set type items
+  // Handle quantity change - FIXED VERSION v2.0 - NO PRICE CHANGES
   const handleEditQuantityChange = (newQuantity: number) => {
-    console.log('🔧 NEW handleEditQuantityChange called - NO PRICE CALCULATION:', {
+    console.log('🚀 FIXED v2.0 - handleEditQuantityChange - NO PRICE CALCULATION:', {
       newQuantity,
       oldQuantity: editQuantity,
       currentEditTotalPrice: editTotalPrice,
+      willKeepSamePrice: true,
       isSetType,
       stockType: item.productDetails?.stockType
     });
     
+    // CRITICAL: Only update quantity, NEVER update price
     setEditQuantity(newQuantity);
     
     if (isSetType) {
-      console.log('💎 SET TYPE: Only updating carat, keeping total price unchanged');
+      console.log('💎 SET TYPE: Only updating carat, KEEPING total price unchanged');
       const individualCarat = getIndividualStoneCarat();
       if (individualCarat) {
         setEditCarat(newQuantity * individualCarat);
       }
     } else {
-      console.log('💎 PARCEL TYPE: Quantity changed, keeping total price unchanged');
-      // For parcel/regular gems, only update quantity
-      // Total price remains unchanged when quantity changes
+      console.log('💎 PARCEL TYPE: Quantity changed, KEEPING total price unchanged');
     }
+    
+    // EXPLICITLY LOG: Price should remain the same
+    console.log('🔒 PRICE LOCKED: Total price should remain:', editTotalPrice);
   };
 
   // Handle carat change for set type items
