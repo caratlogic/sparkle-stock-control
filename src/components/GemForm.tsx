@@ -58,23 +58,32 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   useEffect(() => {
     if (gem) {
       console.log('🔍 GemForm: Populating form with gem data:', gem);
-      setFormData({
+      console.log('🔍 GemForm: Specific field values:', {
         gemType: gem.gemType,
-        stockType: gem.stockType || 'single',
-        carat: gem.carat.toString(),
         cut: gem.cut,
         color: gem.color,
-        description: gem.description,
-        measurements: gem.measurements,
-        price: gem.price.toString(),
-        retailPrice: (gem.retailPrice || gem.price).toString(),
-        costPrice: gem.costPrice.toString(),
-        certificateNumber: gem.certificateNumber,
-        status: gem.status,
+        stockType: gem.stockType,
+        ownershipStatus: gem.ownershipStatus,
+        associatedEntity: gem.associatedEntity,
+        partnerPercentage: gem.partnerPercentage
+      });
+      
+      const newFormData = {
+        gemType: gem.gemType || 'Diamond',
+        stockType: gem.stockType || 'single',
+        carat: gem.carat?.toString() || '',
+        cut: gem.cut || '',
+        color: gem.color || '',
+        description: gem.description || '',
+        measurements: gem.measurements || '',
+        price: gem.price?.toString() || '',
+        retailPrice: (gem.retailPrice || gem.price)?.toString() || '',
+        costPrice: gem.costPrice?.toString() || '',
+        certificateNumber: gem.certificateNumber || '',
+        status: gem.status || 'In Stock',
         notes: gem.notes || '',
         imageUrl: gem.imageUrl || '',
         treatment: gem.treatment || 'none',
-        
         certificateType: gem.certificateType || 'none',
         supplier: gem.supplier || '',
         purchaseDate: gem.purchaseDate || '',
@@ -83,8 +92,16 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         ownershipStatus: gem.ownershipStatus || 'O',
         associatedEntity: gem.associatedEntity || 'Self',
         partnerPercentage: (gem.partnerPercentage || 0).toString()
+      };
+      
+      console.log('🔍 GemForm: Setting form data:', newFormData);
+      setFormData(newFormData);
+      console.log('✅ GemForm: Form data set with critical fields:', {
+        gemType: newFormData.gemType,
+        cut: newFormData.cut,
+        color: newFormData.color,
+        partnerPercentage: newFormData.partnerPercentage
       });
-      console.log('✅ GemForm: Form data set with partnerPercentage:', gem.partnerPercentage);
     }
   }, [gem]);
 
