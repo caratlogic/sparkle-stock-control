@@ -15,7 +15,8 @@ import {
   X,
   Gem,
   Home,
-  Building2
+  Building2,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +41,7 @@ const navigationItems = [
   { id: 'communications', label: 'Communications', icon: MessageSquare },
   { id: 'credit-notes', label: 'Credit Notes', icon: FileText },
   { id: 'qr-codes', label: 'QR Codes', icon: QrCode },
+  { id: 'gem-settings', label: 'Gem Settings', icon: Settings },
 ];
 
 export const Sidebar = ({ activeTab, onTabChange, collapsed, onToggleCollapse }: SidebarProps) => {

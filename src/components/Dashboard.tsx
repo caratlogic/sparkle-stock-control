@@ -21,6 +21,7 @@ import { ConsignmentCreation } from './ConsignmentCreation';
 import { HelpSection } from './HelpSection';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { CaratLogicHomepage } from './CaratLogicHomepage';
+import GemSettingsManagement from './GemSettingsManagement';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
@@ -332,6 +333,8 @@ export const Dashboard = () => {
             {activeTab === 'credit-notes' && <CreditNotesDashboard />}
 
             {activeTab === 'qr-codes' && <QRCodeManagement gems={gems} />}
+
+            {activeTab === 'gem-settings' && <GemSettingsManagement />}
           </div>
         </div>
       </div>
