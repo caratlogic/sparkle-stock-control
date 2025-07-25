@@ -402,7 +402,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                       </SelectTrigger>
                       <SelectContent className="bg-white border-slate-200">
                         <SelectItem value="none">None</SelectItem>
-                        {treatments.map((treatment) => (
+                        {treatments.filter(treatment => treatment !== 'none').map((treatment) => (
                           <SelectItem key={treatment} value={treatment}>
                             {treatment} - {treatment === 'H' ? 'Heated' : treatment === 'NH' ? 'No Heat' : treatment === 'NO' ? 'No Oil' : 'Minor'}
                           </SelectItem>
@@ -411,20 +411,20 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="certificateType">Certificate Type</Label>
-                    <Select value={formData.certificateType} onValueChange={(value) => handleChange('certificateType', value)}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Select certificate type" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="none">None</SelectItem>
-                        {CERTIFICATE_TYPE_OPTIONS.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="certificateType">Certificate Type</Label>
+                     <Select value={formData.certificateType} onValueChange={(value) => handleChange('certificateType', value)}>
+                       <SelectTrigger className="bg-slate-50 border-slate-200">
+                         <SelectValue placeholder="Select certificate type" />
+                       </SelectTrigger>
+                       <SelectContent className="bg-white border-slate-200">
+                         <SelectItem value="none">None</SelectItem>
+                         {CERTIFICATE_TYPE_OPTIONS.filter(type => type !== 'none').map((type) => (
+                           <SelectItem key={type} value={type}>{type}</SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="supplier">Supplier</Label>
