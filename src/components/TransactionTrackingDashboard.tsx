@@ -101,7 +101,17 @@ export const TransactionTrackingDashboard = () => {
       totalProportionalPartner += finalPartnerAmount;
       totalProportionalMemo += finalMemoAmount;
 
-      // Log significant discrepancies
+      // Debug: Check if invoice has items and ownership breakdown
+      if (invoiceItems.length === 0) {
+        console.log(`🚨 Invoice ${invoice.invoiceNumber} has NO ITEMS - Total: ${invoice.total}`);
+      } else if (ownedAmount === 0 && partnerAmount === 0 && memoAmount === 0) {
+        console.log(`🚨 Invoice ${invoice.invoiceNumber} has items but NO OWNERSHIP STATUS - Total: ${invoice.total}`);
+        invoiceItems.forEach(item => {
+          console.log(`   Item: ${item.stockId} - Ownership: ${item.ownership_status} - Price: ${item.itemAmount}`);
+        });
+      }
+      
+      // Log significant discrepancies or missing ownership
       if (Math.abs(totalItemsAmount - invoice.total) > 1 || totalItemsAmount === 0) {
         console.log(`⚠️ Invoice ${invoice.invoiceNumber}:`, {
           invoiceTotal: invoice.total,
