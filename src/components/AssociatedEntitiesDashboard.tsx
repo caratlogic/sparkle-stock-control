@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Building2, Edit2, Trash2, TrendingUp, Gem } from 'lucide-react';
 import { useAssociatedEntities, useAssociatedEntityTransactions, useAssociatedEntityGems, type AssociatedEntity } from '@/hooks/useAssociatedEntities';
 import { AssociatedEntityDetailView } from './AssociatedEntityDetailView';
+import { AssociatedEntityGemsDialog } from './AssociatedEntityGemsDialog';
 import { toast } from 'sonner';
 
 export const AssociatedEntitiesDashboard = () => {
@@ -19,7 +20,9 @@ export const AssociatedEntitiesDashboard = () => {
   const { transactions } = useAssociatedEntityTransactions();
   const { gemsByEntity } = useAssociatedEntityGems();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isGemsDialogOpen, setIsGemsDialogOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<AssociatedEntity | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<AssociatedEntity | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<{
@@ -303,13 +306,19 @@ export const AssociatedEntitiesDashboard = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          setSelectedEntity(entity);
+                          setIsGemsDialogOpen(true);
+                        }}
+                        className="flex items-center gap-1 hover:bg-slate-50 p-1 rounded cursor-pointer"
+                      >
                         <Gem className="w-4 h-4 text-emerald-600" />
                         <span className="font-medium">{stats.gemCount}</span>
                         <span className="text-sm text-muted-foreground">
                           ({stats.totalCarats.toFixed(2)}ct)
                         </span>
-                      </div>
+                      </button>
                     </TableCell>
                     <TableCell>
                       <Badge variant={entity.status === 'active' ? 'default' : 'secondary'}>
@@ -354,6 +363,16 @@ export const AssociatedEntitiesDashboard = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Associated Entity Gems Dialog */}
+      {selectedEntity && (
+        <AssociatedEntityGemsDialog
+          open={isGemsDialogOpen}
+          onOpenChange={setIsGemsDialogOpen}
+          entityName={selectedEntity.name}
+          gems={gemsByEntity[selectedEntity.name] || []}
+        />
+      )}
     </div>
   );
 };

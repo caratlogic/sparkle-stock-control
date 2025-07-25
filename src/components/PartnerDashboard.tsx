@@ -26,6 +26,7 @@ import { Plus, Edit, DollarSign, Users, TrendingUp, Building, Gem } from 'lucide
 import { usePartners, usePartnerTransactions, usePartnerGems, Partner } from '@/hooks/usePartners';
 import { useToast } from '@/hooks/use-toast';
 import { PartnerTransactionDetail } from './PartnerTransactionDetail';
+import { PartnerGemsDialog } from './PartnerGemsDialog';
 
 export const PartnerDashboard = () => {
   const { partners, loading, addPartner, updatePartner, deletePartner } = usePartners();
@@ -36,6 +37,7 @@ export const PartnerDashboard = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [isGemsDialogOpen, setIsGemsDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -343,13 +345,19 @@ export const PartnerDashboard = () => {
                   </TableCell>
                   <TableCell>{partner.ownership_percentage}%</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        setSelectedPartner(partner);
+                        setIsGemsDialogOpen(true);
+                      }}
+                      className="flex items-center gap-1 hover:bg-slate-50 p-1 rounded cursor-pointer"
+                    >
                       <Gem className="w-4 h-4 text-blue-600" />
                       <span className="font-medium">{partner.gemCount}</span>
                       <span className="text-sm text-muted-foreground">
                         ({partner.totalCarats.toFixed(2)}ct)
                       </span>
-                    </div>
+                    </button>
                   </TableCell>
                   <TableCell>${partner.totalRevenue.toLocaleString()}</TableCell>
                   <TableCell>${partner.partnerShare.toLocaleString()}</TableCell>
@@ -482,6 +490,16 @@ export const PartnerDashboard = () => {
             setIsDetailDialogOpen(false);
             setSelectedPartner(null);
           }}
+        />
+      )}
+
+      {/* Partner Gems Dialog */}
+      {selectedPartner && (
+        <PartnerGemsDialog
+          open={isGemsDialogOpen}
+          onOpenChange={setIsGemsDialogOpen}
+          partnerName={selectedPartner.name}
+          gems={gemsByPartner[selectedPartner.name] || []}
         />
       )}
     </div>
