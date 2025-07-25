@@ -46,6 +46,7 @@ export interface Gem {
   updatedBy?: string;
   ownershipStatus?: 'P' | 'M' | 'O';
   associatedEntity?: string;
+  partnerPercentage?: number;
   certificates?: GemCertificate[];
   consignmentInfo?: {
     id: string;

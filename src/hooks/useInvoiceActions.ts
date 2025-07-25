@@ -161,7 +161,8 @@ export const useInvoiceActions = () => {
           if (gem && gem.ownershipStatus === 'P' && gem.associatedEntity && gem.associatedEntity !== 'Self') {
             const partner = partners.find(p => p.name === gem.associatedEntity);
             if (partner) {
-              const partnerShare = (item.totalPrice * partner.ownership_percentage) / 100;
+              const partnerPercentage = gem.partnerPercentage || 0;
+              const partnerShare = (item.totalPrice * partnerPercentage) / 100;
               
               console.log(`🔄 Creating partner transaction for gem ${gemId}, partner ${partner.name}, share: $${partnerShare}`);
               

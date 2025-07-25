@@ -173,11 +173,11 @@ export const PartnerTransactionDetail = ({ partner, isOpen, onClose }: PartnerTr
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Ownership %
+                Percentage
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{partner.ownership_percentage}%</div>
+              <div className="text-2xl font-bold">Per Gem</div>
             </CardContent>
           </Card>
           
@@ -279,7 +279,7 @@ export const PartnerTransactionDetail = ({ partner, isOpen, onClose }: PartnerTr
                           ${transaction.partner_share.toLocaleString()}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          ({partner.ownership_percentage}%)
+                          (Variable by gem)
                         </div>
                       </TableCell>
                       <TableCell>

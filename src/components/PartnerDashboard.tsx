@@ -44,7 +44,6 @@ export const PartnerDashboard = () => {
     email: '',
     phone: '',
     company: '',
-    ownership_percentage: 0,
     address: '',
     status: 'active' as 'active' | 'inactive',
     notes: ''
@@ -56,7 +55,6 @@ export const PartnerDashboard = () => {
       email: '',
       phone: '',
       company: '',
-      ownership_percentage: 0,
       address: '',
       status: 'active',
       notes: ''
@@ -91,7 +89,6 @@ export const PartnerDashboard = () => {
       email: partner.email,
       phone: partner.phone || '',
       company: partner.company || '',
-      ownership_percentage: partner.ownership_percentage,
       address: partner.address || '',
       status: partner.status,
       notes: partner.notes || ''
@@ -186,19 +183,6 @@ export const PartnerDashboard = () => {
                     id="company"
                     value={formData.company}
                     onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="ownership">Ownership Percentage *</Label>
-                  <Input
-                    id="ownership"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value={formData.ownership_percentage}
-                    onChange={(e) => setFormData(prev => ({ ...prev, ownership_percentage: parseFloat(e.target.value) || 0 }))}
-                    required
                   />
                 </div>
                 <div>
@@ -310,7 +294,7 @@ export const PartnerDashboard = () => {
               <TableRow>
                 <TableHead>Partner</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead>Ownership %</TableHead>
+                <TableHead>Percentage</TableHead>
                 <TableHead>Gems</TableHead>
                 <TableHead>Total Revenue</TableHead>
                 <TableHead>Partner Share</TableHead>
@@ -343,7 +327,7 @@ export const PartnerDashboard = () => {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{partner.ownership_percentage}%</TableCell>
+                  <TableCell>Per Gem</TableCell>
                   <TableCell>
                     <button
                       onClick={() => {
@@ -427,19 +411,6 @@ export const PartnerDashboard = () => {
                   id="edit-company"
                   value={formData.company}
                   onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-ownership">Ownership Percentage *</Label>
-                <Input
-                  id="edit-ownership"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value={formData.ownership_percentage}
-                  onChange={(e) => setFormData(prev => ({ ...prev, ownership_percentage: parseFloat(e.target.value) || 0 }))}
-                  required
                 />
               </div>
               <div>

@@ -8,7 +8,6 @@ export interface Partner {
   email: string;
   phone?: string;
   company?: string;
-  ownership_percentage: number;
   address?: string;
   status: 'active' | 'inactive';
   notes?: string;

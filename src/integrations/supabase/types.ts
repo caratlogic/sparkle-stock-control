@@ -598,6 +598,7 @@ export type Database = {
           old_code: string | null
           origin: string | null
           ownership_status: string
+          partner_percentage: number | null
           price: number
           price_in_letters: string | null
           purchase_date: string | null
@@ -638,6 +639,7 @@ export type Database = {
           old_code?: string | null
           origin?: string | null
           ownership_status?: string
+          partner_percentage?: number | null
           price: number
           price_in_letters?: string | null
           purchase_date?: string | null
@@ -678,6 +680,7 @@ export type Database = {
           old_code?: string | null
           origin?: string | null
           ownership_status?: string
+          partner_percentage?: number | null
           price?: number
           price_in_letters?: string | null
           purchase_date?: string | null
@@ -905,7 +908,6 @@ export type Database = {
           id: string
           name: string
           notes: string | null
-          ownership_percentage: number
           phone: string | null
           status: string
           updated_at: string
@@ -918,7 +920,6 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
-          ownership_percentage?: number
           phone?: string | null
           status?: string
           updated_at?: string
@@ -931,7 +932,6 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
-          ownership_percentage?: number
           phone?: string | null
           status?: string
           updated_at?: string

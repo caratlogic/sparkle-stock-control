@@ -51,7 +51,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     origin: '',
     inStock: '',
     ownershipStatus: 'O',
-    associatedEntity: 'Self'
+    associatedEntity: 'Self',
+    partnerPercentage: ''
   });
 
   useEffect(() => {
@@ -79,7 +80,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         origin: gem.origin || '',
         inStock: (gem.inStock || 0).toString(),
         ownershipStatus: gem.ownershipStatus || 'O',
-        associatedEntity: gem.associatedEntity || 'Self'
+        associatedEntity: gem.associatedEntity || 'Self',
+        partnerPercentage: (gem.partnerPercentage || 0).toString()
       });
     }
   }, [gem]);
@@ -94,6 +96,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       retailPrice: formData.retailPrice ? parseFloat(formData.retailPrice) : 0,
       costPrice: parseFloat(formData.costPrice) || 0,
       inStock: parseInt(formData.inStock) || 0,
+      partnerPercentage: formData.ownershipStatus === 'P' ? (parseFloat(formData.partnerPercentage) || 0) : 0,
       purchaseDate: formData.purchaseDate || null,
       // Ensure required database fields have default values
       stockType: formData.stockType || 'single',
@@ -130,8 +133,14 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
       if (field === 'ownershipStatus') {
         if (value === 'O') {
           newData.associatedEntity = 'Self';
+          newData.partnerPercentage = '';
         } else {
           newData.associatedEntity = '';
+          if (value === 'P') {
+            newData.partnerPercentage = '50';
+          } else {
+            newData.partnerPercentage = '';
+          }
         }
       }
       return newData;
@@ -482,10 +491,31 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                            </SelectContent>
                         </Select>
                       )}
-                    </div>
+                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="inStock">In Stock Quantity</Label>
+                     {formData.ownershipStatus === 'P' && (
+                       <div className="space-y-2">
+                         <Label htmlFor="partnerPercentage">Partner Percentage *</Label>
+                         <Input
+                           id="partnerPercentage"
+                           type="number"
+                           min="0"
+                           max="100"
+                           step="0.01"
+                           placeholder="50"
+                           value={formData.partnerPercentage}
+                           onChange={(e) => handleChange('partnerPercentage', e.target.value)}
+                           className="bg-slate-50 border-slate-200"
+                           required
+                         />
+                         <p className="text-sm text-muted-foreground">
+                           Percentage of revenue that goes to the partner for this specific gem
+                         </p>
+                       </div>
+                     )}
+
+                     <div className="space-y-2">
+                       <Label htmlFor="inStock">In Stock Quantity</Label>
                       <Input
                         id="inStock"
                         type="number"
