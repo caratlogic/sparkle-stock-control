@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Building2, Edit2, Trash2, TrendingUp } from 'lucide-react';
 import { useAssociatedEntities, useAssociatedEntityTransactions, type AssociatedEntity } from '@/hooks/useAssociatedEntities';
+import { AssociatedEntityDetailView } from './AssociatedEntityDetailView';
 import { toast } from 'sonner';
 
 export const AssociatedEntitiesDashboard = () => {
@@ -18,6 +19,7 @@ export const AssociatedEntitiesDashboard = () => {
   const { transactions } = useAssociatedEntityTransactions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<AssociatedEntity | null>(null);
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<{
     name: string;
@@ -96,8 +98,14 @@ export const AssociatedEntitiesDashboard = () => {
     return { totalRevenue, transactionCount };
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
+  // Show detail view if an entity is selected
+  if (selectedEntityId) {
+    return (
+      <AssociatedEntityDetailView 
+        entityId={selectedEntityId} 
+        onBack={() => setSelectedEntityId(null)} 
+      />
+    );
   }
 
   return (
@@ -273,7 +281,12 @@ export const AssociatedEntitiesDashboard = () => {
                 const stats = getEntityStats(entity.name);
                 return (
                   <TableRow key={entity.id}>
-                    <TableCell className="font-medium">{entity.name}</TableCell>
+                    <TableCell 
+                      className="font-medium cursor-pointer text-blue-600 hover:text-blue-800 hover:underline"
+                      onClick={() => setSelectedEntityId(entity.id)}
+                    >
+                      {entity.name}
+                    </TableCell>
                     <TableCell>{entity.company || '-'}</TableCell>
                     <TableCell>
                       <div className="text-sm">
