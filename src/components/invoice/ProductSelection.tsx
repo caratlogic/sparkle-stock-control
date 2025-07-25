@@ -64,6 +64,12 @@ const InvoiceItemRow = ({
       if (individualCarat) {
         setEditCarat(newQuantity * individualCarat);
       }
+    } else {
+      // For regular gems, update total price proportionally when quantity changes
+      if (editTotalPrice && item.quantity > 0) {
+        const pricePerStone = editTotalPrice / item.quantity;
+        setEditTotalPrice(newQuantity * pricePerStone);
+      }
     }
   };
 
@@ -269,6 +275,13 @@ export const ProductSelection = ({
             setTotalSellingPrice(newTotalPrice);
           }
         }
+      }
+    } else {
+      // Handle regular gems - update total selling price proportionally when quantity changes
+      if (totalSellingPrice && quantity > 0 && setTotalSellingPrice) {
+        const pricePerStone = totalSellingPrice / quantity;
+        const newTotalPrice = newQuantity * pricePerStone;
+        setTotalSellingPrice(newTotalPrice);
       }
     }
     
