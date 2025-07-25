@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      associated_entities: {
+        Row: {
+          address: string | null
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      associated_entity_transactions: {
+        Row: {
+          associated_entity_id: string
+          associated_entity_name: string
+          created_at: string
+          id: string
+          ownership_status: string
+          revenue_amount: number
+          transaction_date: string
+          transaction_id: string
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          associated_entity_id: string
+          associated_entity_name: string
+          created_at?: string
+          id?: string
+          ownership_status: string
+          revenue_amount?: number
+          transaction_date?: string
+          transaction_id: string
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          associated_entity_id?: string
+          associated_entity_name?: string
+          created_at?: string
+          id?: string
+          ownership_status?: string
+          revenue_amount?: number
+          transaction_date?: string
+          transaction_id?: string
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       column_customizations: {
         Row: {
           column_key: string

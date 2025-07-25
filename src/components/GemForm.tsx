@@ -14,6 +14,7 @@ import { FileUpload } from './ui/file-upload';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 import { GemCertificateManager } from './GemCertificateManager';
 import { usePartners } from '../hooks/usePartners';
+import { useAssociatedEntities } from '../hooks/useAssociatedEntities';
 
 interface GemFormProps {
   gem?: Gem | null;
@@ -25,6 +26,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const { isOwner } = useAuth();
   const { fieldConfig } = useQRCodeSettings();
   const { partners } = usePartners();
+  const { associatedEntities } = useAssociatedEntities();
   const [formData, setFormData] = useState({
     gemType: 'Diamond',
     stockType: 'single',
@@ -473,20 +475,25 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                           value={formData.associatedEntity} 
                           onValueChange={(value) => handleChange('associatedEntity', value)}
                         >
-                          <SelectTrigger className="bg-slate-50 border-slate-200">
-                            <SelectValue placeholder={
-                              formData.ownershipStatus === 'P' ? 'Select partner' :
-                              formData.ownershipStatus === 'M' ? 'Select supplier' :
-                              'Select entity'
-                            } />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white border-slate-200">
-                            {partners.map((partner) => (
-                              <SelectItem key={partner.id} value={partner.name}>
-                                {partner.name} {partner.company && `(${partner.company})`}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
+                           <SelectTrigger className="bg-slate-50 border-slate-200">
+                             <SelectValue placeholder={
+                               formData.ownershipStatus === 'P' ? 'Select partner' :
+                               formData.ownershipStatus === 'M' ? 'Select company/entity' :
+                               'Select entity'
+                             } />
+                           </SelectTrigger>
+                           <SelectContent className="bg-white border-slate-200">
+                             {formData.ownershipStatus === 'P' && partners.map((partner) => (
+                               <SelectItem key={partner.id} value={partner.name}>
+                                 {partner.name} {partner.company && `(${partner.company})`}
+                               </SelectItem>
+                             ))}
+                             {formData.ownershipStatus === 'M' && associatedEntities.map((entity) => (
+                               <SelectItem key={entity.id} value={entity.name}>
+                                 {entity.name} {entity.company && `(${entity.company})`}
+                               </SelectItem>
+                             ))}
+                           </SelectContent>
                         </Select>
                       )}
                     </div>
