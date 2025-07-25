@@ -92,10 +92,11 @@ export const TransactionTrackingDashboard = () => {
       totalPartnerFromItems += partnerAmount;
       totalMemoFromItems += memoAmount;
 
-      // Use proportional distribution if there's a mismatch (due to taxes, discounts, etc.)
-      const finalOwnedAmount = totalItemsAmount > 0 ? ownedAmount / totalItemsAmount * invoice.total : 0;
-      const finalPartnerAmount = totalItemsAmount > 0 ? partnerAmount / totalItemsAmount * invoice.total : 0;
-      const finalMemoAmount = totalItemsAmount > 0 ? memoAmount / totalItemsAmount * invoice.total : 0;
+      // For ownership breakdown, use raw amounts (not proportional with taxes)
+      // This ensures consigned revenue reflects actual gem values, not tax-adjusted amounts
+      const finalOwnedAmount = ownedAmount;
+      const finalPartnerAmount = partnerAmount;
+      const finalMemoAmount = memoAmount;
       totalProportionalOwned += finalOwnedAmount;
       totalProportionalPartner += finalPartnerAmount;
       totalProportionalMemo += finalMemoAmount;
