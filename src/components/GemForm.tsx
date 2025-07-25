@@ -171,11 +171,15 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const treatments = getTreatments();
   const availableColors = getColorsForGemType(formData.gemType) || [];
 
+  // Check if gem settings are still loading
+  const isGemSettingsLoading = gemTypes.length === 0 || cuts.length === 0;
+
   // Debug: Log available options and current form values
   console.log('🔍 GemForm: Available options and current values:', {
     gemTypes: gemTypes.length > 0 ? gemTypes : 'Loading...',
     cuts: cuts.length > 0 ? cuts : 'Loading...',
     availableColors: availableColors.length > 0 ? availableColors : `Loading for ${formData.gemType}...`,
+    isGemSettingsLoading,
     currentFormData: {
       gemType: formData.gemType,
       cut: formData.cut, 
@@ -185,6 +189,28 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     cutExists: cuts.includes(formData.cut),
     colorExists: availableColors.includes(formData.color)
   });
+
+  // Don't render form until gem settings are loaded
+  if (isGemSettingsLoading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center space-x-4 mb-6">
+          <Button variant="ghost" onClick={onCancel} className="p-2">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">
+              {gem ? 'Edit Gem' : 'Add New Gem'}
+            </h2>
+            <p className="text-slate-600">Loading gem settings...</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <div className="text-slate-600">Loading form data...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
