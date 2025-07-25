@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   Gem,
-  Home
+  Home,
+  Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +34,7 @@ const navigationItems = [
   { id: 'transactions', label: 'Transactions', icon: Receipt },
   { id: 'payments', label: 'Payments', icon: CreditCard },
   { id: 'partners', label: 'Partners', icon: Users },
+  { id: 'associated-entities', label: 'Associated Entities', icon: Building2 },
   { id: 'transaction-tracking', label: 'Transaction Tracking', icon: BarChart3 },
   { id: 'reminders', label: 'Reminders', icon: Bell },
   { id: 'communications', label: 'Communications', icon: MessageSquare },

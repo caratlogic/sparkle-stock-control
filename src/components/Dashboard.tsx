@@ -14,6 +14,7 @@ import { CommunicationsDashboard } from './CommunicationsDashboard';
 import { CreditNotesDashboard } from './CreditNotesDashboard';
 import { QRCodeManagement } from './QRCodeManagement';
 import { PartnerDashboard } from './PartnerDashboard';
+import { AssociatedEntitiesDashboard } from './AssociatedEntitiesDashboard';
 import { TransactionTrackingDashboard } from './TransactionTrackingDashboard';
 import { InvoiceCreation } from './InvoiceCreation';
 import { ConsignmentCreation } from './ConsignmentCreation';
@@ -289,6 +290,8 @@ export const Dashboard = () => {
             {activeTab === 'communications' && <CommunicationsDashboard />}
 
             {activeTab === 'partners' && <PartnerDashboard />}
+
+            {activeTab === 'associated-entities' && <AssociatedEntitiesDashboard />}
 
             {activeTab === 'transaction-tracking' && <TransactionTrackingDashboard />}
 
