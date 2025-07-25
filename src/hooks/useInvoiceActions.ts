@@ -6,6 +6,7 @@ import { useInvoices } from './useInvoices';
 import { useGems } from './useGems';
 import { useCustomerCommunications } from './useCustomerCommunications';
 import { usePartners, usePartnerTransactions } from './usePartners';
+import { useAssociatedEntities, useAssociatedEntityTransactions } from './useAssociatedEntities';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useInvoiceActions = () => {
@@ -15,6 +16,8 @@ export const useInvoiceActions = () => {
   const { addCommunication } = useCustomerCommunications();
   const { partners } = usePartners();
   const { addPartnerTransaction } = usePartnerTransactions();
+  const { associatedEntities } = useAssociatedEntities();
+  const { addAssociatedEntityTransaction } = useAssociatedEntityTransactions();
   const [isSaving, setIsSaving] = useState(false);
 
   const sendInvoiceEmail = async (invoice: Invoice) => {
@@ -177,6 +180,30 @@ export const useInvoiceActions = () => {
                 console.log(`✅ Partner transaction created for ${partner.name}`);
               } else {
                 console.error(`❌ Failed to create partner transaction: ${partnerTransactionResult.error}`);
+              }
+            }
+          }
+          
+          // Check if this gem has "Memo" ownership status and create associated entity transaction
+          if (gem && gem.ownershipStatus === 'M' && gem.associatedEntity && gem.associatedEntity !== 'Self') {
+            const associatedEntity = associatedEntities.find(entity => entity.name === gem.associatedEntity);
+            if (associatedEntity) {
+              console.log(`🔄 Creating associated entity transaction for gem ${gemId}, entity ${associatedEntity.name}, revenue: $${item.totalPrice}`);
+              
+              const entityTransactionResult = await addAssociatedEntityTransaction({
+                associated_entity_id: associatedEntity.id,
+                associated_entity_name: associatedEntity.name,
+                transaction_type: 'invoice',
+                transaction_id: result.data.id,
+                ownership_status: gem.ownershipStatus,
+                revenue_amount: item.totalPrice,
+                transaction_date: invoiceData.dateCreated
+              });
+              
+              if (entityTransactionResult.success) {
+                console.log(`✅ Associated entity transaction created for ${associatedEntity.name}`);
+              } else {
+                console.error(`❌ Failed to create associated entity transaction: ${entityTransactionResult.error}`);
               }
             }
           }

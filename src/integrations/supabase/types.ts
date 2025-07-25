@@ -90,7 +90,15 @@ export type Database = {
           transaction_type?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_associated_entity_transactions_entity_id"
+            columns: ["associated_entity_id"]
+            isOneToOne: false
+            referencedRelation: "associated_entities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       column_customizations: {
         Row: {
