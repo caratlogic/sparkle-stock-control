@@ -57,6 +57,15 @@ const InvoiceItemRow = ({
 
   // Handle quantity change for set type items
   const handleEditQuantityChange = (newQuantity: number) => {
+    console.log('🔧 handleEditQuantityChange called:', {
+      newQuantity,
+      oldQuantity: editQuantity,
+      originalItemQuantity: item.quantity,
+      originalItemTotalPrice: item.totalPrice,
+      currentEditTotalPrice: editTotalPrice,
+      isSetType
+    });
+    
     setEditQuantity(newQuantity);
     
     if (isSetType) {
@@ -69,7 +78,14 @@ const InvoiceItemRow = ({
       // Use original item data to calculate price per stone
       if (item.quantity > 0) {
         const pricePerStone = item.totalPrice / item.quantity;
-        setEditTotalPrice(newQuantity * pricePerStone);
+        const newTotalPrice = newQuantity * pricePerStone;
+        console.log('💰 Calculating new price:', {
+          pricePerStone,
+          newQuantity,
+          newTotalPrice,
+          calculation: `${newQuantity} × ${pricePerStone} = ${newTotalPrice}`
+        });
+        setEditTotalPrice(newTotalPrice);
       }
     }
   };
