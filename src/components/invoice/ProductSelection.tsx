@@ -80,36 +80,13 @@ const InvoiceItemRow = ({
       const individualCarat = getIndividualStoneCarat();
       if (individualCarat) {
         setEditCarat(newQuantity * individualCarat);
-        // Also update total price proportionally for set types
-        if (item.quantity > 0) {
-          const pricePerStone = item.totalPrice / item.quantity;
-          const newTotalPrice = newQuantity * pricePerStone;
-          console.log('💰 SET TYPE: Calculating new price:', {
-            pricePerStone,
-            newQuantity,
-            newTotalPrice,
-            calculation: `${newQuantity} × ${pricePerStone} = ${newTotalPrice}`
-          });
-          setEditTotalPrice(newTotalPrice);
-        }
+        // For set types, only update carat but keep total price unchanged when quantity changes
+        console.log('💎 SET TYPE: Only updating carat, keeping total price unchanged');
       }
     } else {
-      console.log('💎 REGULAR GEM detected - calculating proportional price');
-      // For regular gems, update total price proportionally when quantity changes
-      // Use original item data to calculate price per stone
-      if (item.quantity > 0) {
-        const pricePerStone = item.totalPrice / item.quantity;
-        const newTotalPrice = newQuantity * pricePerStone;
-        console.log('💰 Calculating new price:', {
-          pricePerStone,
-          newQuantity,
-          newTotalPrice,
-          calculation: `${newQuantity} × ${pricePerStone} = ${newTotalPrice}`
-        });
-        setEditTotalPrice(newTotalPrice);
-      } else {
-        console.log('⚠️ Cannot calculate price: item.quantity is 0 or invalid');
-      }
+      console.log('💎 REGULAR GEM detected - keeping total price unchanged when quantity changes');
+      // For regular gems, don't update total price when quantity changes
+      // Total price should only change when carat is modified
     }
   };
 
@@ -299,30 +276,12 @@ export const ProductSelection = ({
         const newCaratAmount = newQuantity * individualCarat;
         setCaratAmount(newCaratAmount);
         
-        // Update total selling price proportionally for set type gems
-        if (totalSellingPrice && quantity > 0) {
-          // Calculate price per carat from current total selling price and carat amount
-          const pricePerCarat = totalSellingPrice / caratAmount;
-          const newTotalPrice = newCaratAmount * pricePerCarat;
-          if (setTotalSellingPrice) {
-            setTotalSellingPrice(newTotalPrice);
-          }
-        } else if (selectedProduct.price) {
-          // If no current total selling price, calculate based on gem's price per carat
-          const pricePerCarat = selectedProduct.price / selectedProduct.carat;
-          const newTotalPrice = newCaratAmount * pricePerCarat;
-          if (setTotalSellingPrice) {
-            setTotalSellingPrice(newTotalPrice);
-          }
-        }
+        // For set type gems, don't update total selling price when quantity changes
+        // Total selling price should only change when explicitly modified by user
       }
     } else {
-      // Handle regular gems - update total selling price proportionally when quantity changes
-      if (totalSellingPrice && quantity > 0 && setTotalSellingPrice) {
-        const pricePerStone = totalSellingPrice / quantity;
-        const newTotalPrice = newQuantity * pricePerStone;
-        setTotalSellingPrice(newTotalPrice);
-      }
+      // For regular gems, don't update total selling price when quantity changes
+      // Total selling price should only change when carat is modified
     }
     
     setQuantity(newQuantity);
