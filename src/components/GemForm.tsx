@@ -171,6 +171,21 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const treatments = getTreatments();
   const availableColors = getColorsForGemType(formData.gemType) || [];
 
+  // Debug: Log available options and current form values
+  console.log('🔍 GemForm: Available options and current values:', {
+    gemTypes: gemTypes.length > 0 ? gemTypes : 'Loading...',
+    cuts: cuts.length > 0 ? cuts : 'Loading...',
+    availableColors: availableColors.length > 0 ? availableColors : `Loading for ${formData.gemType}...`,
+    currentFormData: {
+      gemType: formData.gemType,
+      cut: formData.cut, 
+      color: formData.color
+    },
+    gemTypeExists: gemTypes.includes(formData.gemType),
+    cutExists: cuts.includes(formData.cut),
+    colorExists: availableColors.includes(formData.color)
+  });
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center space-x-4 mb-6">
