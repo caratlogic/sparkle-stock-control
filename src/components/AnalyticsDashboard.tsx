@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { TrendingUp, DollarSign, Package, Users, Gem as GemIcon, Calendar, Building2 } from 'lucide-react';
 import { Gem } from '../types/gem';
 import { Customer, Invoice } from '../types/customer';
+import { RecentMergeSplitCard } from './RecentMergeSplitCard';
 
 interface AnalyticsDashboardProps {
   gems: Gem[];
@@ -360,6 +361,14 @@ export const AnalyticsDashboard = ({ gems, customers, invoices }: AnalyticsDashb
             <p className="text-xs text-slate-500 mt-1">Per invoice</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Recent Operations and Gem Type Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <RecentMergeSplitCard onViewFullHistory={() => {
+          // This would be handled by the parent Dashboard component
+          console.log('Navigate to merge/split history');
+        }} />
       </div>
 
       {/* Gem Type Analytics */}

@@ -849,6 +849,60 @@ export type Database = {
           },
         ]
       }
+      merge_split_history: {
+        Row: {
+          created_at: string
+          id: string
+          new_carat: number
+          new_stock_numbers: string[]
+          new_total_cost: number | null
+          new_total_selling: number | null
+          notes: string | null
+          operation_type: string
+          original_carat: number
+          original_stock_numbers: string[]
+          original_total_cost: number | null
+          original_total_selling: number | null
+          updated_at: string
+          user_email: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_carat: number
+          new_stock_numbers: string[]
+          new_total_cost?: number | null
+          new_total_selling?: number | null
+          notes?: string | null
+          operation_type: string
+          original_carat: number
+          original_stock_numbers: string[]
+          original_total_cost?: number | null
+          original_total_selling?: number | null
+          updated_at?: string
+          user_email: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_carat?: number
+          new_stock_numbers?: string[]
+          new_total_cost?: number | null
+          new_total_selling?: number | null
+          notes?: string | null
+          operation_type?: string
+          original_carat?: number
+          original_stock_numbers?: string[]
+          original_total_cost?: number | null
+          original_total_selling?: number | null
+          updated_at?: string
+          user_email?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       partner_transactions: {
         Row: {
           associated_entity: string

@@ -22,6 +22,7 @@ import { HelpSection } from './HelpSection';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { CaratLogicHomepage } from './CaratLogicHomepage';
 import GemSettingsManagement from './GemSettingsManagement';
+import { MergeSplitHistoryDashboard } from './MergeSplitHistoryDashboard';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
@@ -297,6 +298,8 @@ export const Dashboard = () => {
             {activeTab === 'qr-codes' && <QRCodeManagement gems={gems} />}
 
             {activeTab === 'gem-settings' && <GemSettingsManagement />}
+
+            {activeTab === 'merge-split-history' && <MergeSplitHistoryDashboard />}
           </div>
         </div>
       </div>

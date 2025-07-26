@@ -16,7 +16,8 @@ import {
   Gem,
   Home,
   Building2,
-  Settings
+  Settings,
+  History
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,7 @@ const navigationItems = [
   { id: 'partners', label: 'Partners', icon: Users },
   { id: 'associated-entities', label: 'Associated Entities', icon: Building2 },
   { id: 'transaction-tracking', label: 'Transaction Tracking', icon: BarChart3 },
+  { id: 'merge-split-history', label: 'Merge & Split History', icon: History },
   { id: 'reminders', label: 'Reminders', icon: Bell },
   { id: 'communications', label: 'Communications', icon: MessageSquare },
   { id: 'credit-notes', label: 'Credit Notes', icon: FileText },

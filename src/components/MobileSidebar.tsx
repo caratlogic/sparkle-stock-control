@@ -13,7 +13,10 @@ import {
   QrCode,
   Menu,
   Gem,
-  Home
+  Home,
+  History,
+  Building2,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -30,10 +33,15 @@ const navigationItems = [
   { id: 'customers', label: 'Customers', icon: Users },
   { id: 'transactions', label: 'Transactions', icon: Receipt },
   { id: 'payments', label: 'Payments', icon: CreditCard },
+  { id: 'partners', label: 'Partners', icon: Users },
+  { id: 'associated-entities', label: 'Associated Entities', icon: Building2 },
+  { id: 'transaction-tracking', label: 'Transaction Tracking', icon: BarChart3 },
+  { id: 'merge-split-history', label: 'Merge & Split History', icon: History },
   { id: 'reminders', label: 'Reminders', icon: Bell },
   { id: 'communications', label: 'Communications', icon: MessageSquare },
   { id: 'credit-notes', label: 'Credit Notes', icon: FileText },
   { id: 'qr-codes', label: 'QR Codes', icon: QrCode },
+  { id: 'gem-settings', label: 'Gem Settings', icon: Settings },
 ];
 
 export const MobileSidebar = ({ activeTab, onTabChange }: MobileSidebarProps) => {
