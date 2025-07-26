@@ -125,6 +125,17 @@ const InvoiceItemRow = ({
   };
 
   const handleSave = () => {
+    // Strict validation before saving edited item
+    if (editQuantity > (item.productDetails.totalCarat / (item.productDetails.totalCarat / item.quantity) || 0)) {
+      console.warn('Cannot save: Quantity exceeds available stock');
+      return;
+    }
+    
+    if (editCarat > item.productDetails.totalCarat) {
+      console.warn('Cannot save: Carat amount exceeds available carat weight');
+      return;
+    }
+    
     const pricePerCarat = editTotalPrice / editCarat;
     const updatedItem = {
       ...item,
@@ -165,8 +176,15 @@ const InvoiceItemRow = ({
             <Input
               type="number"
               min="1"
+              max={item.productDetails.totalCarat / (item.productDetails.totalCarat / item.quantity) || 1}
               value={editQuantity}
-              onChange={(e) => handleEditQuantityChange(parseInt(e.target.value) || 1)}
+              onChange={(e) => {
+                const newQty = parseInt(e.target.value) || 1;
+                const maxQty = Math.floor(item.productDetails.totalCarat / (item.productDetails.totalCarat / item.quantity) || 1);
+                if (newQty <= maxQty) {
+                  handleEditQuantityChange(newQty);
+                }
+              }}
               className="w-16 h-8 text-xs"
               placeholder="Qty"
             />
@@ -178,7 +196,12 @@ const InvoiceItemRow = ({
               min="0.01"
               max={item.productDetails.totalCarat}
               value={editCarat}
-              onChange={(e) => handleEditCaratChange(parseFloat(e.target.value) || 0.01)}
+              onChange={(e) => {
+                const newCarat = parseFloat(e.target.value) || 0.01;
+                if (newCarat <= item.productDetails.totalCarat) {
+                  handleEditCaratChange(newCarat);
+                }
+              }}
               className="w-20 h-8 text-xs"
               placeholder="Carat"
               disabled={isSetType}
@@ -321,10 +344,17 @@ export const ProductSelection = ({
 
   const isValidForAddition = () => {
     if (!selectedProduct) return false;
+    
+    // Check quantity doesn't exceed available stock
+    if (quantity > (selectedProduct.inStock || 0)) return false;
+    
+    // Check carat doesn't exceed available carat weight
+    if (caratAmount > selectedProduct.carat) return false;
+    
     if (selectedProduct.stockType === 'set') {
       return validateSetTypeInput(selectedProduct, quantity, caratAmount);
     }
-    return caratAmount <= selectedProduct.carat;
+    return true;
   };
   return (
     <Card className="lg:col-span-3">
@@ -367,8 +397,14 @@ export const ProductSelection = ({
               min="1"
               max={selectedProduct?.inStock || 999}
               value={quantity}
-              onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-              placeholder={selectedProduct ? `Total: ${selectedProduct.inStock || 0}` : "1"}
+              onChange={(e) => {
+                const newQty = parseInt(e.target.value) || 1;
+                const maxQty = selectedProduct?.inStock || 0;
+                if (newQty <= maxQty) {
+                  handleQuantityChange(newQty);
+                }
+              }}
+              placeholder={selectedProduct ? `Max: ${selectedProduct.inStock || 0}` : "1"}
             />
             {selectedProduct?.stockType === 'set' && (
               <div className="text-xs text-slate-500 mt-1">
@@ -386,8 +422,14 @@ export const ProductSelection = ({
               min="0.01"
               max={selectedProduct?.carat || 999}
               value={caratAmount}
-              onChange={(e) => handleCaratChange(parseFloat(e.target.value) || 0.01)}
-              placeholder={selectedProduct ? `Available: ${selectedProduct.carat}ct` : "0.01"}
+              onChange={(e) => {
+                const newCarat = parseFloat(e.target.value) || 0.01;
+                const maxCarat = selectedProduct?.carat || 0;
+                if (newCarat <= maxCarat) {
+                  handleCaratChange(newCarat);
+                }
+              }}
+              placeholder={selectedProduct ? `Max: ${selectedProduct.carat}ct` : "0.01"}
               disabled={selectedProduct?.stockType === 'set'}
             />
             {selectedProduct?.stockType === 'set' && (

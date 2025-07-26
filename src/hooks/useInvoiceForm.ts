@@ -95,7 +95,24 @@ export const useInvoiceForm = ({ preselectedCustomer, preselectedGem }: UseInvoi
   };
 
   const handleAddItem = () => {
-    if (!selectedProduct || caratAmount > selectedProduct.carat) return;
+    if (!selectedProduct) return;
+    
+    // Strict validation: Prevent exceeding available stock
+    if (quantity > (selectedProduct.inStock || 0)) {
+      console.warn('Cannot add item: Quantity exceeds available stock', {
+        requested: quantity,
+        available: selectedProduct.inStock
+      });
+      return;
+    }
+    
+    if (caratAmount > selectedProduct.carat) {
+      console.warn('Cannot add item: Carat amount exceeds available carat weight', {
+        requested: caratAmount,
+        available: selectedProduct.carat
+      });
+      return;
+    }
 
     const pricePerCarat = selectedProduct.price / selectedProduct.carat;
     const totalPrice = caratAmount * pricePerCarat;
