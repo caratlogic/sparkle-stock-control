@@ -151,12 +151,15 @@ export const useGems = () => {
     }
   };
 
-  const addGem = async (gemData: Omit<Gem, 'id' | 'stockId' | 'dateAdded'>) => {
+  const addGem = async (gemData: Omit<Gem, 'id' | 'stockId' | 'dateAdded'>, customStockId?: string) => {
     try {
+      // Generate unique stock ID if not provided
+      const stockId = customStockId || `${gemData.gemType.substring(0, 2).toUpperCase()}${String(gems.length + 1).padStart(4, '0')}${Date.now().toString().slice(-3)}`;
+      
       const { data, error } = await supabase
         .from('gems')
         .insert([{
-          stock_id: `${gemData.gemType.substring(0, 2).toUpperCase()}${String(gems.length + 1).padStart(4, '0')}`,
+          stock_id: stockId,
           gem_type: gemData.gemType,
           stock_type: gemData.stockType || 'single',
           carat: gemData.carat,
@@ -189,7 +192,7 @@ export const useGems = () => {
 
       if (error) throw error;
       await fetchGems();
-      return { success: true };
+      return { success: true, data: data };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Failed to add gem' };
     }

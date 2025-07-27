@@ -28,6 +28,7 @@ interface MergeGemDialogProps {
 export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: MergeGemDialogProps) => {
   const { addGem, updateGem } = useGems();
   const [newStockId, setNewStockId] = useState('');
+  const [newPrice, setNewPrice] = useState(0);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -41,9 +42,10 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
       const firstGem = selectedGems[0];
       const prefix = firstGem.stockId.replace(/\d+$/, '');
       setNewStockId(`${prefix}M${Date.now().toString().slice(-4)}`);
+      setNewPrice(totalPrice);
       setNotes(`Merged ${selectedGems.length} gems: ${selectedGems.map(g => g.stockId).join(', ')}`);
     }
-  }, [open, selectedGems]);
+  }, [open, selectedGems, totalPrice]);
 
   const handleMerge = async () => {
     if (!newStockId.trim()) {
@@ -68,7 +70,7 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
         color: firstGem.color,
         description: `Merged from ${selectedGems.length} gems`,
         measurements: firstGem.measurements,
-        price: totalPrice,
+        price: newPrice,
         retailPrice: firstGem.retailPrice,
         costPrice: totalCostPrice,
         certificateNumber: `MERGED-${newStockId}`,
@@ -89,7 +91,7 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
       };
 
       // Add the new merged gem
-      const result = await addGem(newGem);
+      const result = await addGem(newGem, newStockId);
       if (!result.success) {
         throw new Error(result.error || 'Failed to create merged gem');
       }
@@ -185,6 +187,19 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
               value={newStockId}
               onChange={(e) => setNewStockId(e.target.value)}
               placeholder="Enter stock ID for merged gem"
+            />
+          </div>
+
+          {/* New Price */}
+          <div className="space-y-2">
+            <Label htmlFor="newPrice">New Selling Price *</Label>
+            <Input
+              id="newPrice"
+              type="number"
+              step="0.01"
+              value={newPrice}
+              onChange={(e) => setNewPrice(parseFloat(e.target.value) || 0)}
+              placeholder="Enter new selling price"
             />
           </div>
 

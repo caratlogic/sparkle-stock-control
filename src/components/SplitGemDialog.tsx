@@ -42,16 +42,17 @@ export const SplitGemDialog = ({ open, onOpenChange, selectedGem, onSuccess }: S
     if (open && selectedGem) {
       // Initialize with 2 portions
       const prefix = selectedGem.stockId.replace(/\d+$/, '');
-      const timestamp = Date.now().toString().slice(-4);
+      const timestamp = Date.now().toString().slice(-3);
+      const randomSuffix = Math.random().toString(36).substring(2, 4).toUpperCase();
       setSplitPortions([
         {
-          stockId: `${prefix}S${timestamp}A`,
+          stockId: `${prefix}S${timestamp}${randomSuffix}A`,
           carat: Math.round((selectedGem.carat / 2) * 100) / 100,
           costPrice: Math.round((selectedGem.costPrice / 2) * 100) / 100,
           price: Math.round((selectedGem.price / 2) * 100) / 100,
         },
         {
-          stockId: `${prefix}S${timestamp}B`,
+          stockId: `${prefix}S${timestamp}${randomSuffix}B`,
           carat: Math.round((selectedGem.carat / 2) * 100) / 100,
           costPrice: Math.round((selectedGem.costPrice / 2) * 100) / 100,
           price: Math.round((selectedGem.price / 2) * 100) / 100,
@@ -65,11 +66,12 @@ export const SplitGemDialog = ({ open, onOpenChange, selectedGem, onSuccess }: S
     if (!selectedGem) return;
     
     const prefix = selectedGem.stockId.replace(/\d+$/, '');
-    const timestamp = Date.now().toString().slice(-4);
+    const timestamp = Date.now().toString().slice(-3);
+    const randomSuffix = Math.random().toString(36).substring(2, 4).toUpperCase();
     const letter = String.fromCharCode(65 + splitPortions.length); // A, B, C, etc.
     
     setSplitPortions([...splitPortions, {
-      stockId: `${prefix}S${timestamp}${letter}`,
+      stockId: `${prefix}S${timestamp}${randomSuffix}${letter}`,
       carat: 0,
       costPrice: 0,
       price: 0,
@@ -157,11 +159,11 @@ export const SplitGemDialog = ({ open, onOpenChange, selectedGem, onSuccess }: S
           partnerPercentage: selectedGem.partnerPercentage
         };
 
-        const result = await addGem(newGem);
+        const result = await addGem(newGem, portion.stockId);
         if (!result.success) {
           throw new Error(result.error || `Failed to create split gem ${portion.stockId}`);
         }
-        const createdGem = { ...newGem, stockId: portion.stockId, id: '', dateAdded: new Date().toISOString() } as Gem;
+        const createdGem = { ...newGem, stockId: portion.stockId, id: result.data?.id || '', dateAdded: new Date().toISOString() } as Gem;
         newGems.push(createdGem);
       }
 

@@ -73,6 +73,11 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
         'Supplier information and purchase history tracking',
         'Treatment and origin documentation',
         'Professional QR code generation with customizable field selection',
+        'Merge & Split Operations: Combine multiple gems into one or split single gems into multiple portions',
+        '  • Merge function: Select multiple gems and combine them with editable pricing',
+        '  • Split function: Divide a single gem into multiple portions with precise carat and pricing allocation',
+        '  • Complete operation history tracking with detailed audit trails',
+        '  • Automatic stock status updates and inventory management',
         'Bulk operations for efficient inventory management',
         'CSV export for external systems integration',
         'Transaction history showing complete gem lifecycle',
@@ -238,6 +243,29 @@ export const HelpSection = ({ onClose }: HelpSectionProps) => {
         'Large credit note approvals pending',
         'Credit balance utilization reminders',
         'Credit note processing confirmations'
+      ]
+    },
+    {
+      id: 'merge-split',
+      title: 'Merge & Split Operations',
+      icon: Package,
+      purpose: 'Advanced inventory operations for combining or dividing gem stocks with complete tracking',
+      features: [
+        'Merge multiple gems into a single stock item with combined specifications',
+        'Split single gems into multiple portions with precise carat and pricing allocation',
+        'Editable pricing during merge operations for accurate valuation',
+        'Automatic generation of unique stock IDs for new gems created',
+        'Complete operation history with detailed audit trails',
+        'Real-time inventory status updates (original stocks marked as sold/out of stock)',
+        'Comprehensive logging of all merge/split activities with user tracking',
+        'Transaction history showing before and after states',
+        'Conflict resolution for stock ID duplicates with automatic retry mechanisms',
+        'Professional documentation of operation details and notes'
+      ],
+      alerts: [
+        'Operation completion confirmations',
+        'Stock ID conflict warnings with resolution suggestions',
+        'Inventory status change notifications'
       ]
     },
     {

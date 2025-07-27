@@ -1,6 +1,25 @@
-import { useMergeSplitHistory } from '@/hooks/useMergeSplitHistory';
+import { supabase } from '@/integrations/supabase/client';
 import { MergeSplitOperation } from '@/types/mergeSplit';
 import { Gem } from '@/types/gem';
+
+// Utility function to create merge/split operation records without using hooks
+export const createMergeSplitRecord = async (operation: MergeSplitOperation): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('merge_split_history')
+      .insert([operation]);
+
+    if (error) {
+      console.error('Error adding merge/split record:', error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('Error in createMergeSplitRecord:', err);
+    return false;
+  }
+};
 
 // Demo function to show how merge operations would be logged
 export const logMergeOperation = async (
@@ -8,8 +27,6 @@ export const logMergeOperation = async (
   newGem: Gem,
   userEmail: string
 ): Promise<boolean> => {
-  const { addMergeSplitRecord } = useMergeSplitHistory();
-
   const operation: MergeSplitOperation = {
     operation_type: 'Merge',
     user_email: userEmail,
@@ -24,7 +41,7 @@ export const logMergeOperation = async (
     notes: `Merged ${originalGems.length} gems into one`
   };
 
-  return await addMergeSplitRecord(operation);
+  return await createMergeSplitRecord(operation);
 };
 
 // Demo function to show how split operations would be logged
@@ -34,8 +51,6 @@ export const logSplitOperation = async (
   userEmail: string,
   notes?: string
 ): Promise<boolean> => {
-  const { addMergeSplitRecord } = useMergeSplitHistory();
-
   const operation: MergeSplitOperation = {
     operation_type: 'Split',
     user_email: userEmail,
@@ -50,13 +65,11 @@ export const logSplitOperation = async (
     notes: notes || `Split 1 gem into ${newGems.length} gems`
   };
 
-  return await addMergeSplitRecord(operation);
+  return await createMergeSplitRecord(operation);
 };
 
 // Sample data insertion function for testing
 export const insertSampleMergeSplitData = async () => {
-  const { addMergeSplitRecord } = useMergeSplitHistory();
-
   const sampleOperations: MergeSplitOperation[] = [
     {
       operation_type: 'Split',
@@ -87,6 +100,6 @@ export const insertSampleMergeSplitData = async () => {
   ];
 
   for (const operation of sampleOperations) {
-    await addMergeSplitRecord(operation);
+    await createMergeSplitRecord(operation);
   }
 };

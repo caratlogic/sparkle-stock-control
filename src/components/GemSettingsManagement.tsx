@@ -157,9 +157,8 @@ const GemSettingsManagement: React.FC = () => {
   const gemColors = getAllGemColors();
 
   const handleDeleteSetting = async (id: string, value: string) => {
-    if (window.confirm(`Are you sure you want to delete "${value}"?`)) {
-      await deleteGemSetting(id);
-    }
+    // Prevent deletion - show warning message instead
+    alert(`Cannot delete "${value}". Existing entries can only be updated, not deleted.`);
   };
 
   if (loading) {
