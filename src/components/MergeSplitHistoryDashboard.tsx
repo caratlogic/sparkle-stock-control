@@ -6,14 +6,26 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Search, Download, History, ArrowUpDown } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, Search, Download, History, ArrowUpDown, Merge, Split } from 'lucide-react';
 import { useMergeSplitHistory } from '@/hooks/useMergeSplitHistory';
+import { useGems } from '@/hooks/useGems';
 import { MergeSplitFilters } from '@/types/mergeSplit';
+import { Gem } from '@/types/gem';
 import { format } from 'date-fns';
+import { MergeGemDialog } from './MergeGemDialog';
+import { SplitGemDialog } from './SplitGemDialog';
+import { toast } from 'sonner';
 
 export const MergeSplitHistoryDashboard = () => {
   const { history, loading, fetchHistory } = useMergeSplitHistory();
+  const { gems } = useGems();
   const [filters, setFilters] = useState<MergeSplitFilters>({});
+  const [selectedGems, setSelectedGems] = useState<Gem[]>([]);
+  const [selectedGemForSplit, setSelectedGemForSplit] = useState<Gem | null>(null);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [showSplitDialog, setShowSplitDialog] = useState(false);
+  const [showGemSelection, setShowGemSelection] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -32,6 +44,37 @@ export const MergeSplitHistoryDashboard = () => {
     fetchHistory();
     setCurrentPage(1);
   };
+
+  const handleGemSelection = (gem: Gem, checked: boolean) => {
+    if (checked) {
+      setSelectedGems([...selectedGems, gem]);
+    } else {
+      setSelectedGems(selectedGems.filter(g => g.id !== gem.id));
+    }
+  };
+
+  const handleMergeClick = () => {
+    if (selectedGems.length < 2) {
+      toast.error("Please select at least 2 gems to merge");
+      return;
+    }
+    setShowMergeDialog(true);
+  };
+
+  const handleSplitClick = (gem: Gem) => {
+    setSelectedGemForSplit(gem);
+    setShowSplitDialog(true);
+  };
+
+  const handleOperationSuccess = () => {
+    setSelectedGems([]);
+    setSelectedGemForSplit(null);
+    setShowGemSelection(false);
+    fetchHistory(); // Refresh history
+  };
+
+  // Filter gems that are in stock and available for operations
+  const availableGems = gems.filter(gem => gem.status === 'In Stock' && (gem.inStock || 0) > 0);
 
   const handleExport = () => {
     // Create CSV content
@@ -97,11 +140,101 @@ export const MergeSplitHistoryDashboard = () => {
             Track all merge and split operations for inventory accuracy and compliance
           </p>
         </div>
-        <Button onClick={handleExport} className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
-          Export CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowGemSelection(!showGemSelection)}
+            className="flex items-center gap-2"
+          >
+            <Merge className="h-4 w-4" />
+            {showGemSelection ? 'Hide' : 'Show'} Gem Operations
+          </Button>
+          <Button onClick={handleExport} className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
+
+      {/* Gem Selection Section */}
+      {showGemSelection && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Merge className="h-5 w-5" />
+              Gem Operations
+            </CardTitle>
+            <CardDescription>
+              Select gems to merge or split. Available gems: {availableGems.length}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleMergeClick}
+                  disabled={selectedGems.length < 2}
+                  className="flex items-center gap-2"
+                >
+                  <Merge className="h-4 w-4" />
+                  Merge Selected ({selectedGems.length})
+                </Button>
+              </div>
+
+              {/* Gem Selection Table */}
+              <div className="border rounded-lg max-h-96 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">Select</TableHead>
+                      <TableHead>Stock ID</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Carat</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {availableGems.slice(0, 20).map((gem) => (
+                      <TableRow key={gem.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedGems.some(g => g.id === gem.id)}
+                            onCheckedChange={(checked) => handleGemSelection(gem, checked as boolean)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{gem.stockId}</Badge>
+                        </TableCell>
+                        <TableCell>{gem.gemType}</TableCell>
+                        <TableCell>{gem.carat}ct</TableCell>
+                        <TableCell>${gem.price.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSplitClick(gem)}
+                            className="flex items-center gap-1"
+                          >
+                            <Split className="h-3 w-3" />
+                            Split
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {availableGems.length > 20 && (
+                  <div className="p-2 text-center text-sm text-muted-foreground">
+                    Showing first 20 of {availableGems.length} available gems
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card>
@@ -320,6 +453,21 @@ export const MergeSplitHistoryDashboard = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <MergeGemDialog
+        open={showMergeDialog}
+        onOpenChange={setShowMergeDialog}
+        selectedGems={selectedGems}
+        onSuccess={handleOperationSuccess}
+      />
+
+      <SplitGemDialog
+        open={showSplitDialog}
+        onOpenChange={setShowSplitDialog}
+        selectedGem={selectedGemForSplit}
+        onSuccess={handleOperationSuccess}
+      />
     </div>
   );
 };
