@@ -210,12 +210,12 @@ export const ActivityLog = () => {
               {/* Customer */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Customer</label>
-                <Select value={filters.customerId} onValueChange={(value) => setFilters({...filters, customerId: value})}>
+                <Select value={filters.customerId} onValueChange={(value) => setFilters({...filters, customerId: value === "all" ? "" : value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="All customers" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All customers</SelectItem>
+                    <SelectItem value="all">All customers</SelectItem>
                     {customers.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id}>
                         {customer.name}
@@ -229,14 +229,14 @@ export const ActivityLog = () => {
               <div>
                 <label className="text-sm font-medium mb-2 block">Type</label>
                 <Select 
-                  value={filters.communicationType[0] || ''} 
-                  onValueChange={(value) => setFilters({...filters, communicationType: value ? [value] : []})}
+                  value={filters.communicationType[0] || 'all'} 
+                  onValueChange={(value) => setFilters({...filters, communicationType: value === "all" ? [] : [value]})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     {communicationTypes.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
@@ -250,14 +250,14 @@ export const ActivityLog = () => {
               <div>
                 <label className="text-sm font-medium mb-2 block">Status</label>
                 <Select 
-                  value={filters.responseStatus[0] || ''} 
-                  onValueChange={(value) => setFilters({...filters, responseStatus: value ? [value] : []})}
+                  value={filters.responseStatus[0] || 'all'} 
+                  onValueChange={(value) => setFilters({...filters, responseStatus: value === "all" ? [] : [value]})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     {responseStatuses.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
