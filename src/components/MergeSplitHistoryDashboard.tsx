@@ -137,14 +137,14 @@ export const MergeSplitHistoryDashboard = () => {
             <div className="space-y-2">
               <Label htmlFor="operationType">Operation Type</Label>
               <Select
-                value={filters.operationType || ''}
-                onValueChange={(value) => handleFilterChange('operationType', value)}
+                value={filters.operationType || 'all'}
+                onValueChange={(value) => handleFilterChange('operationType', value === 'all' ? '' : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="Merge">Merge</SelectItem>
                   <SelectItem value="Split">Split</SelectItem>
                 </SelectContent>
