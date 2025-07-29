@@ -35,6 +35,7 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
   const totalCarat = selectedGems.reduce((sum, gem) => sum + gem.carat, 0);
   const totalCostPrice = selectedGems.reduce((sum, gem) => sum + gem.costPrice, 0);
   const totalPrice = selectedGems.reduce((sum, gem) => sum + gem.price, 0);
+  const totalInStock = selectedGems.reduce((sum, gem) => sum + (gem.inStock || 0), 0);
 
   useEffect(() => {
     if (open && selectedGems.length > 0) {
@@ -64,7 +65,7 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
       const firstGem = selectedGems[0];
       const newGem: Omit<Gem, 'id' | 'stockId' | 'dateAdded'> = {
         gemType: firstGem.gemType,
-        stockType: 'single', // Merged gems become single stones
+        stockType: firstGem.stockType, // Inherit stock type from original gems
         carat: totalCarat,
         cut: firstGem.cut,
         color: firstGem.color,
@@ -82,7 +83,7 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
         supplier: firstGem.supplier,
         purchaseDate: firstGem.purchaseDate,
         origin: firstGem.origin,
-        inStock: 1,
+        inStock: totalInStock, // Sum of all original gems' quantities
         reserved: 0,
         sold: 0,
         ownershipStatus: firstGem.ownershipStatus,
