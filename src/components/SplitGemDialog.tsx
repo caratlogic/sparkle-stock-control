@@ -133,7 +133,7 @@ export const SplitGemDialog = ({ open, onOpenChange, selectedGem, onSuccess }: S
       for (const portion of splitPortions) {
         const newGem: Omit<Gem, 'id' | 'stockId' | 'dateAdded'> = {
           gemType: selectedGem.gemType,
-          stockType: 'single',
+          stockType: selectedGem.stockType, // Inherit stock type from original gem
           carat: portion.carat,
           cut: selectedGem.cut,
           color: selectedGem.color,
