@@ -53,16 +53,27 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
     if (selectedGems.length < 2) return { isValid: false, error: "Please select at least 2 gems to merge" };
 
     const firstGem = selectedGems[0];
+    const stockTypes = [...new Set(selectedGems.map(gem => gem.stockType))];
     
-    // Check if all gems are parcels when merging parcels
-    const hasParcel = selectedGems.some(gem => gem.stockType === 'parcel');
-    if (hasParcel) {
-      const allParcels = selectedGems.every(gem => gem.stockType === 'parcel');
-      if (!allParcels) {
-        return { isValid: false, error: "Cannot mix parcel and single gems in a merge" };
-      }
+    // Check if there are any single stones - not allowed for merge
+    const hasSingle = selectedGems.some(gem => gem.stockType === 'single');
+    if (hasSingle) {
+      return { 
+        isValid: false, 
+        error: "Single stone merges are not allowed. Only parcel-to-parcel or set-to-set merges are permitted." 
+      };
+    }
 
-      // For parcel merges, check gem type, shape, and color compatibility
+    // Check if all gems have the same stock type
+    if (stockTypes.length > 1) {
+      return { 
+        isValid: false, 
+        error: `Cannot mix different stock types. Found: ${stockTypes.join(", ")}` 
+      };
+    }
+
+    // For parcel merges, check gem type, shape, and color compatibility
+    if (firstGem.stockType === 'parcel') {
       const incompatibleGem = selectedGems.find(gem => 
         gem.gemType !== firstGem.gemType ||
         gem.cut !== firstGem.cut ||
@@ -80,6 +91,11 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
           error: `Parcel merge requires same ${issues.join(", ")}. Found mismatch in ${incompatibleGem.stockId}` 
         };
       }
+    }
+
+    // For set merges, check compatibility (add similar logic if needed)
+    if (firstGem.stockType === 'set') {
+      // Add set-specific validation rules here if needed
     }
 
     return { isValid: true, error: null };
