@@ -48,14 +48,53 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
     }
   }, [open, selectedGems, totalPrice]);
 
+  // Validation function for merge compatibility
+  const validateMergeCompatibility = () => {
+    if (selectedGems.length < 2) return { isValid: false, error: "Please select at least 2 gems to merge" };
+
+    const firstGem = selectedGems[0];
+    
+    // Check if all gems are parcels when merging parcels
+    const hasParcel = selectedGems.some(gem => gem.stockType === 'parcel');
+    if (hasParcel) {
+      const allParcels = selectedGems.every(gem => gem.stockType === 'parcel');
+      if (!allParcels) {
+        return { isValid: false, error: "Cannot mix parcel and single gems in a merge" };
+      }
+
+      // For parcel merges, check gem type, shape, and color compatibility
+      const incompatibleGem = selectedGems.find(gem => 
+        gem.gemType !== firstGem.gemType ||
+        gem.cut !== firstGem.cut ||
+        gem.color !== firstGem.color
+      );
+
+      if (incompatibleGem) {
+        const issues = [];
+        if (incompatibleGem.gemType !== firstGem.gemType) issues.push("gem type");
+        if (incompatibleGem.cut !== firstGem.cut) issues.push("cut/shape");
+        if (incompatibleGem.color !== firstGem.color) issues.push("color");
+        
+        return { 
+          isValid: false, 
+          error: `Parcel merge requires same ${issues.join(", ")}. Found mismatch in ${incompatibleGem.stockId}` 
+        };
+      }
+    }
+
+    return { isValid: true, error: null };
+  };
+
   const handleMerge = async () => {
     if (!newStockId.trim()) {
       toast.error("Please enter a stock ID for the merged gem");
       return;
     }
 
-    if (selectedGems.length < 2) {
-      toast.error("Please select at least 2 gems to merge");
+    // Validate merge compatibility
+    const validation = validateMergeCompatibility();
+    if (!validation.isValid) {
+      toast.error(validation.error);
       return;
     }
 
@@ -142,13 +181,31 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
           {/* Selected Gems */}
           <div>
             <Label className="text-sm font-medium">Selected Gems ({selectedGems.length})</Label>
+            
+            {/* Validation Warning */}
+            {(() => {
+              const validation = validateMergeCompatibility();
+              if (!validation.isValid && selectedGems.length >= 2) {
+                return (
+                  <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-sm text-destructive font-medium">⚠️ Merge Not Allowed</p>
+                    <p className="text-sm text-destructive">{validation.error}</p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
             <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
               {selectedGems.map((gem) => (
                 <div key={gem.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Badge variant="outline">{gem.stockId}</Badge>
+                    <Badge variant={gem.stockType === 'parcel' ? 'default' : 'secondary'} className="text-xs">
+                      {gem.stockType}
+                    </Badge>
                     <span className="text-sm">
-                      {gem.gemType} • {gem.carat}ct • ${gem.price.toLocaleString()}
+                      {gem.gemType} • {gem.cut} • {gem.color} • {gem.carat}ct • ${gem.price.toLocaleString()}
                     </span>
                   </div>
                   <Button
@@ -221,7 +278,7 @@ export const MergeGemDialog = ({ open, onOpenChange, selectedGems, onSuccess }: 
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleMerge} disabled={loading || selectedGems.length < 2}>
+          <Button onClick={handleMerge} disabled={loading || !validateMergeCompatibility().isValid}>
             {loading ? 'Merging...' : `Merge ${selectedGems.length} Gems`}
           </Button>
         </DialogFooter>
