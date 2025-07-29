@@ -239,12 +239,12 @@ export const GemTable = ({
   const filteredGems = gems
     .filter((gem) => {
       const matchesSearch = 
-        gem.stockId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.certificateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.gemType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gem.cut.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (gem.description && gem.description.toLowerCase().includes(searchTerm.toLowerCase()));
+        (gem.stockId?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (gem.certificateNumber?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (gem.gemType?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (gem.color?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (gem.cut?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (gem.description?.toLowerCase() || '').includes(searchTerm.toLowerCase());
       
       const matchesGemType = filterGemType === 'all' || gem.gemType === filterGemType;
       const matchesStatus = filterStatus === 'all' || gem.status === filterStatus;
