@@ -73,8 +73,12 @@ export const MergeSplitHistoryDashboard = () => {
     fetchHistory(); // Refresh history
   };
 
-  // Filter gems that are in stock and available for operations
-  const availableGems = gems.filter(gem => gem.status === 'In Stock' && (gem.inStock || 0) > 0);
+  // Filter gems that are in stock and available for operations (exclude single stones)
+  const availableGems = gems.filter(gem => 
+    gem.status === 'In Stock' && 
+    (gem.inStock || 0) > 0 && 
+    gem.stockType !== 'single'
+  );
 
   const handleExport = () => {
     // Create CSV content
@@ -189,7 +193,8 @@ export const MergeSplitHistoryDashboard = () => {
                     <TableRow>
                       <TableHead className="w-12">Select</TableHead>
                       <TableHead>Stock ID</TableHead>
-                      <TableHead>Type</TableHead>
+                      <TableHead>Stock Type</TableHead>
+                      <TableHead>Gem Type</TableHead>
                       <TableHead>Carat</TableHead>
                       <TableHead>Price</TableHead>
                       <TableHead>Actions</TableHead>
@@ -206,6 +211,9 @@ export const MergeSplitHistoryDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{gem.stockId}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{gem.stockType}</Badge>
                         </TableCell>
                         <TableCell>{gem.gemType}</TableCell>
                         <TableCell>{gem.carat}ct</TableCell>
