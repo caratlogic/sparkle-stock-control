@@ -992,6 +992,142 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_items: {
+        Row: {
+          carat: number
+          certificate_number: string | null
+          certificate_type: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          gem_type: string | null
+          id: string
+          measurements: string | null
+          origin: string | null
+          price_per_unit: number
+          purchase_id: string
+          quantity: number
+          shape: string | null
+          total_price: number
+          treatment: string | null
+        }
+        Insert: {
+          carat: number
+          certificate_number?: string | null
+          certificate_type?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          gem_type?: string | null
+          id?: string
+          measurements?: string | null
+          origin?: string | null
+          price_per_unit: number
+          purchase_id: string
+          quantity?: number
+          shape?: string | null
+          total_price: number
+          treatment?: string | null
+        }
+        Update: {
+          carat?: number
+          certificate_number?: string | null
+          certificate_type?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          gem_type?: string | null
+          id?: string
+          measurements?: string | null
+          origin?: string | null
+          price_per_unit?: number
+          purchase_id?: string
+          quantity?: number
+          shape?: string | null
+          total_price?: number
+          treatment?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_items_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchases: {
+        Row: {
+          attachment_urls: string[] | null
+          balance: number
+          created_at: string
+          currency: string
+          due_date: string
+          id: string
+          invoice_number: string
+          notes: string | null
+          purchase_date: string
+          purchase_id: string
+          settled_amount: number
+          status: string
+          subtotal: number
+          supplier_id: string
+          tax_amount: number
+          tax_rate: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          attachment_urls?: string[] | null
+          balance?: number
+          created_at?: string
+          currency?: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          notes?: string | null
+          purchase_date?: string
+          purchase_id: string
+          settled_amount?: number
+          status?: string
+          subtotal?: number
+          supplier_id: string
+          tax_amount?: number
+          tax_rate?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          attachment_urls?: string[] | null
+          balance?: number
+          created_at?: string
+          currency?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          notes?: string | null
+          purchase_date?: string
+          purchase_id?: string
+          settled_amount?: number
+          status?: string
+          subtotal?: number
+          supplier_id?: string
+          tax_amount?: number
+          tax_rate?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qr_code_settings: {
         Row: {
           created_at: string | null
@@ -1125,6 +1261,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          country: string | null
+          created_at: string
+          credit_limit: number | null
+          email: string | null
+          ethical_certifications: string[] | null
+          id: string
+          name: string
+          payment_terms: string | null
+          performance_notes: string | null
+          phone: string | null
+          reliability_rating: number | null
+          status: string
+          supplier_id: string
+          total_purchase_history: number | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          country?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          ethical_certifications?: string[] | null
+          id?: string
+          name: string
+          payment_terms?: string | null
+          performance_notes?: string | null
+          phone?: string | null
+          reliability_rating?: number | null
+          status?: string
+          supplier_id: string
+          total_purchase_history?: number | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          country?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          ethical_certifications?: string[] | null
+          id?: string
+          name?: string
+          payment_terms?: string | null
+          performance_notes?: string | null
+          phone?: string | null
+          reliability_rating?: number | null
+          status?: string
+          supplier_id?: string
+          total_purchase_history?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
