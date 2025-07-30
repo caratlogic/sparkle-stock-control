@@ -44,6 +44,8 @@ const navigationItems = [
   { id: 'credit-notes', label: 'Credit Notes', icon: FileText },
   { id: 'qr-codes', label: 'QR Codes', icon: QrCode },
   { id: 'gem-settings', label: 'Gem Settings', icon: Settings },
+  { id: 'suppliers', label: 'Suppliers', icon: Building2 },
+  { id: 'purchases', label: 'Purchases', icon: Package },
 ];
 
 export const Sidebar = ({ activeTab, onTabChange, collapsed, onToggleCollapse }: SidebarProps) => {
