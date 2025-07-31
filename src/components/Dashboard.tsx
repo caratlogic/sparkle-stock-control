@@ -23,6 +23,8 @@ import { ThemeSwitcher } from './ThemeSwitcher';
 import { CaratLogicHomepage } from './CaratLogicHomepage';
 import GemSettingsManagement from './GemSettingsManagement';
 import { MergeSplitHistoryDashboard } from './MergeSplitHistoryDashboard';
+import { SupplierDashboard } from './SupplierDashboard';
+import { PurchaseDashboard } from './PurchaseDashboard';
 import { useGems } from '../hooks/useGems';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
@@ -300,6 +302,10 @@ export const Dashboard = () => {
             {activeTab === 'gem-settings' && <GemSettingsManagement />}
 
             {activeTab === 'merge-split-history' && <MergeSplitHistoryDashboard />}
+
+            {activeTab === 'suppliers' && <SupplierDashboard />}
+
+            {activeTab === 'purchases' && <PurchaseDashboard />}
           </div>
         </div>
       </div>
