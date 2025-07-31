@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LoginForm } from "./components/LoginForm";
+import { Layout } from "./components/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { SupplierDashboard } from "./components/SupplierDashboard";
@@ -25,8 +26,8 @@ const AppContent = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/suppliers" element={<SupplierDashboard />} />
-        <Route path="/purchases" element={<PurchaseDashboard />} />
+        <Route path="/suppliers" element={<Layout><SupplierDashboard /></Layout>} />
+        <Route path="/purchases" element={<Layout><PurchaseDashboard /></Layout>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
