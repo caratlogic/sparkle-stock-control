@@ -151,10 +151,22 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({ purchase, onClose })
     e.preventDefault();
     
     try {
+      // Auto-update status based on balance
+      let finalStatus = formData.status;
+      if (formData.balance <= 0 && formData.total_amount > 0) {
+        finalStatus = 'paid';
+      } else if (formData.settled_amount > 0 && formData.balance > 0) {
+        finalStatus = 'partial';
+      } else if (new Date(formData.due_date) < new Date() && formData.balance > 0) {
+        finalStatus = 'overdue';
+      }
+      
+      const finalFormData = { ...formData, status: finalStatus };
+      
       if (purchase) {
-        await updatePurchase(purchase.id, formData);
+        await updatePurchase(purchase.id, finalFormData);
       } else {
-        await addPurchase(formData, items);
+        await addPurchase(finalFormData, items);
       }
       onClose();
     } catch (error) {
@@ -183,10 +195,28 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({ purchase, onClose })
             </div>
 
             <div>
-              <Label htmlFor="supplier">Supplier</Label>
+              <Label htmlFor="supplier">Supplier *</Label>
               <Select
                 value={formData.supplier_id}
-                onValueChange={(value) => handleInputChange('supplier_id', value)}
+                onValueChange={(value) => {
+                  handleInputChange('supplier_id', value);
+                  // Auto-fill supplier details when selected
+                  const selectedSupplier = suppliers.find(s => s.id === value);
+                  if (selectedSupplier) {
+                    // Auto-calculate due date based on payment terms
+                    const purchaseDate = new Date(formData.purchase_date);
+                    const termsDays = selectedSupplier.payment_terms === 'Net 15' ? 15 :
+                                   selectedSupplier.payment_terms === 'Net 30' ? 30 :
+                                   selectedSupplier.payment_terms === 'Net 45' ? 45 :
+                                   selectedSupplier.payment_terms === 'Net 60' ? 60 :
+                                   selectedSupplier.payment_terms === 'COD' ? 0 : 30;
+                    
+                    const dueDate = new Date(purchaseDate);
+                    dueDate.setDate(dueDate.getDate() + termsDays);
+                    
+                    handleInputChange('due_date', format(dueDate, 'yyyy-MM-dd'));
+                  }
+                }}
                 required
               >
                 <SelectTrigger>
@@ -195,11 +225,25 @@ export const PurchaseForm: React.FC<PurchaseFormProps> = ({ purchase, onClose })
                 <SelectContent>
                   {suppliers.filter(s => s.status === 'active').map((supplier) => (
                     <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.name} ({supplier.supplier_id})
+                      {supplier.name} ({supplier.supplier_id}) - {supplier.payment_terms} - {supplier.country}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {formData.supplier_id && (
+                <div className="mt-2 text-sm text-gray-600">
+                  {(() => {
+                    const supplier = suppliers.find(s => s.id === formData.supplier_id);
+                    return supplier ? (
+                      <div className="space-y-1">
+                        <p><strong>Contact:</strong> {supplier.email} {supplier.phone ? `| ${supplier.phone}` : ''}</p>
+                        <p><strong>Location:</strong> {supplier.address ? `${supplier.address}, ` : ''}{supplier.country}</p>
+                        <p><strong>Credit Limit:</strong> ${supplier.credit_limit.toLocaleString()} | <strong>Rating:</strong> {supplier.reliability_rating}/5 stars</p>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              )}
             </div>
 
             <div>

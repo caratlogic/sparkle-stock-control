@@ -16,6 +16,8 @@ import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 import { GemCertificateManager } from './GemCertificateManager';
 import { usePartners } from '../hooks/usePartners';
 import { useAssociatedEntities } from '../hooks/useAssociatedEntities';
+import { useSuppliers } from '../hooks/useSuppliers';
+import { usePurchases } from '../hooks/usePurchases';
 
 
 interface GemFormProps {
@@ -29,6 +31,8 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const { fieldConfig } = useQRCodeSettings();
   const { partners } = usePartners();
   const { associatedEntities } = useAssociatedEntities();
+  const { suppliers } = useSuppliers();
+  const { purchases } = usePurchases();
   const { getGemTypes, getCuts, getTreatments, getColorsForGemType } = useGemSettings();
   const [formData, setFormData] = useState({
     gemType: 'Diamond',
@@ -48,6 +52,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
     treatment: 'none',
     certificateType: 'none',
     supplier: '',
+    purchaseId: '',
     purchaseDate: '',
     origin: '',
     inStock: '',
@@ -87,6 +92,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
         treatment: gem.treatment || 'none',
         certificateType: gem.certificateType || 'none',
         supplier: gem.supplier || '',
+        purchaseId: '', // Will be populated from purchases matching supplier and date
         purchaseDate: gem.purchaseDate || '',
         origin: gem.origin || '',
         inStock: (gem.inStock || 0).toString(),
@@ -109,15 +115,34 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Auto-populate cost price from linked purchase if not set
+    let finalCostPrice = parseFloat(formData.costPrice) || 0;
+    if (!finalCostPrice && formData.purchaseId) {
+      const linkedPurchase = purchases.find(p => p.id === formData.purchaseId);
+      if (linkedPurchase && linkedPurchase.subtotal && linkedPurchase.items?.length) {
+        // Calculate average cost per carat from purchase items
+        const totalCarats = linkedPurchase.items.reduce((sum, item) => sum + item.carat, 0);
+        if (totalCarats > 0) {
+          finalCostPrice = linkedPurchase.subtotal / totalCarats;
+        }
+      }
+    }
+
     const gemData = {
       ...formData,
       carat: parseFloat(formData.carat),
       price: formData.price ? parseFloat(formData.price) : 0,
       retailPrice: formData.retailPrice ? parseFloat(formData.retailPrice) : 0,
-      costPrice: parseFloat(formData.costPrice) || 0,
+      costPrice: finalCostPrice,
       inStock: parseInt(formData.inStock) || 0,
       partnerPercentage: formData.ownershipStatus === 'P' ? (parseFloat(formData.partnerPercentage) || 0) : 0,
       purchaseDate: formData.purchaseDate || null,
+      // Store the actual supplier name for display, but also store purchase link
+      supplier: formData.supplier ? (suppliers.find(s => s.id === formData.supplier)?.name || formData.supplier) : '',
+      // Store purchase reference in notes if linked
+      notes: formData.purchaseId ? 
+        `${formData.notes ? formData.notes + '\n' : ''}Linked to Purchase: ${purchases.find(p => p.id === formData.purchaseId)?.purchase_id || formData.purchaseId}`.trim() : 
+        formData.notes,
       // Ensure required database fields have default values
       stockType: formData.stockType || 'single',
       treatment: formData.treatment || 'none',
@@ -468,27 +493,109 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                      </Select>
                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="supplier">Supplier</Label>
-                    <Input
-                      id="supplier"
-                      placeholder="e.g., Bangkok Gem Co."
-                      value={formData.supplier}
-                      onChange={(e) => handleChange('supplier', e.target.value)}
-                      className="bg-slate-50 border-slate-200"
-                    />
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="supplier">Supplier</Label>
+                     <Select
+                       value={formData.supplier}
+                       onValueChange={(value) => {
+                         handleChange('supplier', value);
+                         // Auto-populate origin from supplier's country
+                         const selectedSupplier = suppliers.find(s => s.id === value);
+                         if (selectedSupplier && !formData.origin) {
+                           handleChange('origin', selectedSupplier.country);
+                         }
+                       }}
+                     >
+                       <SelectTrigger className="bg-slate-50 border-slate-200">
+                         <SelectValue placeholder="Select supplier" />
+                       </SelectTrigger>
+                       <SelectContent className="bg-white border-slate-200">
+                         <SelectItem value="">None / Free text entry</SelectItem>
+                         {suppliers.filter(s => s.status === 'active').map((supplier) => (
+                           <SelectItem key={supplier.id} value={supplier.id}>
+                             {supplier.name} ({supplier.supplier_id}) - {supplier.country}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                     {formData.supplier && suppliers.find(s => s.id === formData.supplier) && (
+                       <div className="mt-2 text-sm text-gray-600">
+                         {(() => {
+                           const supplier = suppliers.find(s => s.id === formData.supplier);
+                           return supplier ? (
+                             <div className="space-y-1">
+                               <p><strong>Contact:</strong> {supplier.email} {supplier.phone ? `| ${supplier.phone}` : ''}</p>
+                               <p><strong>Rating:</strong> {supplier.reliability_rating}/5 stars | <strong>Terms:</strong> {supplier.payment_terms}</p>
+                             </div>
+                           ) : null;
+                         })()}
+                       </div>
+                     )}
+                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="purchaseDate">Purchase Date</Label>
-                    <Input
-                      id="purchaseDate"
-                      type="date"
-                      value={formData.purchaseDate}
-                      onChange={(e) => handleChange('purchaseDate', e.target.value)}
-                      className="bg-slate-50 border-slate-200"
-                    />
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="purchaseId">Purchase ID (Optional)</Label>
+                     <Select
+                       value={formData.purchaseId}
+                       onValueChange={(value) => {
+                         handleChange('purchaseId', value);
+                         // Auto-populate data from selected purchase
+                         const selectedPurchase = purchases.find(p => p.id === value);
+                         if (selectedPurchase) {
+                           if (!formData.purchaseDate) {
+                             handleChange('purchaseDate', selectedPurchase.purchase_date);
+                           }
+                           if (!formData.supplier && selectedPurchase.supplier_id) {
+                             handleChange('supplier', selectedPurchase.supplier_id);
+                           }
+                           // Auto-populate origin from supplier
+                           const supplier = suppliers.find(s => s.id === selectedPurchase.supplier_id);
+                           if (supplier && !formData.origin) {
+                             handleChange('origin', supplier.country);
+                           }
+                         }
+                       }}
+                     >
+                       <SelectTrigger className="bg-slate-50 border-slate-200">
+                         <SelectValue placeholder="Link to purchase order" />
+                       </SelectTrigger>
+                       <SelectContent className="bg-white border-slate-200">
+                         <SelectItem value="">None / Manual entry</SelectItem>
+                         {purchases
+                           .filter(p => p.status !== 'overdue')
+                           .sort((a, b) => new Date(b.purchase_date).getTime() - new Date(a.purchase_date).getTime())
+                           .map((purchase) => (
+                           <SelectItem key={purchase.id} value={purchase.id}>
+                             {purchase.purchase_id} - {purchase.supplier?.name || 'Unknown'} ({purchase.purchase_date})
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                     {formData.purchaseId && purchases.find(p => p.id === formData.purchaseId) && (
+                       <div className="mt-2 text-sm text-gray-600">
+                         {(() => {
+                           const purchase = purchases.find(p => p.id === formData.purchaseId);
+                           return purchase ? (
+                             <div className="space-y-1">
+                               <p><strong>Invoice:</strong> {purchase.invoice_number} | <strong>Total:</strong> ${purchase.total_amount.toLocaleString()}</p>
+                               <p><strong>Status:</strong> {purchase.status} | <strong>Balance:</strong> ${purchase.balance.toLocaleString()}</p>
+                             </div>
+                           ) : null;
+                         })()}
+                       </div>
+                     )}
+                   </div>
+
+                   <div className="space-y-2">
+                     <Label htmlFor="purchaseDate">Purchase Date</Label>
+                     <Input
+                       id="purchaseDate"
+                       type="date"
+                       value={formData.purchaseDate}
+                       onChange={(e) => handleChange('purchaseDate', e.target.value)}
+                       className="bg-slate-50 border-slate-200"
+                     />
+                   </div>
 
                    <div className="space-y-2">
                      <Label htmlFor="origin">Origin</Label>

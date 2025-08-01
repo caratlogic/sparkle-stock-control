@@ -20,7 +20,36 @@ export const usePurchases = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPurchases(data || []);
+      
+      // Auto-update status based on current conditions
+      const updatedPurchases = (data || []).map(purchase => {
+        let newStatus = purchase.status;
+        const now = new Date();
+        const dueDate = new Date(purchase.due_date);
+        
+        if (purchase.balance <= 0 && purchase.total_amount > 0) {
+          newStatus = 'paid';
+        } else if (purchase.settled_amount > 0 && purchase.balance > 0) {
+          newStatus = 'partial';
+        } else if (dueDate < now && purchase.balance > 0) {
+          newStatus = 'overdue';
+        }
+        
+        // Update status in database if it changed
+        if (newStatus !== purchase.status) {
+          supabase
+            .from('purchases')
+            .update({ status: newStatus })
+            .eq('id', purchase.id)
+            .then(() => {
+              purchase.status = newStatus;
+            });
+        }
+        
+        return purchase;
+      });
+      
+      setPurchases(updatedPurchases);
     } catch (error) {
       console.error('Error fetching purchases:', error);
       toast({
