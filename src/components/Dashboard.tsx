@@ -26,6 +26,7 @@ import { MergeSplitHistoryDashboard } from './MergeSplitHistoryDashboard';
 import { SupplierDashboard } from './SupplierDashboard';
 import { PurchaseDashboard } from './PurchaseDashboard';
 import { useGems } from '../hooks/useGems';
+import { useDiamonds } from '../hooks/useDiamonds';
 import { useCustomers } from '../hooks/useCustomers';
 import { useInvoices } from '../hooks/useInvoices';
 import { useConsignments } from '../hooks/useConsignments';
@@ -34,7 +35,9 @@ import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import { useToast } from '@/hooks/use-toast';
 import { Gem } from '../types/gem';
+import { Diamond } from '../types/diamond';
 import { Customer } from '../types/customer';
+import { StoneInventoryDashboard } from './StoneInventoryDashboard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, RefreshCw, HelpCircle } from 'lucide-react';
 export const Dashboard = () => {
@@ -46,6 +49,15 @@ export const Dashboard = () => {
     deleteGem,
     refetch: refetchGems
   } = useGems();
+  
+  const {
+    diamonds,
+    loading: diamondsLoading,
+    addDiamond,
+    updateDiamond,
+    deleteDiamond,
+    refetch: refetchDiamonds
+  } = useDiamonds();
   const {
     customers,
     refetch: refetchCustomers
@@ -245,13 +257,7 @@ export const Dashboard = () => {
                 </CardContent>
               </Card>}
 
-            {activeTab === 'inventory' && <div className="space-y-6">
-                <WeeklyStatsBox gems={gems} />
-                <GemTable gems={gems} onEdit={gem => {
-              setEditingGem(gem);
-              setShowGemForm(true);
-            }} onDelete={handleDeleteGem} onAdd={() => setShowGemForm(true)} onCreateInvoice={handleCreateInvoice} onCreateConsignment={handleCreateConsignment} />
-              </div>}
+            {activeTab === 'inventory' && <StoneInventoryDashboard onCreateInvoice={handleCreateInvoice} onCreateConsignment={handleCreateConsignment} />}
 
             {activeTab === 'customers' && <CustomerDashboard onCreateInvoice={customer => {
             setInvoiceCustomer(customer);
