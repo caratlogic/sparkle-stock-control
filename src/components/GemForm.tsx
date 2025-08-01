@@ -496,13 +496,16 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                    <div className="space-y-2">
                      <Label htmlFor="supplier">Supplier</Label>
                      <Select
-                       value={formData.supplier}
+                       value={formData.supplier || "none"}
                        onValueChange={(value) => {
-                         handleChange('supplier', value);
+                         const actualValue = value === "none" ? "" : value;
+                         handleChange('supplier', actualValue);
                          // Auto-populate origin from supplier's country
-                         const selectedSupplier = suppliers.find(s => s.id === value);
-                         if (selectedSupplier && !formData.origin) {
-                           handleChange('origin', selectedSupplier.country);
+                         if (actualValue) {
+                           const selectedSupplier = suppliers.find(s => s.id === actualValue);
+                           if (selectedSupplier && !formData.origin) {
+                             handleChange('origin', selectedSupplier.country);
+                           }
                          }
                        }}
                      >
@@ -510,7 +513,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                          <SelectValue placeholder="Select supplier" />
                        </SelectTrigger>
                        <SelectContent className="bg-white border-slate-200">
-                         <SelectItem value="">None / Free text entry</SelectItem>
+                         <SelectItem value="none">None / Free text entry</SelectItem>
                          {suppliers.filter(s => s.status === 'active').map((supplier) => (
                            <SelectItem key={supplier.id} value={supplier.id}>
                              {supplier.name} ({supplier.supplier_id}) - {supplier.country}
@@ -536,22 +539,25 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                    <div className="space-y-2">
                      <Label htmlFor="purchaseId">Purchase ID (Optional)</Label>
                      <Select
-                       value={formData.purchaseId}
+                       value={formData.purchaseId || "manual"}
                        onValueChange={(value) => {
-                         handleChange('purchaseId', value);
+                         const actualValue = value === "manual" ? "" : value;
+                         handleChange('purchaseId', actualValue);
                          // Auto-populate data from selected purchase
-                         const selectedPurchase = purchases.find(p => p.id === value);
-                         if (selectedPurchase) {
-                           if (!formData.purchaseDate) {
-                             handleChange('purchaseDate', selectedPurchase.purchase_date);
-                           }
-                           if (!formData.supplier && selectedPurchase.supplier_id) {
-                             handleChange('supplier', selectedPurchase.supplier_id);
-                           }
-                           // Auto-populate origin from supplier
-                           const supplier = suppliers.find(s => s.id === selectedPurchase.supplier_id);
-                           if (supplier && !formData.origin) {
-                             handleChange('origin', supplier.country);
+                         if (actualValue) {
+                           const selectedPurchase = purchases.find(p => p.id === actualValue);
+                           if (selectedPurchase) {
+                             if (!formData.purchaseDate) {
+                               handleChange('purchaseDate', selectedPurchase.purchase_date);
+                             }
+                             if (!formData.supplier && selectedPurchase.supplier_id) {
+                               handleChange('supplier', selectedPurchase.supplier_id);
+                             }
+                             // Auto-populate origin from supplier
+                             const supplier = suppliers.find(s => s.id === selectedPurchase.supplier_id);
+                             if (supplier && !formData.origin) {
+                               handleChange('origin', supplier.country);
+                             }
                            }
                          }
                        }}
@@ -560,7 +566,7 @@ export const GemForm = ({ gem, onSubmit, onCancel }: GemFormProps) => {
                          <SelectValue placeholder="Link to purchase order" />
                        </SelectTrigger>
                        <SelectContent className="bg-white border-slate-200">
-                         <SelectItem value="">None / Manual entry</SelectItem>
+                         <SelectItem value="manual">None / Manual entry</SelectItem>
                          {purchases
                            .filter(p => p.status !== 'overdue')
                            .sort((a, b) => new Date(b.purchase_date).getTime() - new Date(a.purchase_date).getTime())
