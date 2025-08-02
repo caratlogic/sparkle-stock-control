@@ -18,13 +18,13 @@ interface DiamondFormProps {
 export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) => {
   const { isOwner } = useAuth();
   const [formData, setFormData] = useState({
-    carat: '',
-    cut: '',
+    weight: '',
+    cut_grade: '',
     color: '',
     clarity: '',
-    price: '',
-    costPrice: '',
-    certificateNumber: '',
+    retail_price: '',
+    cost_price: '',
+    report_number: '',
     status: 'In Stock',
     notes: ''
   });
@@ -32,13 +32,13 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
   useEffect(() => {
     if (diamond) {
       setFormData({
-        carat: diamond.carat.toString(),
-        cut: diamond.cut,
-        color: diamond.color,
-        clarity: diamond.clarity,
-        price: diamond.price.toString(),
-        costPrice: diamond.costPrice.toString(),
-        certificateNumber: diamond.certificateNumber,
+        weight: diamond.weight?.toString() || '',
+        cut_grade: diamond.cut_grade || '',
+        color: diamond.color || '',
+        clarity: diamond.clarity || '',
+        retail_price: diamond.retail_price.toString(),
+        cost_price: diamond.cost_price?.toString() || '',
+        report_number: diamond.report_number || '',
         status: diamond.status,
         notes: diamond.notes || ''
       });
@@ -50,10 +50,10 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
     
     const diamondData = {
       ...formData,
-      carat: parseFloat(formData.carat),
-      price: parseFloat(formData.price),
-      costPrice: parseFloat(formData.costPrice) || 0,
-      ...(diamond && { id: diamond.id, stockId: diamond.stockId, dateAdded: diamond.dateAdded })
+      weight: parseFloat(formData.weight),
+      retail_price: parseFloat(formData.retail_price),
+      cost_price: parseFloat(formData.cost_price) || 0,
+      ...(diamond && { id: diamond.id, stock_number: diamond.stock_number, date_added: diamond.date_added })
     };
 
     onSubmit(diamondData);
@@ -94,24 +94,24 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="carat">Carat Weight</Label>
+                <Label htmlFor="weight">Carat Weight</Label>
                 <Input
-                  id="carat"
+                  id="weight"
                   type="number"
                   step="0.01"
                   placeholder="1.25"
-                  value={formData.carat}
-                  onChange={(e) => handleChange('carat', e.target.value)}
+                  value={formData.weight}
+                  onChange={(e) => handleChange('weight', e.target.value)}
                   required
                   className="bg-slate-50 border-slate-200"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cut">Cut</Label>
-                <Select value={formData.cut} onValueChange={(value) => handleChange('cut', value)}>
+                <Label htmlFor="cut_grade">Cut Grade</Label>
+                <Select value={formData.cut_grade} onValueChange={(value) => handleChange('cut_grade', value)}>
                   <SelectTrigger className="bg-slate-50 border-slate-200">
-                    <SelectValue placeholder="Select cut" />
+                    <SelectValue placeholder="Select cut grade" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border-slate-200">
                     {CUT_OPTIONS.map((cut) => (
@@ -150,13 +150,13 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price">Selling Price (USD)</Label>
+                <Label htmlFor="retail_price">Selling Price (USD)</Label>
                 <Input
-                  id="price"
+                  id="retail_price"
                   type="number"
                   placeholder="12500"
-                  value={formData.price}
-                  onChange={(e) => handleChange('price', e.target.value)}
+                  value={formData.retail_price}
+                  onChange={(e) => handleChange('retail_price', e.target.value)}
                   required
                   className="bg-slate-50 border-slate-200"
                 />
@@ -164,13 +164,13 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
 
               {isOwner && (
                 <div className="space-y-2">
-                  <Label htmlFor="costPrice">Cost Price (USD)</Label>
+                  <Label htmlFor="cost_price">Cost Price (USD)</Label>
                   <Input
-                    id="costPrice"
+                    id="cost_price"
                     type="number"
                     placeholder="8500"
-                    value={formData.costPrice}
-                    onChange={(e) => handleChange('costPrice', e.target.value)}
+                    value={formData.cost_price}
+                    onChange={(e) => handleChange('cost_price', e.target.value)}
                     className="bg-slate-50 border-slate-200"
                   />
                 </div>
@@ -192,12 +192,12 @@ export const DiamondForm = ({ diamond, onSubmit, onCancel }: DiamondFormProps) =
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="certificateNumber">Certificate Number</Label>
+              <Label htmlFor="report_number">Certificate Number</Label>
               <Input
-                id="certificateNumber"
+                id="report_number"
                 placeholder="GIA-1234567890"
-                value={formData.certificateNumber}
-                onChange={(e) => handleChange('certificateNumber', e.target.value)}
+                value={formData.report_number}
+                onChange={(e) => handleChange('report_number', e.target.value)}
                 required
                 className="bg-slate-50 border-slate-200"
               />
