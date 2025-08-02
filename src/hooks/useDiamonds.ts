@@ -20,7 +20,8 @@ export const useDiamonds = () => {
         throw error;
       }
 
-      setDiamonds((data as Diamond[]) || []);
+      const diamondData = data as unknown as Diamond[];
+      setDiamonds(diamondData || []);
     } catch (error) {
       console.error('Error fetching diamonds:', error);
       toast({
@@ -45,7 +46,8 @@ export const useDiamonds = () => {
         throw error;
       }
 
-      setDiamonds(prev => [data as Diamond, ...prev]);
+      const newDiamond = data as unknown as Diamond;
+      setDiamonds(prev => [newDiamond, ...prev]);
       toast({
         title: "Success",
         description: "Diamond added successfully",
@@ -75,8 +77,9 @@ export const useDiamonds = () => {
         throw error;
       }
 
+      const updatedDiamond = data as unknown as Diamond;
       setDiamonds(prev => prev.map(diamond => 
-        diamond.id === id ? (data as Diamond) : diamond
+        diamond.id === id ? updatedDiamond : diamond
       ));
       toast({
         title: "Success",
