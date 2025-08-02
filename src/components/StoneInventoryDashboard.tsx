@@ -252,6 +252,7 @@ export const StoneInventoryDashboard = ({
                 diamonds={diamonds}
                 onEdit={handleEditDiamond}
                 onDelete={deleteDiamond}
+                onAdd={() => setShowDiamondForm(true)}
                 onCreateInvoice={onCreateDiamondInvoice}
                 onCreateConsignment={onCreateDiamondConsignment}
               />
