@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FileText, Send, Plus, Trash2 } from 'lucide-react';
-import { Gem } from '../types/gem';
+import { Gem, GemType } from '../types/gem';
+import { useDiamonds } from '../hooks/useDiamonds';
 import { Customer } from '../types/customer';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +32,7 @@ interface QuotationCreationProps {
 
 export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelectedGems = [] }: QuotationCreationProps) => {
   const { toast } = useToast();
+  const { diamonds } = useDiamonds();
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
   
@@ -58,13 +60,33 @@ export const QuotationCreation = ({ gems, customers, isOpen, onClose, preSelecte
   const [sending, setSending] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  const availableGems = gems.filter(gem => 
+  // Convert diamonds to gem format for compatibility
+  const diamondsAsGems = diamonds.filter(diamond => diamond.status === 'In Stock').map(diamond => ({
+    id: diamond.id,
+    stockId: diamond.stock_number,
+    status: (diamond.status as 'In Stock' | 'Sold' | 'Reserved') || 'In Stock',
+    carat: diamond.weight || 0,
+    gemType: 'Diamond' as GemType,
+    cut: (diamond.shape as 'Round' | 'Princess' | 'Emerald' | 'Asscher' | 'Marquise' | 'Oval' | 'Radiant' | 'Pear' | 'Heart' | 'Cushion' | 'Cabochon' | 'Faceted' | 'Raw') || 'Round',
+    color: diamond.color || '',
+    description: diamond.notes || '',
+    measurements: diamond.measurements || '',
+    certificateNumber: diamond.report_number || '',
+    price: diamond.retail_price || 0,
+    inStock: diamond.in_stock || 1,
+    stockType: (diamond.stock_type as 'single' | 'parcel' | 'set') || 'single',
+    costPrice: diamond.cost_price || 0,
+    dateAdded: diamond.date_added || new Date().toISOString().split('T')[0],
+  }));
+
+  const allAvailableItems = [...gems, ...diamondsAsGems];
+  const availableGems = allAvailableItems.filter(gem => 
     gem.status === 'In Stock' && 
     !quotationItems.some(item => item.gem.id === gem.id)
   );
 
   const addGemToQuotation = (gemId: string) => {
-    const gem = gems.find(g => g.id === gemId);
+    const gem = allAvailableItems.find(g => g.id === gemId);
     if (gem) {
       setQuotationItems(prev => [...prev, {
         gem,

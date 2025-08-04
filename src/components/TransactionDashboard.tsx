@@ -11,6 +11,8 @@ import { useConsignments } from '../hooks/useConsignments';
 import { useInvoicePayments } from '../hooks/useInvoicePayments';
 import { useCustomers } from '../hooks/useCustomers';
 import { useGems } from '../hooks/useGems';
+import { useDiamonds } from '../hooks/useDiamonds';
+import { GemType } from '../types/gem';
 import { InvoicePaymentDialog } from './InvoicePaymentDialog';
 import { ConsignmentToInvoiceDialog } from './ConsignmentToInvoiceDialog';
 import { InvoiceDetailView } from './InvoiceDetailView';
@@ -46,6 +48,7 @@ export const TransactionDashboard = () => {
     customers
   } = useCustomers();
   const { gems } = useGems();
+  const { diamonds } = useDiamonds();
   const {
     toast
   } = useToast();
@@ -1209,11 +1212,27 @@ export const TransactionDashboard = () => {
         </Dialog>}
         
         {/* Quotation Creation Dialog */}
-        <QuotationCreation
-          gems={gems}
-          customers={customers}
-          isOpen={showQuotationCreation}
-          onClose={() => setShowQuotationCreation(false)}
-        />
+            <QuotationCreation
+              gems={[...gems, ...diamonds.map(diamond => ({
+                id: diamond.id,
+                stockId: diamond.stock_number,
+                status: (diamond.status as 'In Stock' | 'Sold' | 'Reserved') || 'In Stock',
+                carat: diamond.weight || 0,
+                gemType: 'Diamond' as GemType,
+                cut: (diamond.shape as 'Round' | 'Princess' | 'Emerald' | 'Asscher' | 'Marquise' | 'Oval' | 'Radiant' | 'Pear' | 'Heart' | 'Cushion' | 'Cabochon' | 'Faceted' | 'Raw') || 'Round',
+                color: diamond.color || '',
+                description: diamond.notes || '',
+                measurements: diamond.measurements || '',
+                certificateNumber: diamond.report_number || '',
+                price: diamond.retail_price || 0,
+                inStock: diamond.in_stock || 1,
+                stockType: (diamond.stock_type as 'single' | 'parcel' | 'set') || 'single',
+                costPrice: diamond.cost_price || 0,
+                dateAdded: diamond.date_added || new Date().toISOString().split('T')[0],
+              }))]}
+              customers={customers}
+              isOpen={showQuotationCreation}
+              onClose={() => setShowQuotationCreation(false)}
+            />
     </div>;
 };

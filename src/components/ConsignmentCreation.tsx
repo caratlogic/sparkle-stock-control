@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save, Download, FileText } from 'lucide-react';
 import { Customer } from '../types/customer';
 import { Consignment, ConsignmentItem } from '../types/customer';
-import { Gem } from '../types/gem';
+import { Gem, GemType } from '../types/gem';
 import { sampleGems } from '../data/sampleGems';
 import { useConsignments } from '../hooks/useConsignments';
 import { useCustomers } from '../hooks/useCustomers';
 import { useGems } from '../hooks/useGems';
+import { useDiamonds } from '../hooks/useDiamonds';
 import { useConsignmentForm } from '../hooks/useConsignmentForm';
 import { useConsignmentActions } from '../hooks/useConsignmentActions';
 import { CustomerSelection } from './invoice/CustomerSelection';
@@ -28,6 +29,7 @@ interface ConsignmentCreationProps {
 export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselectedCustomer }: ConsignmentCreationProps) => {
   const { customers } = useCustomers();
   const { gems } = useGems();
+  const { diamonds } = useDiamonds();
   
   const {
     selectedCustomer,
@@ -66,7 +68,7 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     customer.customerId.toLowerCase().includes(customerSearch.toLowerCase())
   ).slice(0, 5);
 
-  // Product search results - use both database gems and sample gems, but prioritize database gems
+  // Product search results - combine gems and diamonds
   const databaseGems = gems.filter(gem =>
     gem.status === 'In Stock' &&
     (gem.stockId.toLowerCase().includes(productSearch.toLowerCase()) ||
@@ -74,6 +76,30 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     gem.gemType.toLowerCase().includes(productSearch.toLowerCase()) ||
     (gem.description && gem.description.toLowerCase().includes(productSearch.toLowerCase())))
   );
+
+  const databaseDiamonds = diamonds.filter(diamond =>
+    diamond.status === 'In Stock' &&
+    (diamond.stock_number.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (diamond.report_number && diamond.report_number.toLowerCase().includes(productSearch.toLowerCase())) ||
+    diamond.shape?.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (diamond.notes && diamond.notes.toLowerCase().includes(productSearch.toLowerCase())))
+  ).map(diamond => ({
+    id: diamond.id,
+    stockId: diamond.stock_number,
+    status: (diamond.status as 'In Stock' | 'Sold' | 'Reserved') || 'In Stock',
+    carat: diamond.weight || 0,
+    gemType: 'Diamond' as GemType,
+    cut: (diamond.shape as 'Round' | 'Princess' | 'Emerald' | 'Asscher' | 'Marquise' | 'Oval' | 'Radiant' | 'Pear' | 'Heart' | 'Cushion' | 'Cabochon' | 'Faceted' | 'Raw') || 'Round',
+    color: diamond.color || '',
+    description: diamond.notes || '',
+    measurements: diamond.measurements || '',
+    certificateNumber: diamond.report_number || '',
+    price: diamond.retail_price || 0,
+    inStock: diamond.in_stock || 1,
+    stockType: (diamond.stock_type as 'single' | 'parcel' | 'set') || 'single',
+    costPrice: diamond.cost_price || 0,
+    dateAdded: diamond.date_added || new Date().toISOString().split('T')[0],
+  }));
 
   const sampleGemsFiltered = sampleGems.filter(gem =>
     gem.status === 'In Stock' &&
@@ -83,8 +109,8 @@ export const ConsignmentCreation = ({ onCancel, onSave, preselectedGem, preselec
     gem.description.toLowerCase().includes(productSearch.toLowerCase()))
   );
 
-  // Combine and prioritize database gems
-  const productResults = [...databaseGems, ...sampleGemsFiltered].slice(0, 5);
+  // Combine and prioritize database gems and diamonds
+  const productResults = [...databaseGems, ...databaseDiamonds, ...sampleGemsFiltered].slice(0, 5);
 
   const estimatedValue = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
