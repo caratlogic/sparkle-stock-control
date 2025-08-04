@@ -44,11 +44,59 @@ export const DiamondDetailView = ({ diamond, onBack, onEdit }: DiamondDetailView
               Edit
             </Button>
           )}
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={() => {
+              // Convert diamond to gem format for compatibility
+              const gemEquivalent = {
+                id: diamond.id,
+                stockId: diamond.stock_number,
+                status: diamond.status as 'In Stock' | 'Sold' | 'Reserved',
+                carat: diamond.weight || 0,
+                gemType: 'Diamond' as const,
+                cut: diamond.shape as any || 'Round',
+                color: diamond.color || '',
+                description: diamond.notes || '',
+                measurements: diamond.measurements || '',
+                certificateNumber: diamond.report_number || '',
+                price: diamond.retail_price || 0,
+                inStock: diamond.in_stock || 1,
+                stockType: diamond.stock_type as any || 'single',
+                costPrice: diamond.cost_price || 0,
+                dateAdded: diamond.date_added || new Date().toISOString().split('T')[0],
+              };
+              // Navigate to invoice creation with preselected diamond
+              window.location.href = `/#/transaction-dashboard?createInvoice=true&preselectedGem=${encodeURIComponent(JSON.stringify(gemEquivalent))}`;
+            }}
+          >
             <FileText className="w-4 h-4 mr-2" />
             Create Invoice
           </Button>
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={() => {
+              // Convert diamond to gem format for compatibility
+              const gemEquivalent = {
+                id: diamond.id,
+                stockId: diamond.stock_number,
+                status: diamond.status as 'In Stock' | 'Sold' | 'Reserved',
+                carat: diamond.weight || 0,
+                gemType: 'Diamond' as const,
+                cut: diamond.shape as any || 'Round',
+                color: diamond.color || '',
+                description: diamond.notes || '',
+                measurements: diamond.measurements || '',
+                certificateNumber: diamond.report_number || '',
+                price: diamond.retail_price || 0,
+                inStock: diamond.in_stock || 1,
+                stockType: diamond.stock_type as any || 'single',
+                costPrice: diamond.cost_price || 0,
+                dateAdded: diamond.date_added || new Date().toISOString().split('T')[0],
+              };
+              // Navigate to consignment creation with preselected diamond
+              window.location.href = `/#/transaction-dashboard?createConsignment=true&preselectedGem=${encodeURIComponent(JSON.stringify(gemEquivalent))}`;
+            }}
+          >
             <Handshake className="w-4 h-4 mr-2" />
             Consign
           </Button>

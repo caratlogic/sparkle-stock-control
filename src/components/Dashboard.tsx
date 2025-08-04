@@ -22,6 +22,7 @@ import { HelpSection } from './HelpSection';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { CaratLogicHomepage } from './CaratLogicHomepage';
 import GemSettingsManagement from './GemSettingsManagement';
+import DiamondSettingsManagement from './DiamondSettingsManagement';
 import { MergeSplitHistoryDashboard } from './MergeSplitHistoryDashboard';
 import { SupplierDashboard } from './SupplierDashboard';
 import { PurchaseDashboard } from './PurchaseDashboard';
@@ -303,9 +304,11 @@ export const Dashboard = () => {
 
             {activeTab === 'credit-notes' && <CreditNotesDashboard />}
 
-            {activeTab === 'qr-codes' && <QRCodeManagement gems={gems} />}
+            {activeTab === 'qr-codes' && <QRCodeManagement gems={gems} diamonds={diamonds} />}
 
             {activeTab === 'gem-settings' && <GemSettingsManagement />}
+
+            {activeTab === 'diamond-settings' && <DiamondSettingsManagement />}
 
             {activeTab === 'merge-split-history' && <MergeSplitHistoryDashboard />}
 

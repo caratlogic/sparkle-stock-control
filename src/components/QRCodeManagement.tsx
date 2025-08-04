@@ -4,15 +4,17 @@ import { QRCodeSettings } from './QRCodeSettings';
 import { BulkQRCodeGenerator } from './BulkQRCodeGenerator';
 import { QRCodeDisplay } from './QRCodeDisplay';
 import { Gem } from '../types/gem';
+import { Diamond } from '../types/diamond';
 import { useToast } from '@/hooks/use-toast';
 import { useQRCodeSettings } from '../hooks/useQRCodeSettings';
 import { QrCode } from 'lucide-react';
 
 interface QRCodeManagementProps {
   gems: Gem[];
+  diamonds?: Diamond[];
 }
 
-export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
+export const QRCodeManagement = ({ gems, diamonds = [] }: QRCodeManagementProps) => {
   const { toast } = useToast();
   const { fieldConfig, updateFieldConfig } = useQRCodeSettings();
 
@@ -28,27 +30,52 @@ export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
     });
   };
 
-  // Get a sample gem for preview
+  // Get a sample gem or diamond for preview
   const sampleGem = gems.find(gem => gem.status === 'In Stock') || gems[0];
+  const sampleDiamond = diamonds.find(diamond => diamond.status === 'In Stock') || diamonds[0];
   
-  const sampleQRData = sampleGem ? {
-    stockId: sampleGem.stockId,
-    gemType: sampleGem.gemType,
-    carat: sampleGem.carat,
-    color: sampleGem.color,
-    cut: sampleGem.cut,
-    measurements: sampleGem.measurements || '',
-    certificateNumber: sampleGem.certificateNumber,
-    price: sampleGem.price,
-    pricePerCarat: sampleGem.price / sampleGem.carat,
-    costPrice: sampleGem.costPrice || 0,
-    costPricePerCarat: (sampleGem.costPrice || 0) / sampleGem.carat,
-    description: sampleGem.description || '',
-    origin: sampleGem.origin || '',
-    treatment: sampleGem.treatment || '',
-    supplier: sampleGem.supplier || '',
-    dateAdded: sampleGem.dateAdded
-  } : null;
+  // Prefer diamond if available, otherwise use gem
+  const sampleItem = sampleDiamond || sampleGem;
+  
+  const sampleQRData = sampleItem ? (
+    'stock_number' in sampleItem ? {
+      // Diamond data
+      stockId: sampleItem.stock_number,
+      gemType: 'Diamond',
+      carat: sampleItem.weight || 0,
+      color: sampleItem.color || '',
+      cut: sampleItem.shape || '',
+      measurements: sampleItem.measurements || '',
+      certificateNumber: sampleItem.report_number || '',
+      price: sampleItem.retail_price || 0,
+      pricePerCarat: sampleItem.retail_price && sampleItem.weight ? sampleItem.retail_price / sampleItem.weight : 0,
+      costPrice: sampleItem.cost_price || 0,
+      costPricePerCarat: sampleItem.cost_price && sampleItem.weight ? sampleItem.cost_price / sampleItem.weight : 0,
+      description: sampleItem.notes || '',
+      origin: sampleItem.origin || '',
+      treatment: sampleItem.treatment || '',
+      supplier: sampleItem.supplier || '',
+      dateAdded: sampleItem.date_added
+    } : {
+      // Gem data
+      stockId: sampleItem.stockId,
+      gemType: sampleItem.gemType,
+      carat: sampleItem.carat,
+      color: sampleItem.color,
+      cut: sampleItem.cut,
+      measurements: sampleItem.measurements || '',
+      certificateNumber: sampleItem.certificateNumber,
+      price: sampleItem.price,
+      pricePerCarat: sampleItem.price / sampleItem.carat,
+      costPrice: sampleItem.costPrice || 0,
+      costPricePerCarat: (sampleItem.costPrice || 0) / sampleItem.carat,
+      description: sampleItem.description || '',
+      origin: sampleItem.origin || '',
+      treatment: sampleItem.treatment || '',
+      supplier: sampleItem.supplier || '',
+      dateAdded: sampleItem.dateAdded
+    }
+  ) : null;
 
   return (
     <div className="space-y-6">
@@ -100,6 +127,7 @@ export const QRCodeManagement = ({ gems }: QRCodeManagementProps) => {
             <TabsContent value="bulk" className="space-y-4">
               <BulkQRCodeGenerator
                 gems={gems}
+                diamonds={diamonds}
                 fieldConfig={fieldConfig}
               />
             </TabsContent>

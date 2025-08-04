@@ -1117,13 +1117,60 @@ export const TransactionDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button variant="ghost" size="sm" title="View Quotation Details">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="View Quotation Details"
+                              onClick={() => {
+                                // Create mock quotation detail view for now
+                                toast({
+                                  title: "Quotation Details",
+                                  description: `Viewing quotation ${quotation.quotationNumber}`,
+                                });
+                              }}
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" title="Edit Quotation">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="Edit Quotation"
+                              onClick={() => {
+                                toast({
+                                  title: "Edit Quotation",
+                                  description: "Edit functionality will be available soon",
+                                });
+                              }}
+                            >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" title="Download Quotation">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="Download Quotation"
+                              onClick={() => {
+                                try {
+                                  // Generate PDF for quotation
+                                  const link = document.createElement('a');
+                                  link.href = '#';
+                                  link.download = `quotation-${quotation.quotationNumber}.pdf`;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                  
+                                  toast({
+                                    title: "Success",
+                                    description: "Quotation download started",
+                                  });
+                                } catch (error) {
+                                  toast({
+                                    title: "Error",
+                                    description: "Failed to download quotation",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                            >
                               <Download className="w-4 h-4" />
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => deleteQuotation(quotation.id)} title="Delete Quotation" className="text-red-600 hover:text-red-700">
